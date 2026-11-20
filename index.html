@@ -3156,6 +3156,14 @@
     }
     function ctxImage(qid) {
       closeCtx();
+      const u = prompt('이미지 주소(URL)를 붙여넣으세요.\n(비워 두고 확인을 누르면 내 컴퓨터에서 파일을 고를 수 있어요)', '');
+      if (u === null) return;
+      if (u.trim()) {
+        const url = u.trim(), im = new Image();
+        const go = r => openItemModal(null, { mode: 'new', qid, data: url, ratio: r || 1 });
+        im.onload = () => go(im.width / (im.height || 1)); im.onerror = () => go(1); im.src = url;
+        return;
+      }
       const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
       inp.onchange = () => {
         const f = inp.files && inp.files[0]; if (!f) return;
