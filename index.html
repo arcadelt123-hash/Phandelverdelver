@@ -1190,6 +1190,20 @@
     .pcl-custom .pcf-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-size: .8rem; color: #8a7a55; border: 2px dashed #c9b88a; margin: 6px; border-radius: 6px; }
     .pcl-custom .pt-win { position: absolute; overflow: hidden; background: rgba(255,255,255,.5); }
     .pcl-custom .pt-win img { width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center; }
+    .pcf-w { position: relative; min-width: 0; }
+    .pcf-w > button { width: 100%; }
+    .pcf-x { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; opacity: 0; transition: opacity .15s; font-style: normal; }
+    .pcf-w:hover .pcf-x, .pcf-x.armed { opacity: 1; }
+    .pcf-x.armed { background: #d33; }
+    @media (hover: none) { .pcf-x { opacity: .85; } }
+    #patmgr { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 9800; display: flex; align-items: center; justify-content: center; }
+    #patmgr .pm-box { background: var(--bg-card, #fff); color: var(--text, #222); border-radius: 12px; padding: 14px; width: min(560px, 94vw); max-height: 82vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+    #patmgr .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+    #patmgr .pm-c { display: flex; flex-direction: column; gap: 4px; align-items: stretch; font-size: .74rem; text-align: center; }
+    #patmgr .pm-c.off { opacity: .45; }
+    #patmgr .pm-sw { height: 64px; border-radius: 6px; border: 1px solid #8884; background-color: #8883; }
+    #patmgr .pm-b { font-size: .72rem; padding: 2px 6px; border-radius: 6px; border: 1px solid #8887; background: transparent; color: inherit; cursor: pointer; }
+    #patmgr .pm-b.armed { background: #d33; color: #fff; }
     .pcc-frames { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
     .pcc-frames button { border: 2px solid transparent; border-radius: 6px; background: #8884; padding: 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; color: inherit; }
     .pcc-frames button.on { border-color: #ca8a04; }
@@ -3840,11 +3854,40 @@
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" fill="${c[0]}"/><g fill="none" stroke="${c[1]}" stroke-width="1.1" stroke-linejoin="round">${arabLatticeG()}</g></svg>`;
       return 'data:image/svg+xml,' + encodeURIComponent(svg);
     }
-    const CLUE_BGS = [['g1', '아라베스크 남색'], ['g2', '아라베스크 크림'], ['g3', '아라베스크 청록'], ['p1', '문양 1'], ['p2', '문양 2'], ['p3', '문양 3'], ['m0', '문양 4'], ['m1', '문양 5'], ['m2', '문양 6'], ['m3', '문양 7'], ['m4', '문양 8']];
+    const PAT_IMGS = [{"k": "teal", "n": "청록 격자", "w": 300, "h": 732, "ar": 0.41}, {"k": "navy", "n": "남색 금박", "w": 300, "h": 525, "ar": 0.571}, {"k": "mandala", "n": "금빛 만다라", "w": 300, "h": 560, "ar": 0.537}, {"k": "dan1", "n": "단청 1", "w": 300, "h": 106, "ar": 2.837}, {"k": "dan2", "n": "단청 2", "w": 300, "h": 96, "ar": 3.125}, {"k": "dan3", "n": "단청 3", "w": 300, "h": 86, "ar": 3.472}, {"k": "dan4", "n": "단청 4", "w": 300, "h": 115, "ar": 2.609}, {"k": "dan5", "n": "단청 5", "w": 300, "h": 107, "ar": 2.809}, {"k": "dan6", "n": "단청 6", "w": 300, "h": 115, "ar": 2.609}, {"k": "dan7", "n": "단청 7", "w": 300, "h": 104, "ar": 2.874}, {"k": "dan8", "n": "단청 8", "w": 300, "h": 114, "ar": 2.64}, {"k": "dan9", "n": "단청 9", "w": 300, "h": 103, "ar": 2.907}];
+    const CLUE_BGS = [['g1', '아라베스크 남색'], ['g2', '아라베스크 크림'], ['g3', '아라베스크 청록'], ['p1', '문양 1'], ['p2', '문양 2'], ['p3', '문양 3'], ['m0', '문양 4'], ['m1', '문양 5'], ['m2', '문양 6'], ['m3', '문양 7'], ['m4', '문양 8']].concat(PAT_IMGS.map(x => ['i_' + x.k, x.n]));
+    function hidList(t) { const h = (state.boardTex.hide = state.boardTex.hide || {}); return (h[t] = h[t] || []); }
+    function isHid(t, k) { return hidList(t).indexOf(k) >= 0; }
+    function armX(el, fn) {
+      if (el.dataset.armed) { fn(); return; }
+      el.dataset.armed = '1'; el.classList.add('armed'); showToast('지우려면 한 번 더 눌러주세요. (나중에 복원할 수 있어요)');
+      setTimeout(() => { if (el.isConnected) { delete el.dataset.armed; el.classList.remove('armed'); } }, 3000);
+    }
+    function hideItem(t, k) { if (!isHid(t, k)) hidList(t).push(k); persistState(); hiddenRefresh(); }
+    function restoreHidden(t) { hidList(t).length = 0; persistState(); hiddenRefresh(); }
+    function hiddenRefresh() {
+      if (document.getElementById('pcc-box') && document.getElementById('pcc-box').offsetParent) { try { pcCfgRender(); } catch (e) {} }
+      if (document.getElementById('patmgr')) patMgrRender();
+      try { if (state.viewMode === 'board') renderBoard(); } catch (e) {}
+    }
+    function bgOptions() { return CLUE_BGS.filter(x => !isHid('bg', x[0])); }
+    function patMgrOpen() {
+      let ov = document.getElementById('patmgr');
+      if (!ov) { ov = document.createElement('div'); ov.id = 'patmgr'; ov.onclick = e => { if (e.target === ov) ov.remove(); }; document.body.appendChild(ov); }
+      patMgrRender();
+    }
+    function patMgrRender() {
+      const ov = document.getElementById('patmgr'); if (!ov) return;
+      const cells = CLUE_BGS.map(x => { const pp = patOf(x[0]), off = isHid('bg', x[0]);
+        return `<div class="pm-c${off ? ' off' : ''}"><div class="pm-sw ${pp && pp.cls ? pp.cls : ''}" style="${pp ? pp.st.replace(/\"/g, '&quot;') : ''}"></div><span>${x[1]}</span>${off ? `<button class="pm-b" onclick="unhideItem('bg','${x[0]}')">복원</button>` : `<button class="pm-b" onclick="armX(this,()=>hideItem('bg','${x[0]}'))">지우기</button>`}</div>`; }).join('');
+      ov.innerHTML = `<div class="pm-box"><div style="display:flex;align-items:center;gap:8px;"><b style="flex:1;">배경 무늬 정리</b>${hidList('bg').length ? `<button class="btn btn-secondary" onclick="restoreHidden('bg')">모두 복원</button>` : ''}<button class="btn btn-secondary" onclick="document.getElementById('patmgr').remove()">닫기</button></div><div class="pm-grid">${cells}</div></div>`;
+    }
+    function unhideItem(t, k) { const a = hidList(t), i = a.indexOf(k); if (i >= 0) a.splice(i, 1); persistState(); hiddenRefresh(); }
     function patSel(prop, cur, fn, withDefault) {
-      return `<label style="display:flex;gap:6px;align-items:center;font-size:.85rem;white-space:nowrap;">배경 무늬 <select onchange="${fn}">${withDefault ? `<option value=""${!cur ? ' selected' : ''}>기본</option>` : ''}${CLUE_BGS.map(x => `<option value="${x[0]}"${cur === x[0] ? ' selected' : ''}>${x[1]}</option>`).join('')}</select></label>`;
+      return `<label style="display:flex;gap:6px;align-items:center;font-size:.85rem;white-space:nowrap;">배경 무늬 <select onchange="${fn}">${withDefault ? `<option value=""${!cur ? ' selected' : ''}>기본</option>` : ''}${CLUE_BGS.filter(x => !isHid('bg', x[0]) || cur === x[0]).map(x => `<option value="${x[0]}"${cur === x[0] ? ' selected' : ''}>${x[1]}</option>`).join('')}</select><button class="btn btn-secondary" style="padding:2px 8px;font-size:.74rem;" onclick="patMgrOpen()" title="배경 무늬 정리">정리</button></label>`;
     }
     function patOf(k) {
+      if (/^i_/.test(k || '')) { const q = PAT_IMGS.find(x => 'i_' + x.k === k); if (q) return { cls: '', st: `background-image:url(img/pat/tile_${q.k}.webp);background-size:${q.w}px ${q.h}px;background-repeat:repeat;background-position:0 0;` }; }
       if (/^g[1-3]$/.test(k || '')) return { cls: '', st: `background-image:url("${arabTile(k)}");background-size:110px 110px;background-repeat:repeat;background-position:0 0;` };
       if (/^m[0-4]$/.test(k || '')) { const p = CLUE_PATS[+k[1]]; return { cls: '', st: `background-image:url(${p[0]});background-size:${Math.round(p[1] * 0.6)}px ${Math.round(p[2] * 0.6)}px;background-repeat:repeat;background-position:0 0;` }; }
       if (/^p[1-3]$/.test(k || '')) return { cls: 'tl-' + k, st: 'background:var(--pat) 0 0 / 110px 110px;' };
@@ -3857,7 +3900,7 @@
       let k = kind === 'clue' ? (state.boardTex.clueBg || 'p1') : (state.boardTex.storeBg || 'paper');
       if (kind === 'clue' && !CLUE_BGS.some(x => x[0] === k)) k = 'p1';
       if (kind !== 'clue') { const pp = patOf(k); if (pp) return pp; }
-      if (/^g[1-3]$/.test(k)) return patOf(k);
+      if (/^g[1-3]$/.test(k) || /^i_/.test(k)) return patOf(k);
       if (/^m[0-4]$/.test(k)) { const p = CLUE_PATS[+k[1]]; return { cls: '', st: `background-image:url(${p[0]});background-size:${Math.round(p[1] * 0.6)}px ${Math.round(p[2] * 0.6)}px;background-repeat:repeat;background-position:0 0;` }; }
       if (/^p[1-3]$/.test(k)) return { cls: 'tl-' + k, st: 'background:var(--pat) 0 0 / 110px 110px;' };
       return { cls: '', st: `background-image:url(${BOARD_BG});` };
@@ -4944,10 +4987,11 @@
           <input type="text" value="${escapeHtml(p.name || '')}" placeholder="PC 이름" oninput="pcCfgSet('name',this.value)">
           ${ty === 'custom' ? `<div class="pcc-sec"><b>내 틀 이미지</b><div style="font-size:.76rem;color:var(--text-muted);">아래 기본 틀을 고르거나(일부는 배경 · 캐릭터 · 무늬 3겹), 가운데가 투명하게 뚫린 PNG를 올리면 칸 위치를 자동으로 맞추고, 캐릭터가 틀 아래에 깔려요. 뚫리지 않은 이미지는 칸 위치를 직접 맞춰 주세요.</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="pcCfgPickFrame()">틀 이미지 올리기</button>${p.frame ? `<button class="btn btn-secondary" onclick="pcCfgSet('frame','');pcCfgSet('fHole',0);pcCfgSet('fBg','');pcCfgSet('frameR',0,true)">틀 해제</button>` : ''}</div>
-            <div class="pcc-frames">${PC_FRAMES.map(f => `<button class="${p.frame === 'img/frames/' + f.k + '.webp' ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="img/frames/${f.k}.webp" alt="${f.n}" loading="lazy"><span>${f.n}</span></button>`).join('')}</div>
+            <div class="pcc-frames">${PC_FRAMES.filter(f => !isHid('fr', f.k)).map(f => `<div class="pcf-w"><button class="${p.frame === 'img/frames/' + f.k + '.webp' ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="img/frames/${f.k}.webp" alt="${f.n}" loading="lazy"><span>${f.n}</span></button><i class="pcf-x" title="목록에서 지우기" onclick="armX(this,()=>hideItem('fr','${f.k}'))">×</i></div>`).join('')}</div>${hidList('fr').length ? `<button class="btn btn-secondary" style="font-size:.72rem;padding:2px 8px;" onclick="restoreHidden('fr')">지운 틀 복원 (${hidList('fr').length})</button>` : ''}
             ${p.fHole ? `<div class="pcc-sec" style="margin-top:6px;"><b>투명한 칸 배경</b><div style="font-size:.76rem;color:var(--text-muted);">캐릭터 뒤, 틀 뒤쪽 빈 칸에 깔리는 색이나 이미지예요.</div>
               <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><label style="display:flex;gap:4px;align-items:center;">색 <input type="color" value="${p.fBgc || '#f4ecd8'}" oninput="pcCfgSet('fBgc',this.value)"></label>
               <button class="btn btn-secondary" onclick="pcCfgPickBgi()">배경 이미지 올리기</button>
+              <div class="pcc-frames" style="width:100%;">${PAT_IMGS.filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<div class="pcf-w"><button class="${p.fBgi === 'img/pat/bg_' + x.k + '.webp' ? 'on' : ''}" title="${x.n}" onclick="pcCfgSet('fBgc','');pcCfgSet('fBgi','img/pat/bg_${x.k}.webp',true)"><img src="img/pat/bg_${x.k}.webp" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"><span>${x.n}</span></button><i class="pcf-x" title="목록에서 지우기" onclick="armX(this,()=>hideItem('bg','i_${x.k}'))">×</i></div>`).join('')}</div>${PAT_IMGS.some(x => isHid('bg', 'i_' + x.k)) ? `<button class="btn btn-secondary" style="font-size:.72rem;padding:2px 8px;" onclick="patMgrOpen()">지운 무늬 복원…</button>` : ''}
               ${p.fBgc || p.fBgi ? `<button class="btn btn-secondary" onclick="pcCfgSet('fBgc','');pcCfgSet('fBgi','',true)">배경 해제</button>` : ''}</div></div>` : ''}
             ${rg('칸 왼쪽', 'wx', 0, 60, 1, 15)}${rg('칸 위', 'wy', 0, 60, 1, 12)}${rg('칸 너비', 'ww', 20, 100, 1, 70)}${rg('칸 높이', 'wh', 20, 100, 1, 76)}${rg('모서리 둥글기', 'wr', 0, 50, 1, 0)}</div>` : ''}
           <div class="pcc-sec">${full ? rg('확대', 'imgZ', 100, 220, 5, 100) + rg('세로 위치', 'imgY', 0, 100, 5, 50) : rg('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? rg('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : '')}
