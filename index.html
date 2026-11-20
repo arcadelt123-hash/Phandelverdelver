@@ -949,7 +949,25 @@
     #gs-res .gs-r img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; flex: none; }
     #gs-res .gs-t { font-weight: 700; flex: none; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #gs-res .gs-s { font-size: 12px; opacity: .65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-    body.map-nav-off .top-bar { display: none !important; }
+    body.map-nav-off .top-bar, body.nav-off .top-bar { display: none !important; }
+    body.nav-off .container, body.nav-off .container.wide, body.nav-off .container.wide-board { max-width: none !important; }
+    body.nav-off #main-content-area { min-height: calc(100vh - 24px); }
+    #nav-handle { position: fixed; top: 6px; left: 6px; z-index: 300; width: 26px; height: 26px; border: 1px solid rgba(0,0,0,.2); border-radius: 8px; background: rgba(255,255,255,.85); color: #475569; font-size: 12px; line-height: 1; cursor: pointer; opacity: .6; backdrop-filter: blur(4px); display: none; padding: 0; }
+    #nav-handle:hover { opacity: 1; }
+    body.fl-mode .container, body.fl-mode .container.wide, body.fl-mode .container.wide-full { max-width: none !important; }
+    .fl-wrap { position: relative; width: 100%; }
+    .fl-wrap > .qboard, .fl-wrap > .mb, .fl-wrap > .tl-scroll { height: 100% !important; margin: 0 !important; min-height: 0 !important; isolation: isolate; box-sizing: border-box; }
+    .fl-wrap > .qboard, .fl-wrap > .mb, .fl-wrap > .tl-scroll { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; outline: 0 !important; }
+    .fl-panel { position: absolute; z-index: 50; max-width: min(640px, calc(100% - 16px)); background: rgba(255,255,255,.9); border: 1px solid rgba(0,0,0,.15); border-radius: 12px; box-shadow: 0 6px 22px rgba(0,0,0,.28); backdrop-filter: blur(6px); }
+    .fl-h { display: flex; align-items: center; gap: 6px; padding: 3px 6px; cursor: grab; touch-action: none; user-select: none; color: #64748b; }
+    .fl-h:active { cursor: grabbing; }
+    .fl-h .fl-grip { flex: 1; letter-spacing: 2px; font-size: 12px; }
+    .fl-h .fl-c { border: 0; background: none; cursor: pointer; font-size: 13px; color: #475569; padding: 0 4px; }
+    .fl-b { padding: 4px 8px 8px; display: flex; flex-direction: column; gap: 6px; }
+    .fl-panel.collapsed .fl-b { display: none; }
+    .fl-panel .board-tools, .fl-panel .board-drawer, .fl-panel .tl-toolbar { margin: 0 !important; }
+    .fl-panel .tl-tray-box { margin: 0; max-height: 40vh; overflow: auto; }
+    .nav-hide-btn { width: 30px; height: 30px; padding: 0; border: 1px solid var(--border-subtle, #cbd5e1); border-radius: 8px; background: #fff; color: #475569; cursor: pointer; font-size: 12px; flex: none; }
     #map-ov iframe { width: 100%; height: 100%; border: 0; display: block; }
     .srch { position: relative; display: inline-flex; align-items: center; gap: 6px; }
     .srch-b { background: transparent; border: 0; border-radius: 10px; padding: 3px 5px; cursor: pointer; line-height: 0; transition: transform .15s, filter .15s; }
@@ -1358,6 +1376,7 @@
   <div class="container">
     <!-- 상단 바 (백업/복원은 설정창으로 정리) -->
     <div class="top-bar">
+      <button type="button" class="nav-hide-btn" onclick="navToggle()" aria-label="메뉴 숨기기">▲</button>
       <div class="tab-group">
         <button class="btn btn-tab active" id="tab-active" onclick="setViewMode('quests', 'all')" title="전체 퀘스트" aria-label="전체 퀘스트">
           <span class="ico-pair"><img src="" alt=""><img src="" alt=""></span>
@@ -1741,7 +1760,7 @@
 
 
     // ===== 서버 연결: google.script.run 이 응답 없으면 같은 주소로 직접 요청(fetch)으로 자동 전환 =====
-    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyTj0ElFFUk6VLay9z65MaokNqGu2QnWKiMaZdecUEBv1TKiMYo5RlM9AOx_iOx0Sl4/exec';
+    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbz6iUoetvY-rVO1ALByPEwAiP_f3kTKQvnX5gaEoxqFuy0GaGQUcGoYbWJUonDdpTP1/exec';
     function execUrl() { try { return localStorage.getItem('adventure_exec_url') || EXEC_URL_DEFAULT; } catch (e) { return EXEC_URL_DEFAULT; } }
     function diagShow(msg) { try { console.info('[sync]', msg); } catch (e) {} }
     function fetchT(url, opt, ms) {
@@ -1756,7 +1775,7 @@
     function fetchGet(q) { return fetchT(execUrl() + '?action=' + q, { redirect: 'follow' }); }
 
     // ---- 접속 중인 사람 (Apps Script ping, 시트에 쓰지 않음)
-    const PRES = { id: (() => { try { let v = sessionStorage.getItem('adv_pres_id'); if (!v) { v = Math.random().toString(36).slice(2, 10); sessionStorage.setItem('adv_pres_id', v); } return v; } catch (e) { return Math.random().toString(36).slice(2, 10); } })() };
+    const PRES = { id: (() => { try { let v = localStorage.getItem('adv_pres_id'); if (!v) { v = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-3); localStorage.setItem('adv_pres_id', v); } return v; } catch (e) { return Math.random().toString(36).slice(2, 10); } })() };
     function presName() { try { return (localStorage.getItem('adv_pres_name') || '').trim(); } catch (e) { return ''; } }
     function presencePanel(keep) {
       let p = document.getElementById('pres-panel');
@@ -1773,10 +1792,22 @@
     }
     function presenceSaveName() { const v = (document.getElementById('pres-name').value || '').trim().slice(0, 20); try { localStorage.setItem('adv_pres_name', v || ' '); } catch (e) {} presencePing(); }
     document.addEventListener('pointerdown', e => { const p = document.getElementById('pres-panel'); if (p && !p.contains(e.target) && !e.target.closest('#presence-btn')) p.remove(); });
+    const PRES_COLS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#95a5a6'];
+    function presHue(id, col) { if (/^#[0-9a-fA-F]{6}$/.test(col || '')) return col; let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) | 0; return PRES_COLS[Math.abs(h) % PRES_COLS.length]; }
+    function presColor() { try { return localStorage.getItem('adv_pres_color') || ''; } catch (e) { return ''; } }
     function presenceRename() {
-      const v = prompt('다른 사람에게 보일 내 이름', presName() || ''); if (v == null) return;
-      try { localStorage.setItem('adv_pres_name', v.trim().slice(0, 20) || ' '); } catch (e) {}
-      presencePing();
+      let p = document.getElementById('pres-edit'); if (p) { p.remove(); return; }
+      const f = document.getElementById('pres-float'); const r = f ? f.getBoundingClientRect() : { left: 12, top: 100, bottom: 130 };
+      p = document.createElement('div'); p.id = 'pres-edit';
+      p.style.cssText = `position:fixed;z-index:410;left:${Math.max(8, Math.min(innerWidth - 232, Math.round(r.left)))}px;top:${Math.min(innerHeight - 150, Math.round(r.bottom + 6))}px;width:224px;background:#fffdf7;border:2px solid #b8893a;border-radius:12px;padding:10px;color:#3b2c12;display:flex;flex-direction:column;gap:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.3);`;
+      p.innerHTML = `<b>내 접속 표시</b><div style="display:flex;gap:6px;align-items:center"><input id="pe-name" type="text" maxlength="20" value="${escapeHtml(presName())}" placeholder="이름" style="flex:1;min-width:0;border:1.5px solid #e3d3a6;border-radius:8px;padding:4px 8px;background:#fff;color:#3b2c12"><input id="pe-col" type="color" value="${presHue(PRES.id, presColor())}" style="width:34px;height:30px;padding:0;border:1.5px solid #e3d3a6;border-radius:8px;background:#fff;cursor:pointer" title="내 색"></div>
+        <div style="display:flex;gap:6px;justify-content:space-between;align-items:center"><small style="opacity:.55" title="이 브라우저에 저장된 고정 ID">ID ${escapeHtml(PRES.id.slice(-6))}</small><span style="display:flex;gap:6px"><button type="button" onclick="document.getElementById('pres-edit').remove()" style="border:1px solid #b8893a;border-radius:8px;background:#fff;padding:3px 10px;cursor:pointer">취소</button><button type="button" onclick="presenceSave()" style="border:1px solid #b8893a;border-radius:8px;background:#f4e3b5;padding:3px 10px;cursor:pointer;font-weight:700">저장</button></span></div>`;
+      document.body.appendChild(p); document.getElementById('pe-name').focus();
+    }
+    function presenceSave() {
+      const n = (document.getElementById('pe-name').value || '').trim().slice(0, 20), c = document.getElementById('pe-col').value;
+      try { localStorage.setItem('adv_pres_name', n); localStorage.setItem('adv_pres_color', c); } catch (e) {}
+      document.getElementById('pres-edit').remove(); presencePing();
     }
     function presenceRender(list) {
       window.__presList = list;
@@ -1794,13 +1825,11 @@
         f.addEventListener('dblclick', () => presenceRename());
         document.body.appendChild(f);
       }
-      const cols = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#95a5a6'];
-      const hue = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) | 0; return cols[Math.abs(h) % cols.length]; };
-      f.innerHTML = list.map(u => { const nm = (u.name || '').trim() || ('손님 ' + String(u.id).slice(-2)); return `<div ${u.id === PRES.id ? 'data-me="1"' : ''} style="display:flex;align-items:center;gap:6px;padding:2px 0;font-weight:${u.id === PRES.id ? 800 : 500}"><span style="width:10px;height:10px;border-radius:3px;background:${hue(u.id)};flex:none"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(nm)}${u.id === PRES.id ? ' (나)' : ''}</span></div>`; }).join('');
+      f.innerHTML = list.map(u => { const nm = (u.name || '').trim() || ('손님 ' + String(u.id).slice(-2)); return `<div ${u.id === PRES.id ? 'data-me="1"' : ''} style="display:flex;align-items:center;gap:6px;padding:2px 0;font-weight:${u.id === PRES.id ? 800 : 500}"><span style="width:10px;height:10px;border-radius:3px;background:${presHue(u.id, u.id === PRES.id ? (presColor() || u.color) : u.color)};flex:none"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(nm)}${u.id === PRES.id ? ' (나)' : ''}</span></div>`; }).join('');
     }
     function presencePing() {
       if (document.hidden) return;
-      fetchGet('ping&id=' + encodeURIComponent(PRES.id) + '&name=' + encodeURIComponent(presName())).then(t => { const j = typeof t === 'string' ? JSON.parse(t) : t; if (j && j.online) presenceRender(j.online); else throw 0; }).catch(() => { presenceRender([{ id: PRES.id, name: presName() }]); });
+      fetchGet('ping&id=' + encodeURIComponent(PRES.id) + '&name=' + encodeURIComponent(presName()) + '&color=' + encodeURIComponent(presColor())).then(t => { const j = typeof t === 'string' ? JSON.parse(t) : t; if (j && j.online) presenceRender(j.online); else throw 0; }).catch(() => { presenceRender([{ id: PRES.id, name: presName() }]); });
     }
     setTimeout(() => { presencePing(); setInterval(presencePing, 25000); document.addEventListener('visibilitychange', presencePing); }, 4000);
     function fetchPost(body) { return fetchT(execUrl(), { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); }
@@ -2532,7 +2561,7 @@
         <div class="folder-mgmt-item" data-fidx="${idx}">
           <div class="folder-mgmt-row">
             <span class="folder-grip" title="끌어서 순서 변경" aria-label="끌어서 순서 변경">⋮⋮</span>
-            <input type="color" class="folder-color" value="${folderColor(f.name)}" oninput="updateFolderColor(${idx}, this.value)" title="폴더 색상 (카드 테두리)" aria-label="폴더 색상" />
+            
             <input type="text" value="${escapeHtml(f.name)}" oninput="updateFolderName(${idx}, this.value)" style="flex:1; font-weight:700;" />
             ${state.folders.length > 1 ? `<button class="btn btn-danger" onclick="deleteFolder(${idx})">삭제</button>` : ''}
           </div>
@@ -2703,7 +2732,8 @@
       document.querySelector('.container').classList.toggle('wide', state.viewMode === 'timeline' || state.viewMode === 'board' || state.viewMode === 'journal');
       applyTabOrder();
       document.getElementById('tab-board').classList.toggle('active', state.viewMode === 'board');
-      document.querySelector('.container').classList.toggle('wide-full', state.viewMode === 'board' && !!state.boardTex.wide);
+      document.querySelector('.container').classList.toggle('wide-full', state.viewMode === 'board');
+      document.body.classList.toggle('fl-mode', ['board', 'journal', 'timeline'].includes(state.viewMode) && !state.boardPopup);
       document.querySelectorAll('.tab-ico, .top-ico, .gear-img').forEach(im => { im.src = ({ open: SCROLL_OPEN, closed: SCROLL_CLOSED, human: IC_HUMAN, bonfire: IC_BONFIRE, timeline: IC_TIMELINE, gear: IC_GEAR, feather: IC_FEATHER, needle: IC_NEEDLE, journal: IC_JOURNAL, map: IC_MAP, search: (() => { try { return (SRCH_SVG.match(/src="([^"]+)"/) || [])[1]; } catch (e) { return ''; } })() })[im.dataset.ico]; });
       document.getElementById('tab-timeline').classList.toggle('active', state.viewMode === 'timeline');
       document.getElementById('tab-journal').classList.toggle('active', state.viewMode === 'journal');
@@ -2849,7 +2879,7 @@
     state.boardPopup = false;
     function normBoardTex(v) {
       const o = (v && typeof v === 'object') ? v : {};
-      return { custom: Array.isArray(o.custom) ? o.custom.filter(t => t && t.url) : [], hidden: Array.isArray(o.hidden) ? o.hidden : [], h: Number(o.h) || 0, wide: !!o.wide, zoom: Number(o.zoom) || 1, memos: Array.isArray(o.memos) ? o.memos.filter(m => m && m.id) : [], pcs: Array.isArray(o.pcs) ? o.pcs.filter(x => x && x.id) : [], tabs: Array.isArray(o.tabs) ? o.tabs.filter(x => typeof x === 'string') : [], npcs: Array.isArray(o.npcs) ? o.npcs.filter(x => x && x.id) : [], conns: Array.isArray(o.conns) ? o.conns.filter(x => x && x.id) : [], sets: Array.isArray(o.sets) ? o.sets.filter(x => x && x.id) : [], active: typeof o.active === 'string' ? o.active : 'main', members: Array.isArray(o.members) ? o.members.filter(x => typeof x === 'string') : null, clues: Array.isArray(o.clues) ? o.clues.filter(x => x && x.id) : [], store: { items: (o.store && Array.isArray(o.store.items)) ? o.store.items.filter(x => x && x.id) : [] }, clueBoard: (o.clueBoard && Array.isArray(o.clueBoard.lanes)) ? { lanes: o.clueBoard.lanes.filter(x => x && x.id), cards: (o.clueBoard.cards || []).filter(x => x && x.id), conns: (o.clueBoard.conns || []).filter(x => x && x.id) } : null, sharedMoney: (o.sharedMoney && typeof o.sharedMoney === 'object') ? o.sharedMoney : undefined, bagPos: Number.isInteger(o.bagPos) ? o.bagPos : -1, mbz: (o.mbz && typeof o.mbz === 'object') ? o.mbz : {} };
+      return { custom: Array.isArray(o.custom) ? o.custom.filter(t => t && t.url) : [], hidden: Array.isArray(o.hidden) ? o.hidden : [], h: Number(o.h) || 0, hFixed: !!o.hFixed, wide: !!o.wide, zoom: Number(o.zoom) || 1, memos: Array.isArray(o.memos) ? o.memos.filter(m => m && m.id) : [], pcs: Array.isArray(o.pcs) ? o.pcs.filter(x => x && x.id) : [], tabs: Array.isArray(o.tabs) ? o.tabs.filter(x => typeof x === 'string') : [], npcs: Array.isArray(o.npcs) ? o.npcs.filter(x => x && x.id) : [], conns: Array.isArray(o.conns) ? o.conns.filter(x => x && x.id) : [], sets: Array.isArray(o.sets) ? o.sets.filter(x => x && x.id) : [], active: typeof o.active === 'string' ? o.active : 'main', members: Array.isArray(o.members) ? o.members.filter(x => typeof x === 'string') : null, clues: Array.isArray(o.clues) ? o.clues.filter(x => x && x.id) : [], store: { items: (o.store && Array.isArray(o.store.items)) ? o.store.items.filter(x => x && x.id) : [] }, clueBoard: (o.clueBoard && Array.isArray(o.clueBoard.lanes)) ? { lanes: o.clueBoard.lanes.filter(x => x && x.id), cards: (o.clueBoard.cards || []).filter(x => x && x.id), conns: (o.clueBoard.conns || []).filter(x => x && x.id) } : null, sharedMoney: (o.sharedMoney && typeof o.sharedMoney === 'object') ? o.sharedMoney : undefined, bagPos: Number.isInteger(o.bagPos) ? o.bagPos : -1, mbz: (o.mbz && typeof o.mbz === 'object') ? o.mbz : {} };
     }
     function texKey(k) { return NOTE_TEX[k] ? k : (NOTE_ALIAS[k] || ((state.boardTex.custom || []).some(t => t.id === k) ? k : 'slate')); }
     function texOf(k) {
@@ -2896,6 +2926,18 @@
     }
 
     function bz() { return Math.max(0.3, Math.min(2, Number(state.boardTex.zoom) || 1)); }
+    function navBarHidden() { const t = document.querySelector('.top-bar'); return !t || getComputedStyle(t).display === 'none'; }
+    function navHandleSync() { const h = document.getElementById('nav-handle'); if (h) { const hid = navBarHidden(); h.style.display = hid ? 'block' : 'none'; h.textContent = '▼'; } }
+    function navToggle() {
+      if (state.viewMode === 'map') { mapNavOpen = !mapNavOpen; mapSync(true); }
+      else { const off = !document.body.classList.contains('nav-off'); document.body.classList.toggle('nav-off', off); try { localStorage.setItem('adv_nav_off', off ? '1' : '0'); } catch (e) {} }
+      setTimeout(() => { navHandleSync(); try { if (document.querySelector('.fl-wrap')) { flFit(); try { sizeBoardCanvas(); } catch (e) {} } } catch (e) {} }, 60);
+    }
+    (function initNavHandle() {
+      try { if (localStorage.getItem('adv_nav_off') === '1') document.body.classList.add('nav-off'); } catch (e) {}
+      const h = document.createElement('button'); h.id = 'nav-handle'; h.type = 'button'; h.onclick = navToggle; h.setAttribute('aria-label', '메뉴 열기'); document.body.appendChild(h); navHandleSync();
+      setInterval(navHandleSync, 800);
+    })();
     function toggleBoardWide() { state.boardTex.wide = !state.boardTex.wide; persistState(); renderAll(); }
     function openBoardPopup() {
       document.getElementById('main-content-area').innerHTML = '';
@@ -2923,7 +2965,7 @@
       document.addEventListener('pointermove', e => {
         if (!g || e.pointerId !== g.id) return;
         const h = Math.max(300, Math.min(5000, g.h0 + (e.clientY - g.sy)));
-        state.boardTex.h = Math.round(h);
+        state.boardTex.h = Math.round(h); state.boardTex.hFixed = true;
         g.board.style.height = h + 'px';
         sizeBoardCanvas();
       });
@@ -3404,7 +3446,7 @@
 
     function boardFilterChips() {
       const tags = new Set(); state.quests.forEach(q => (q.tags || []).forEach(t => tags.add(t)));
-      const f = ['전체', ...state.folders.map(x => x.name)].map(n => `<button class="folder-pill ${state.folderFilter === n ? 'active' : ''}" data-v="${escapeHtml(n)}" onclick="setFolderFilter(this.dataset.v)">${n === '전체' ? '' : `<span class="f-dot" style="background:${folderColor(n)}"></span>`}<span>${escapeHtml(n)}</span></button>`).join('');
+      const f = ['전체', ...state.folders.map(x => x.name)].map(n => `<button class="folder-pill ${state.folderFilter === n ? 'active' : ''}" data-v="${escapeHtml(n)}" onclick="setFolderFilter(this.dataset.v)"><span>${escapeHtml(n)}</span></button>`).join('');
       const t = ['전체', ...tags].map(n => `<button class="tag-pill ${state.tagFilter === n ? 'active' : ''}" data-v="${escapeHtml(n)}" onclick="setTagFilter(this.dataset.v)">#${escapeHtml(n)}</button>`).join('');
       return `<div class="board-filters">${f}</div><div class="board-filters">${t}</div>`;
     }
@@ -3446,9 +3488,9 @@
         ${!state.boardPopup && open ? drawer : ''}
                 ${(state.boardPopup || state.boardFilterOpen) && !jm ? boardFilterChips() : ''}
         <div class="qboard" id="qboard"><div id="qboard-sizer"><div class="qb-inner" id="qboard-inner"></div></div></div>
-        ${state.boardPopup ? '' : '<div class="qboard-grip" id="qboard-grip" title="끌어서 보드 높이 조절" aria-label="보드 높이 조절"></div>'}`;
+        ${state.boardPopup ? '' : '<div class="qboard-grip" id="qboard-grip" title="끌어서 보드 높이 조절 (직접 조절하면 화면 채우기가 풀려요)" aria-label="보드 높이 조절"></div>'}`;
       const board = document.getElementById('qboard'), inner = document.getElementById('qboard-inner');
-      if (!state.boardPopup) board.style.height = boardMinH() + 'px';
+      if (!state.boardPopup) boardFit(board);
       { const pp = patOf(state.boardTex.boardBg); if (pp) { inner.classList.add(pp.cls); inner.style.cssText += pp.st; } else inner.style.backgroundImage = `url(${BOARD_BG})`; }
       ensureBoardPositions(list, (board.clientWidth || 900) / z);
       if (!list.length && !memos.length && !npcCards.length) inner.innerHTML = '<div class="qn-empty">이 조건에 맞는 퀘스트가 없어요</div>';
@@ -3456,6 +3498,7 @@
       memos.forEach(m => inner.appendChild(buildMemo(m)));
       npcCards.forEach(c => inner.appendChild(buildNpcCard(c)));
       refreshConns();
+      if (!state.boardPopup) flApply('#qboard', jm ? 'journal' : 'board');
       sizeBoardCanvas();
       if (sc) { board.scrollLeft = sc.l; board.scrollTop = sc.t; }
     }
@@ -3870,6 +3913,7 @@
           ${!mbCards(kind, d).length ? `<div class="qn-empty">${kind === 'store' ? '보드판에 붙인 이미지가 있으면 자동으로 들어와요.' : '빈 곳을 우클릭해서 추가 단서·추가 회차를 만들어 보세요.'}</div>` : ''}
         </div></div></div>`;
       const v = document.getElementById('mb-view'); if (sc) { v.scrollLeft = sc.l; v.scrollTop = sc.t; }
+      flApply('#mb-view', 'journal');
       if (kind === 'clue') mbDrawConns();
     }
     function mbCenter() { const v = document.getElementById('mb-view'), z = mbZoom('clue'); return v ? { x: Math.round((v.scrollLeft + 80) / z), y: Math.round((v.scrollTop + 60) / z) } : { x: 100, y: 60 }; }
@@ -4242,6 +4286,49 @@
     }
     function boardUnpick(id) { const bt = state.boardTex; if (Array.isArray(bt.members)) { bt.members = bt.members.filter(x => x !== id); delete (state.quests.find(q => q.id === id) || {}).board; closeCtx(); persistState(); renderBoard(); } }
     function isBoardLike() { return state.viewMode === 'board' || (state.viewMode === 'journal' && state.jView === 'pc'); }
+    function flFit() {
+      const w = document.querySelector('.fl-wrap'); if (!w) return;
+      const top = w.getBoundingClientRect().top;
+      w.style.height = Math.max(360, Math.round(innerHeight - top - 8)) + 'px';
+      const p = w.querySelector('.fl-panel'); if (p) flPlace(p, w);
+    }
+    function flPlace(p, w) {
+      const k = p.dataset.fl; let pos = {}; try { pos = JSON.parse(localStorage.getItem('fl_' + k) || '{}'); } catch (e) {}
+      const x = Math.max(0, Math.min((w.clientWidth || 600) - 60, pos.x != null ? pos.x : 10)), y = Math.max(0, Math.min((w.clientHeight || 400) - 30, pos.y != null ? pos.y : 10));
+      p.style.left = x + 'px'; p.style.top = y + 'px';
+    }
+    function flApply(contentSel, key) {
+      const area = document.getElementById('main-content-area'); if (!area) return;
+      const content = area.querySelector(contentSel); if (!content) return;
+      document.body.classList.add('fl-mode');
+      const kids = [...area.children].filter(e => e !== content && !e.classList.contains('qboard-grip'));
+      kids.forEach(e => { if (e.classList.contains('qboard-grip')) e.remove(); });
+      area.querySelectorAll('.qboard-grip').forEach(e => e.remove());
+      const wrap = document.createElement('div'); wrap.className = 'fl-wrap'; area.appendChild(wrap); wrap.appendChild(content);
+      const panel = document.createElement('div'); panel.className = 'fl-panel'; panel.dataset.fl = key;
+      let st = {}; try { st = JSON.parse(localStorage.getItem('fl_' + key) || '{}'); } catch (e) {}
+      if (st.c) panel.classList.add('collapsed');
+      panel.innerHTML = '<div class="fl-h"><span class="fl-grip">⋮⋮</span><button type="button" class="fl-c" aria-label="접기 / 펼치기">▾</button></div><div class="fl-b"></div>';
+      const body = panel.querySelector('.fl-b'); kids.forEach(k => { if (k.parentNode === area) body.appendChild(k); });
+      wrap.appendChild(panel);
+      const save = o => { let c = {}; try { c = JSON.parse(localStorage.getItem('fl_' + key) || '{}'); } catch (e) {} Object.assign(c, o); try { localStorage.setItem('fl_' + key, JSON.stringify(c)); } catch (e) {} };
+      panel.querySelector('.fl-c').onclick = () => { const c = panel.classList.toggle('collapsed'); save({ c }); panel.querySelector('.fl-c').textContent = c ? '▸' : '▾'; };
+      if (st.c) panel.querySelector('.fl-c').textContent = '▸';
+      const h = panel.querySelector('.fl-h'); let d = null;
+      h.addEventListener('pointerdown', e => { if (e.target.closest('.fl-c')) return; const r = panel.getBoundingClientRect(), wr = wrap.getBoundingClientRect(); d = { sx: e.clientX, sy: e.clientY, l: r.left - wr.left, t: r.top - wr.top }; try { h.setPointerCapture(e.pointerId); } catch (_) {} });
+      h.addEventListener('pointermove', e => { if (!d) return; const x = Math.max(0, Math.min(wrap.clientWidth - 60, d.l + e.clientX - d.sx)), y = Math.max(0, Math.min(wrap.clientHeight - 30, d.t + e.clientY - d.sy)); panel.style.left = x + 'px'; panel.style.top = y + 'px'; });
+      const end = () => { if (!d) return; d = null; save({ x: Math.round(panel.offsetLeft), y: Math.round(panel.offsetTop) }); };
+      h.addEventListener('pointerup', end); h.addEventListener('pointercancel', end);
+      flFit();
+    }
+    function boardFit(board) {
+      board = board || document.getElementById('qboard'); if (!board) return;
+      if (board.closest('.fl-wrap')) { flFit(); return; }
+      if (state.boardTex.hFixed && state.boardTex.h) { board.style.height = boardMinH() + 'px'; return; }
+      const top = board.getBoundingClientRect().top;
+      board.style.height = Math.max(300, Math.round(innerHeight - top - 26)) + 'px';
+    }
+    window.addEventListener('resize', () => { if (document.querySelector('.fl-wrap')) { flFit(); try { sizeBoardCanvas(); } catch (e) {} } });
     function boardMinH() { return Math.max(300, Number(state.boardTex.h) || 640); }
 
     function buildNote(q) {
@@ -4557,7 +4644,7 @@
         const isActive = state.folderFilter === folderName;
         return `
           <button class="folder-pill ${isActive ? 'active' : ''}" data-v="${escapeHtml(folderName)}" onclick="setFolderFilter(this.dataset.v)">
-            ${isAll ? '' : `<span class="f-dot" style="background:${folderColor(folderName)}"></span>`}
+            
             ${img ? `<img src="${escapeHtml(img)}" />` : ''}
             <span>${escapeHtml(folderName)}</span>
           </button>
@@ -5151,7 +5238,7 @@
       const bst = `top:${(pdd[0] * 100).toFixed(2)}%;right:${(pdd[1] * 100).toFixed(2)}%;bottom:${(pdd[2] * 100).toFixed(2)}%;left:${(pdd[3] * 100).toFixed(2)}%;`;
       const shbg = shp ? `<div class="qt-bg" style="-webkit-mask-image:url(${shp.mask});mask-image:url(${shp.mask});-webkit-mask-size:100% 100%;mask-size:100% 100%;background-image:url(${shp.rim}),url(${pp.url});background-size:100% 100%,cover;background-position:center;"></div>` : '';
       return `
-        <div class="quest-card q-tile pp${pp.full ? '' : ' plain'}${q.status === 'completed' ? ' done' : ''}" oncontextmenu="qtileMenu(event, '${q.id}'); return false;" id="card-${q.id}" data-qid="${q.id}" style="--fc:${folderColor(q.folder)};${pst}" draggable="false"
+        <div class="quest-card q-tile pp${pp.full ? '' : ' plain'}${q.status === 'completed' ? ' done' : ''}" oncontextmenu="qtileMenu(event, '${q.id}'); return false;" id="card-${q.id}" data-qid="${q.id}" style="${pst}" draggable="false"
              ondragstart="handleDragStart(event, '${q.id}')" ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event, '${q.id}')"
              ondragleave="handleDragLeave(event, '${q.id}')" ondrop="handleDrop(event, '${q.id}')" ondragend="handleDragEnd(event, '${q.id}')"
              onclick="openQuestView('${q.id}')" title="눌러서 보기">
@@ -5184,7 +5271,7 @@
         const canDrag = state.sortMode === 'custom';
 
         return `
-          <div class="quest-card detail" id="qdcard-${q.id}" data-qid="${q.id}" style="--fc:${folderColor(q.folder)}">
+          <div class="quest-card detail" id="qdcard-${q.id}" data-qid="${q.id}">
             <div class="quest-header">
               <div class="quest-header-left">
                 ${folderImg ? `<img class="folder-ico-only" src="${escapeHtml(folderImg)}" alt="" title="${escapeHtml(q.folder)}" />` : ''}
@@ -6090,6 +6177,7 @@
           </div></div>
         </div>`;
 
+      flApply('#tl-scroll', 'timeline');
       drawTlLinks();
       document.querySelectorAll('.tl-node').forEach(el => {
         el.style.cursor = tlConnectMode ? 'pointer' : 'grab';
