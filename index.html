@@ -1387,7 +1387,6 @@
         <button class="btn btn-primary btn-icon-top" id="top-add-btn" onclick="handleTopAddButton()" title="퀘스트 추가" aria-label="퀘스트 추가"><img class="ico-img top-ico" src="" data-ico="feather" alt=""></button>
         <button class="btn btn-secondary btn-icon-top" onclick="gsOpen()" title="통합 검색 (Ctrl+K)" aria-label="통합 검색"><img class="ico-img top-ico" id="gs-ico" src="" data-ico="search" alt=""></button>
         <button class="btn btn-secondary" id="presence-btn" onclick="presenceRename()" title="접속 중인 사람 (클릭: 내 이름 바꾸기)" style="display:none;gap:4px;align-items:center;padding:2px 8px;"></button>
-      <button class="btn btn-secondary btn-icon-top" id="pcjoin-btn" onclick="pcJoinToggle()" title="PC 카드 한 줄로 붙이기 / 풀기 (인물 도감)" aria-label="PC 카드 붙이기" style="display:none;"><img class="ico-img" width="30" height="30" src="data:image/webp;base64,UklGRjIDAABXRUJQVlA4ICYDAABQEACdASpIAEgAPlEijkUjoiEVy4yAOAUEs4BqsMC4AHzz9+/JjkxM3K8/vNGRzJeM38df0z7AX6zf8bsVehf+xxk3y3H1KjIRV42bcL4npqfg5CzfUdjP+Sw9vYYPkUv8PnDjjxwsBcVhEO7at7wdasRpJrl6Wt1J6L2az212gecev+ZHpqiwrRMAAP79wNe4cuCccQb3qc/l8Gkd9hvzfsedengh3Lq+EM4IfeUfNe4sQxpxF63l8vy6dX5pd8K3jCdDHlq/wPeU6hcDnIOwa73DEHCssL4Y1A8l6fSV6y1+9P/2c1Ci/02fy5YoM3la9LRJuj/E5bXNrBNU0x96UO4kSdrfBa3mXhoblalKc1f3+eZYcvnXlTS2+28sXXlZaNaH8y+Gv4e5b0MZCimIFSps+7HO0YNYEHME9kFS6ua71AsgKHFbMn2G/EvwOkF0j8XLIjFegXmobt9WVX0W/7OTJVq2WOwiod/tw0p0ezBKjiS3zDENbvqjM+Y6ZlWvltnML3hwGGy8+T7mHBrGjbP0G3JNdxRg8FbpgNQFeVS663S5SVGSy6PKa17QLpZTI/+PvP8Rqscpy6Dvu1u9IeuDR33DSAu7jjYkgDZ95Q4J7vl6mYvIvr1ZaDVQQwvjaWVqvL5nEth6G7mQyegq8nv7mChieOdb0m16YBj83qm3o4UOstMiCY3Hb1+OKDK5fSQn+MGt+7iCM9yjCzT9E7AhXZnE2FvRTjOnLaeW12mhs0JH0F1Y9UCE2dELQGxqxFOcTWKz3yDF6GAL8hNQUorPFI9KTqpSq5GqV7DFlDdUjHG6bdLj0N6yxU1785bITnFD8UIRAtFvX0pCViK+RP+J7feCKQwaBKXUhK8jZUjGcLyZ3I2hSErTc/4Etdg5/Gmom37oZRMr1gO7zJvzz6tXAxtxGjP1fy9JxyZTvjeMk+t+JAQJfHvXbiq872Ws7J+9q6aGl9SPkB/Ql6JkWfOTIGRHh5OuXGJfBRcS6c8uXD1AFMspRFP7ATwbtQ2agN38v+qPPReskUt+kzANfcNQe2mSvadO9Pf4DmsdSL7AAAAAAA==" alt="" style="border-radius:6px;"></button>
         <button class="btn btn-secondary btn-icon-top" onclick="loadFromSheet()" title="새로고침" aria-label="새로고침"><img class="ico-img top-ico" src="" data-ico="needle" alt=""></button>
         <button class="btn btn-secondary btn-icon-top" onclick="openFolderModal()" title="환경 설정, 폴더 및 백업 관리" aria-label="환경 설정"><img class="ico-img top-ico" src="" data-ico="gear" alt=""></button>
       </div>
@@ -1412,6 +1411,7 @@
     <!-- 인물 도감 전용 검색 바 -->
     <div class="npc-search-bar" id="npc-search-area" style="display: none;">
       <span id="npc-srch-slot" style="display:flex;flex:1;"></span>
+      <button class="btn btn-secondary" id="pcjoin-btn" onclick="pcJoinToggle()" title="PC 카드 한 줄로 붙이기 / 풀기 (인물 도감)" aria-label="PC 카드 붙이기" style="display:none;margin-left:8px;padding:0;width:44px;height:36px;flex:none;border:0;background:transparent;box-shadow:none;align-items:center;justify-content:center;"><img class="ico-img" width="30" height="30" src="data:image/webp;base64,UklGRjIDAABXRUJQVlA4ICYDAABQEACdASpIAEgAPlEijkUjoiEVy4yAOAUEs4BqsMC4AHzz9+/JjkxM3K8/vNGRzJeM38df0z7AX6zf8bsVehf+xxk3y3H1KjIRV42bcL4npqfg5CzfUdjP+Sw9vYYPkUv8PnDjjxwsBcVhEO7at7wdasRpJrl6Wt1J6L2az212gecev+ZHpqiwrRMAAP79wNe4cuCccQb3qc/l8Gkd9hvzfsedengh3Lq+EM4IfeUfNe4sQxpxF63l8vy6dX5pd8K3jCdDHlq/wPeU6hcDnIOwa73DEHCssL4Y1A8l6fSV6y1+9P/2c1Ci/02fy5YoM3la9LRJuj/E5bXNrBNU0x96UO4kSdrfBa3mXhoblalKc1f3+eZYcvnXlTS2+28sXXlZaNaH8y+Gv4e5b0MZCimIFSps+7HO0YNYEHME9kFS6ua71AsgKHFbMn2G/EvwOkF0j8XLIjFegXmobt9WVX0W/7OTJVq2WOwiod/tw0p0ezBKjiS3zDENbvqjM+Y6ZlWvltnML3hwGGy8+T7mHBrGjbP0G3JNdxRg8FbpgNQFeVS663S5SVGSy6PKa17QLpZTI/+PvP8Rqscpy6Dvu1u9IeuDR33DSAu7jjYkgDZ95Q4J7vl6mYvIvr1ZaDVQQwvjaWVqvL5nEth6G7mQyegq8nv7mChieOdb0m16YBj83qm3o4UOstMiCY3Hb1+OKDK5fSQn+MGt+7iCM9yjCzT9E7AhXZnE2FvRTjOnLaeW12mhs0JH0F1Y9UCE2dELQGxqxFOcTWKz3yDF6GAL8hNQUorPFI9KTqpSq5GqV7DFlDdUjHG6bdLj0N6yxU1785bITnFD8UIRAtFvX0pCViK+RP+J7feCKQwaBKXUhK8jZUjGcLyZ3I2hSErTc/4Etdg5/Gmom37oZRMr1gO7zJvzz6tXAxtxGjP1fy9JxyZTvjeMk+t+JAQJfHvXbiq872Ws7J+9q6aGl9SPkB/Ql6JkWfOTIGRHh5OuXGJfBRcS6c8uXD1AFMspRFP7ATwbtQ2agN38v+qPPReskUt+kzANfcNQe2mSvadO9Pf4DmsdSL7AAAAAAA==" alt="" style="border-radius:6px;"></button>
     </div>
 
     <!-- 정렬 바 -->
@@ -1740,7 +1740,8 @@
 
 
     // ===== 서버 연결: google.script.run 이 응답 없으면 같은 주소로 직접 요청(fetch)으로 자동 전환 =====
-    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwQPUrsEJCc5b8mJzzwtDuG6JdCdmOs9wLMwUmD3bOe6l4iJCwSiwR8d4STS2UVrKnO/exec';
+    co
+nst EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwQPUrsEJCc5b8mJzzwtDuG6JdCdmOs9wLMwUmD3bOe6l4iJCwSiwR8d4STS2UVrKnO/exec';
     function execUrl() { try { return localStorage.getItem('adventure_exec_url') || EXEC_URL_DEFAULT; } catch (e) { return EXEC_URL_DEFAULT; } }
     function diagShow(msg) { try { console.info('[sync]', msg); } catch (e) {} }
     function fetchT(url, opt, ms) {
@@ -1757,18 +1758,45 @@
     // ---- 접속 중인 사람 (Apps Script ping, 시트에 쓰지 않음)
     const PRES = { id: (() => { try { let v = sessionStorage.getItem('adv_pres_id'); if (!v) { v = Math.random().toString(36).slice(2, 10); sessionStorage.setItem('adv_pres_id', v); } return v; } catch (e) { return Math.random().toString(36).slice(2, 10); } })() };
     function presName() { try { return (localStorage.getItem('adv_pres_name') || '').trim(); } catch (e) { return ''; } }
+    function presencePanel(keep) {
+      let p = document.getElementById('pres-panel');
+      if (p && !keep) { p.remove(); return; }
+      if (!p) { p = document.createElement('div'); p.id = 'pres-panel'; document.body.appendChild(p); }
+      const b = document.getElementById('presence-btn').getBoundingClientRect(), L = window.__presList || [];
+      const cols = ['#c0392b', '#2e86c1', '#27ae60', '#d68910', '#8e44ad', '#17a589', '#cb4335', '#5d6d7e'];
+      const hue = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) | 0; return cols[Math.abs(h) % cols.length]; };
+      p.style.cssText = `position:fixed;z-index:400;top:${Math.round(b.bottom + 8)}px;left:${Math.max(8, Math.min(innerWidth - 268, Math.round(b.left)))}px;width:260px;background:#fffdf7;border:2px solid #b8893a;border-radius:14px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);color:#3b2c12;display:flex;flex-direction:column;gap:8px;font-size:13px;`;
+      p.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">접속 중 ${L.length}명</b><button type="button" onclick="presencePanel()" style="border:0;background:none;cursor:pointer;font-size:16px" aria-label="닫기">×</button></div>
+        <div style="display:flex;flex-direction:column;gap:5px;max-height:240px;overflow-y:auto">${L.map(u => `<div style="display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;border-radius:50%;background:${hue(u.id)};color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center">${escapeHtml(((u.name || '').trim() || '?').charAt(0))}</span><span style="flex:1;font-weight:${u.id === PRES.id ? 800 : 600}">${escapeHtml((u.name || '').trim() || '이름 없음')}${u.id === PRES.id ? ' (나)' : ''}</span></div>`).join('') || '<small style="opacity:.6">아직 아무도 없어요</small>'}</div>
+        <div style="display:flex;gap:6px;border-top:1px solid #e3d3a6;padding-top:8px"><input id="pres-name" type="text" maxlength="20" value="${escapeHtml(presName())}" placeholder="내 이름" style="flex:1;min-width:0;border:1.5px solid #e3d3a6;border-radius:8px;padding:4px 8px;background:#fff;color:#3b2c12"><button type="button" onclick="presenceSaveName()" style="border:1px solid #b8893a;border-radius:8px;background:#fff;padding:4px 10px;cursor:pointer;font-weight:700">저장</button></div>
+        <small style="opacity:.6">25초마다 갱신돼요 · 창을 닫으면 1분 안에 목록에서 사라져요</small>`;
+    }
+    function presenceSaveName() { const v = (document.getElementById('pres-name').value || '').trim().slice(0, 20); try { localStorage.setItem('adv_pres_name', v || ' '); } catch (e) {} presencePing(); }
+    document.addEventListener('pointerdown', e => { const p = document.getElementById('pres-panel'); if (p && !p.contains(e.target) && !e.target.closest('#presence-btn')) p.remove(); });
     function presenceRename() {
       const v = prompt('다른 사람에게 보일 내 이름', presName() || ''); if (v == null) return;
       try { localStorage.setItem('adv_pres_name', v.trim().slice(0, 20) || ' '); } catch (e) {}
       presencePing();
     }
     function presenceRender(list) {
-      const b = document.getElementById('presence-btn'); if (!b) return;
-      b.style.display = 'inline-flex';
-      const cols = ['#c0392b', '#2e86c1', '#27ae60', '#d68910', '#8e44ad', '#17a589', '#cb4335', '#5d6d7e'];
+      window.__presList = list;
+      let f = document.getElementById('pres-float');
+      if (!f) {
+        f = document.createElement('div'); f.id = 'pres-float';
+        let pos = {}; try { pos = JSON.parse(localStorage.getItem('adv_pres_pos') || '{}'); } catch (e) {}
+        f.style.cssText = `position:fixed;z-index:150;left:${pos.x != null ? pos.x : 12}px;top:${pos.y != null ? pos.y : Math.max(80, innerHeight - 220)}px;min-width:120px;max-width:200px;background:rgba(20,18,14,.55);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;font-size:12px;backdrop-filter:blur(3px);cursor:grab;user-select:none;touch-action:none;box-shadow:0 2px 10px rgba(0,0,0,.3);`;
+        f.title = '끌어서 옮기기 · 내 이름을 더블클릭하면 이름 변경';
+        let d = null;
+        f.addEventListener('pointerdown', e => { if (e.button !== undefined && e.button !== 0) return; const r = f.getBoundingClientRect(); d = { sx: e.clientX, sy: e.clientY, l: r.left, t: r.top }; f.setPointerCapture(e.pointerId); f.style.cursor = 'grabbing'; });
+        f.addEventListener('pointermove', e => { if (!d) return; const x = Math.max(0, Math.min(innerWidth - f.offsetWidth, d.l + e.clientX - d.sx)), y = Math.max(0, Math.min(innerHeight - f.offsetHeight, d.t + e.clientY - d.sy)); f.style.left = x + 'px'; f.style.top = y + 'px'; });
+        const end = () => { if (!d) return; d = null; f.style.cursor = 'grab'; try { localStorage.setItem('adv_pres_pos', JSON.stringify({ x: Math.round(f.offsetLeft), y: Math.round(f.offsetTop) })); } catch (e) {} };
+        f.addEventListener('pointerup', end); f.addEventListener('pointercancel', end);
+        f.addEventListener('dblclick', e => { if (e.target.closest('[data-me]')) presenceRename(); });
+        document.body.appendChild(f);
+      }
+      const cols = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#95a5a6'];
       const hue = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) | 0; return cols[Math.abs(h) % cols.length]; };
-      b.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#2ecc71;display:inline-block"></span>' + list.slice(0, 6).map(u => `<span title="${escapeHtml((u.name || '').trim() || '이름 없음')}${u.id === PRES.id ? ' (나)' : ''}" style="width:22px;height:22px;border-radius:50%;background:${hue(u.id)};color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;${u.id === PRES.id ? 'outline:2px solid #fff;' : ''}">${escapeHtml(((u.name || '').trim() || '?').charAt(0))}</span>`).join('') + (list.length > 6 ? `<small>+${list.length - 6}</small>` : '') + `<small style="font-weight:700">${list.length}명</small>`;
-      b.title = '접속 중: ' + list.map(u => (u.name || '').trim() || '이름 없음').join(', ') + ' (클릭: 내 이름 바꾸기)';
+      f.innerHTML = list.map(u => { const nm = (u.name || '').trim() || '이름 없음'; return `<div ${u.id === PRES.id ? 'data-me="1"' : ''} style="display:flex;align-items:center;gap:6px;padding:2px 0;font-weight:${u.id === PRES.id ? 800 : 500}"><span style="width:10px;height:10px;border-radius:3px;background:${hue(u.id)};flex:none"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(nm)}${u.id === PRES.id ? ' (나)' : ''}</span></div>`; }).join('');
     }
     function presencePing() {
       if (document.hidden) return;
@@ -4199,7 +4227,7 @@
       const b = q.board;
       const h_ = b.h, w = b.w, x = b.x;
       const el = document.createElement('div');
-      const tex = texOf(q.paper || b.tex);
+      const tex = texOf(q.paper || qPaperOf(q).key);
       const shape = (!tex.full && (q.paper || q.tshape ? q.tshape : b.shape) && NOTE_SHAPE[q.paper || q.tshape ? q.tshape : b.shape]) ? NOTE_SHAPE[q.paper || q.tshape ? q.tshape : b.shape] : null;
       el.className = 'qnote' + (tex.paper ? ' paper' : '') + (tex.full ? ' full' : '') + (shape ? ' shaped' : '') + (tex.dark ? ' tdark' : '') + (q.status === 'completed' ? ' done' : '');
       el.dataset.qid = q.id;
@@ -4390,9 +4418,9 @@
     function refreshNoteModal() {
       const q = noteQ(); if (!q) return;
       const b = noteBoard(q);
-      document.querySelectorAll('#nm-tex .tex-opt').forEach(el => el.classList.toggle('sel', el.dataset.tex === texKey(q.paper || b.tex || 'slate')));
+      document.querySelectorAll('#nm-tex .tex-opt').forEach(el => el.classList.toggle('sel', el.dataset.tex === texKey(q.paper || qPaperOf(q).key || 'slate')));
       document.querySelectorAll('#nm-shape .shape-opt').forEach(el => el.classList.toggle('sel', (el.dataset.shape || '') === ((q.paper || q.tshape ? q.tshape : b.shape) || '')));
-      document.getElementById('nm-shape').classList.toggle('off', !!texOf(q.paper || b.tex).full);
+      document.getElementById('nm-shape').classList.toggle('off', !!texOf(q.paper || qPaperOf(q).key).full);
       const set = (id, v, suf) => { document.getElementById(id).value = v; document.getElementById(id + '-v').textContent = Math.round(v * 10) / 10 + (suf || ''); };
       set('nm-w', b.w); set('nm-h', b.h); set('nm-rot', noteRot(q), '°'); set('nm-arth', Number(b.artH) || 70);
     }
@@ -4572,7 +4600,7 @@
     }
     function pcJoinOn() { try { return localStorage.getItem('pc_join') === '1'; } catch (e) { return false; } }
     function pcJoinToggle() { try { localStorage.setItem('pc_join', pcJoinOn() ? '0' : '1'); } catch (e) {} pcJoinSync(); if (state.viewMode === 'npcs') renderNpcCodex(); }
-    function pcJoinSync() { const b = document.getElementById('pcjoin-btn'); if (!b) return; b.style.display = state.viewMode === 'npcs' ? '' : 'none'; b.classList.toggle('on', pcJoinOn()); }
+    function pcJoinSync() { const b = document.getElementById('pcjoin-btn'); if (!b) return; b.style.display = state.viewMode === 'npcs' ? '' : 'none'; b.classList.toggle('on', pcJoinOn()); b.style.opacity = pcJoinOn() ? '1' : '.5'; b.style.filter = pcJoinOn() ? 'drop-shadow(0 0 4px rgba(202,138,4,.9))' : ''; }
     function pcSlotStyle(p) {
       const cw = Number(p.cw) || 100, ch = Number(p.ch) || 100, dy = Number(p.dy) || 0, o = [];
       if (cw !== 100) o.push('--cw:' + (cw / 100));
