@@ -1502,6 +1502,7 @@
     <div id="bs-allnote" style="font-size:.8rem;color:var(--text-muted);margin-bottom:8px;">기본 보드에는 모든 퀘스트가 올라와요. 퀘스트를 골라서 쓰려면 ＋로 새 보드판을 만드세요.</div>
     <div id="bs-listwrap">
       <div style="display:flex;gap:6px;margin-bottom:6px;"><button class="btn btn-secondary" onclick="bsAll(true)">전체 선택</button><button class="btn btn-secondary" onclick="bsAll(false)">전체 해제</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;"><select id="bs-ff" onchange="bsClassify()" aria-label="폴더"></select><select id="bs-ft" onchange="bsClassify()" aria-label="태그"></select><button class="btn btn-secondary" onclick="bsAllVisible()">보이는 것 모두 선택</button></div>
       <div id="bs-list" class="bs-list"></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:space-between;margin-top:12px;"><button class="btn btn-danger" id="bs-del" onclick="delBsModal()">이 보드판 삭제</button><span style="display:flex;gap:8px;"><button class="btn btn-secondary" onclick="closeBsModal()">취소</button><button class="btn" onclick="saveBsModal()">저장</button></span></div>
@@ -3443,7 +3444,7 @@
           ${srchHtml(jm ? 'pcj' : 'board')}${state.boardPopup ? zoomBar + `<button class="btn btn-primary" onclick="closeBoardPopup()" title="팝업 닫기 (Esc)" aria-label="팝업 닫기">✕ 닫기</button>` : foldBtn}
         </div>
         ${!state.boardPopup && open ? drawer : ''}
-                ${state.boardPopup && !jm ? boardFilterChips() : ''}
+                ${(state.boardPopup || state.boardFilterOpen) && !jm ? boardFilterChips() : ''}
         <div class="qboard" id="qboard"><div id="qboard-sizer"><div class="qb-inner" id="qboard-inner"></div></div></div>
         ${state.boardPopup ? '' : '<div class="qboard-grip" id="qboard-grip" title="끌어서 보드 높이 조절" aria-label="보드 높이 조절"></div>'}`;
       const board = document.getElementById('qboard'), inner = document.getElementById('qboard-inner');
@@ -4154,11 +4155,12 @@
       boardTopZ = Math.max(boardTopZ, mz);
       persistState(); renderBoard();
     }
+    const IC_BOOKMARK = ((typeof BM_SVG === 'string' && BM_SVG.match(/src="([^"]+)"/)) || [])[1] || SCROLL_OPEN;
     const BOOK_IMG = 'img/img_45a30ce6.png';
     function bsIconOf(x) { return x.icon || (x.id === 'main' ? BOOK_IMG : SCROLL_OPEN); }
     function boardIconBar() {
       const bt = bsEnsure();
-      return bt.sets.map(x => `<button class="btn btn-tab bs-ic ${x.id === bt.active ? 'active' : ''}" data-bid="${escapeHtml(x.id)}" title="${escapeHtml(x.name || '보드')}${x.id === bt.active ? ' — 눌러서 진행 중 · 완료 · 전체 선택' : ''}" aria-label="${escapeHtml(x.name || '보드')}" onclick="boardIconClick(this)"><img src="${escapeHtml(bsIconOf(x))}" alt="" draggable="false"></button>`).join('') + `<button class="btn btn-tab bs-ic" onclick="openBsModal('new')" title="새 보드판 만들기" aria-label="새 보드판"><img src="${IC_FEATHER}" alt="" draggable="false"></button>`;
+      return bt.sets.map(x => `<button class="btn btn-tab bs-ic ${x.id === bt.active ? 'active' : ''}" data-bid="${escapeHtml(x.id)}" title="${escapeHtml(x.name || '보드')}${x.id === bt.active ? ' — 눌러서 진행 중 · 완료 · 전체 선택' : ''}" aria-label="${escapeHtml(x.name || '보드')}" onclick="boardIconClick(this)"><img src="${escapeHtml(bsIconOf(x))}" alt="" draggable="false"></button>`).join('') + `<button class="btn btn-tab bs-ic${state.boardFilterOpen ? ' active' : ''}" onclick="state.boardFilterOpen=!state.boardFilterOpen;renderBoard()" title="폴더 · 태그별로 분류해서 보기" aria-label="폴더 태그 필터"><img src="${IC_BOOKMARK}" alt="" draggable="false"></button><button class="btn btn-tab bs-ic" onclick="openBsModal('new')" title="새 보드판 만들기" aria-label="새 보드판 만들기"><img src="${IC_FEATHER}" alt="" draggable="false"></button>`;
     }
     function closeBsPop() { const p = document.getElementById('bs-pop'); if (p) p.remove(); }
     function boardIconClick(btn) {
@@ -4187,7 +4189,6 @@
     function bsToolbar() {
       const bt = bsEnsure();
       return `<span class="bs-bar">
-        <button class="btn btn-secondary" onclick="openBsModal('new')" title="새 보드판 만들기" aria-label="새 보드판"><img src="${IC_FEATHER}" alt="" style="width:22px;height:22px;display:block;"></button>
         <button class="btn btn-secondary" onclick="openBsModal('edit')" title="이 보드판 설정 (이름·담을 퀘스트·삭제)" aria-label="보드판 설정">⚙</button></span>`;
     }
     let bsMode = null;
@@ -4203,11 +4204,22 @@
       document.getElementById('bs-listwrap').style.display = listOn ? '' : 'none';
       document.getElementById('bs-allnote').style.display = listOn ? 'none' : '';
       document.getElementById('bs-list').innerHTML = state.quests.map(q => `<label class="bs-item"><input type="checkbox" value="${escapeHtml(q.id)}"${sel && sel.includes(q.id) ? ' checked' : ''}><span class="bs-st">${q.status === 'completed' ? '완료' : '진행'}</span><span>${escapeHtml(q.title || '제목 없음')}</span></label>`).join('');
+      bsClassInit();
       const del = document.getElementById('bs-del'); del.style.display = mode === 'edit' && bt.active !== 'main' ? '' : 'none'; del.textContent = '이 보드판 삭제'; delete del.dataset.armed;
       document.getElementById('bs-modal').classList.add('open');
     }
     function closeBsModal() { document.getElementById('bs-modal').classList.remove('open'); bsMode = null; }
     function bsAll(on) { document.querySelectorAll('#bs-list input').forEach(c => { c.checked = on; }); }
+    function bsClassInit() {
+      const folders = [...new Set(state.quests.map(q => q.folder).filter(Boolean))], tags = [...new Set(state.quests.flatMap(q => Array.isArray(q.tags) ? q.tags : []))];
+      document.getElementById('bs-ff').innerHTML = '<option value="">폴더 전체</option>' + folders.map(f => `<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join('');
+      document.getElementById('bs-ft').innerHTML = '<option value="">태그 전체</option>' + tags.map(t => `<option value="${escapeHtml(t)}">#${escapeHtml(t)}</option>`).join('');
+    }
+    function bsClassify() {
+      const f = document.getElementById('bs-ff').value, t = document.getElementById('bs-ft').value;
+      document.querySelectorAll('#bs-list .bs-item').forEach(el => { const q = state.quests.find(x => x.id === el.querySelector('input').value); el.style.display = (!f || (q && q.folder === f)) && (!t || (q && Array.isArray(q.tags) && q.tags.includes(t))) ? '' : 'none'; });
+    }
+    function bsAllVisible() { document.querySelectorAll('#bs-list .bs-item').forEach(el => { if (el.style.display !== 'none') el.querySelector('input').checked = true; }); }
     function bsPicked() { return [...document.querySelectorAll('#bs-list input:checked')].map(c => c.value); }
     function saveBsModal() {
       const bt = bsEnsure(), name = document.getElementById('bs-name').value.trim() || '보드';
