@@ -3140,6 +3140,17 @@
       const c = { id: 'n_' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), npcId: null, img: data, label: (extra && extra.label) || '', kind: (extra && extra.kind) || 'item', detail: (extra && extra.detail) || '', pc: (extra && extra.pc) || '', cat: (extra && extra.cat) || '', rar: (extra && extra.rar) || '', qid, x: Math.round(q.board.x + q.board.w - 70 + k * 14), y: Math.round(q.board.y + 14 + k * 14), w, h, z: ++boardTopZ, rot: 0 };
       arr.push(c); placeAbove(c.id, qid); persistState(); renderBoard();
     }
+    function npcNameEdit(id) {
+      const n = document.querySelector('.qnpc[data-nid="' + id + '"] .qnpc-n'); if (!n) return;
+      const c = (state.boardTex.npcs || []).find(x => x.id === id); if (!c) return;
+      const orig = n.textContent; n.contentEditable = 'true'; n.style.textOverflow = 'clip'; n.focus();
+      const r = document.createRange(); r.selectNodeContents(n); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      let done = false;
+      const fin = ok => { if (done) return; done = true; n.contentEditable = 'false'; n.style.textOverflow = ''; if (ok) { c.label = n.textContent.replace(/\s+/g, ' ').trim(); n.textContent = c.label; persistState(); } else n.textContent = orig; };
+      n.onblur = () => fin(true);
+      n.onkeydown = ev => { ev.stopPropagation(); if (ev.key === 'Enter') { ev.preventDefault(); n.blur(); } else if (ev.key === 'Escape') { ev.preventDefault(); fin(false); n.blur(); } };
+    }
+    document.addEventListener('dblclick', e => { const card = e.target.closest && e.target.closest('.qnpc'); if (!card || !isBoardLike() || e.target.closest('.qn-resize')) return; e.preventDefault(); npcNameEdit(card.dataset.nid); });
     function npcLabel(id, v) {
       const c = (state.boardTex.npcs || []).find(n => n.id === id); if (!c) return; c.label = v;
       const n = document.querySelector('.qnpc[data-nid="' + id + '"] .qnpc-n'); if (n) n.textContent = v;
@@ -3166,7 +3177,7 @@
       el.className = 'qnpc' + (c.img ? ' qimg' : '') + (c.status ? ' st-' + (c.status === 'stone' ? 'gray' : c.status) : ''); el.dataset.nid = c.id;
       el.style.cssText = `left:${c.x}px;top:${c.y}px;width:${c.w}px;height:${c.h}px;z-index:${c.z || 1};transform:rotate(${c.rot || 0}deg);`;
       const img = npc && npc.image ? `<img src="${escapeHtml(npc.image)}" alt="" draggable="false" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'qnpc-ph'}))">` : '<div class="qnpc-ph"></div>';
-      el.innerHTML = `${img}<div class="qnpc-n">${escapeHtml(c.img ? (c.label || '') : (npc ? (npc.name || 'NPC') : '(삭제된 인물)'))}</div>${c.status && ST_OVER[c.status] ? `<img class="qnpc-st ${ST_OVER[c.status]}" src="${ST_ICON[c.status]}" alt="${ST_NAME[c.status]}" title="${ST_NAME[c.status]}" draggable="false">` : ''}<span class="qn-resize" data-act="resize"></span>`;
+      el.innerHTML = `${img}<div class="qnpc-n">${escapeHtml(c.img ? (c.label || '') : (c.label != null ? c.label : (npc ? (npc.name || 'NPC') : '(삭제된 인물)')))}</div>${c.status && ST_OVER[c.status] ? `<img class="qnpc-st ${ST_OVER[c.status]}" src="${ST_ICON[c.status]}" alt="${ST_NAME[c.status]}" title="${ST_NAME[c.status]}" draggable="false">` : ''}<span class="qn-resize" data-act="resize"></span>`;
       const ph = el.querySelector('.qnpc-ph'); if (ph) ph.style.backgroundImage = `url(${IC_HUMAN})`;
       return el;
     }
@@ -4454,7 +4465,7 @@
         const obj = isNpc ? npcCardById(note.dataset.nid) : isMemo ? memoById(note.dataset.mid) : (state.quests.find(x => x.id === note.dataset.qid) || {}).board;
         const q = isMemo ? null : state.quests.find(x => x.id === note.dataset.qid);
         if (!obj) return;
-        if (e.target.closest('[data-act="toggle"], [data-act="edit"], select')) return;
+        if (e.target.closest('[data-act="toggle"], [data-act="edit"], select, .qnpc-n[contenteditable="true"]')) return;
         const taEl = e.target.closest('textarea');
         if (taEl && document.activeElement === taEl) return;
         const resize = !!e.target.closest('[data-act="resize"]');
@@ -4502,7 +4513,6 @@
         if (d.ta) { if (!cancel) d.ta.focus(); return; }
         if (!cancel && !d.resize && !d.isMemo && d.q) {
           if (typeof d.q.board.rot !== 'number') d.q.board.rot = noteRot(d.q);
-          if (confirm('「' + (d.q.title || '퀘스트') + '」 퀘스트 창으로 이동할까요?')) { closeBoardPopup(true); jumpToQuest(d.q.id); }
         }
       }
       document.addEventListener('pointerup', e => end(e, false));
