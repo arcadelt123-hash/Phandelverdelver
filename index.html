@@ -955,6 +955,8 @@
     #nav-handle { position: fixed; top: 6px; left: 6px; z-index: 300; width: 26px; height: 26px; border: 1px solid rgba(0,0,0,.2); border-radius: 8px; background: rgba(255,255,255,.85); color: #475569; font-size: 12px; line-height: 1; cursor: pointer; opacity: .6; backdrop-filter: blur(4px); display: none; padding: 0; }
     #nav-handle:hover { opacity: 1; }
     body.fl-mode .container, body.fl-mode .container.wide, body.fl-mode .container.wide-full { max-width: none !important; }
+    body.fl-mode { padding: 0 !important; overflow: hidden; }
+    body.fl-mode .top-bar { margin: 0 !important; border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; }
     .fl-wrap { position: relative; width: 100%; }
     .fl-wrap > .qboard, .fl-wrap > .mb, .fl-wrap > .tl-scroll { height: 100% !important; margin: 0 !important; min-height: 0 !important; isolation: isolate; box-sizing: border-box; }
     .fl-wrap > .qboard, .fl-wrap > .mb, .fl-wrap > .tl-scroll { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; outline: 0 !important; }
@@ -4289,7 +4291,7 @@
     function flFit() {
       const w = document.querySelector('.fl-wrap'); if (!w) return;
       const top = w.getBoundingClientRect().top;
-      w.style.height = Math.max(360, Math.round(innerHeight - top - 8)) + 'px';
+      w.style.height = Math.max(360, Math.round(innerHeight - top)) + 'px';
       const p = w.querySelector('.fl-panel'); if (p) flPlace(p, w);
     }
     function flPlace(p, w) {
