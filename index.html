@@ -1741,7 +1741,7 @@
 
     // ===== 서버 연결: google.script.run 이 응답 없으면 같은 주소로 직접 요청(fetch)으로 자동 전환 =====
     co
-nst EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyHTdwFtURnlwrRvmIVbovShRRyxATBDA57RU4XW5dgMPsiztzmfECUn-8rRzKpS7nm/exec';
+nst EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyTj0ElFFUk6VLay9z65MaokNqGu2QnWKiMaZdecUEBv1TKiMYo5RlM9AOx_iOx0Sl4/exec';
     function execUrl() { try { return localStorage.getItem('adventure_exec_url') || EXEC_URL_DEFAULT; } catch (e) { return EXEC_URL_DEFAULT; } }
     function diagShow(msg) { try { console.info('[sync]', msg); } catch (e) {} }
     function fetchT(url, opt, ms) {
