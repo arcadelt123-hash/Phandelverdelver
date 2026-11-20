@@ -200,6 +200,9 @@
     .tl-quest.completed { border-color: #2f5a22; }
     .tl-quest.completed::after { right: 14px; bottom: 14px; }
     .tl-node .tl-btn.pat { right: 30px; }
+    .tl-node .tl-btn.colr { right: 82px; }
+    .tl-node .tl-btn.col { right: 56px; overflow: hidden; padding: 0; }
+    .tl-node .tl-btn.col input { width: 30px; height: 30px; padding: 0; border: 0; background: none; cursor: pointer; flex: none; }
     .tl-quest { overflow: visible; }
     .tl-quest .tl-btn { top: -9px; width: 20px; height: 20px; }
     .tl-quest .tl-btn.del { right: -9px; } .tl-quest .tl-btn.pat { right: 15px; }
@@ -473,9 +476,11 @@
       filter: drop-shadow(0 18px 26px rgba(0,0,0,.55)); max-height: none; }
     .qv-paper .qv-in { height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; font-size: var(--fs, 15px); display: flex; flex-direction: column; }
     .qv-paper .qv-body { padding: 0; gap: .7em; flex: 1; min-height: 0; display: flex; flex-direction: column; }
-    .qv-paper .qv-quill { width: auto; height: auto; border: 0; background: transparent; box-shadow: none; border-radius: 0; opacity: .9; transition: transform .15s; }
+    .qv-paper .qv-head { justify-content: center; }
+    .qv-paper .qv-title { flex: 0 1 auto; }
+    .qv-paper .qv-quill { width: 2.5em; height: 2.5em; padding: .2em; border: 1.5px solid rgba(92,58,26,.75); background: rgba(255,248,230,.9); box-shadow: 0 1px 3px rgba(60,40,10,.35); border-radius: .6em; opacity: 1; transition: transform .15s; }
     .qv-paper .qv-quill:hover { transform: scale(1.12) rotate(-6deg); }
-    .qv-paper .qv-quill img { width: 2.1em; height: 2.1em; filter: drop-shadow(0 1px 2px rgba(60,40,10,.35)); }
+    .qv-paper .qv-quill img { width: 100%; height: 100%; filter: drop-shadow(0 1px 2px rgba(60,40,10,.35)); }
     .qv-paper .qv-done { border: 0; background: transparent; box-shadow: none; padding: 0; transition: transform .15s; }
     .qv-paper .qv-done:hover { transform: scale(1.08); }
     .qv-paper .qv-done span { display: none; }
@@ -498,10 +503,6 @@
     .q-tile .qt-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1; min-height: 0; overflow: hidden; }
     .q-tile .qt-npc { display: flex; gap: 4px; flex: none; overflow: hidden; }
     .q-tile .qt-npc img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border-subtle); background: #fff; flex: none; }
-    .q-tile .qt-edit { flex: none; width: 24px; height: 24px; padding: 2px; border: 1.5px solid rgba(92,58,26,.7); border-radius: 7px; background: rgba(255,248,230,.88); box-shadow: 0 1px 2px rgba(60,40,10,.3); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-    .q-tile .qt-edit:hover { background: #fff3cf; border-color: var(--accent-primary, #ca8a04); }
-    .q-tile .qt-edit img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-    .tl-mini .qt-edit { display: none; }
     .q-tile .qt-top { display: flex; align-items: center; gap: 7px; min-width: 0; }
     .q-tile .qt-title { font-weight: 800; font-size: 1rem; color: var(--text-main); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .q-tile .qt-meta { font-size: .74rem; color: var(--text-muted); }
@@ -745,10 +746,13 @@
     .npc-stats-row input { min-width: 0; flex: 1; padding: 4px 6px; font-size: .8rem; }
     .pc-del { position: absolute; top: 8px; right: 8px; }
     .codex-grid.fx { grid-template-columns: repeat(auto-fill, 176px); gap: 14px; }
-    .pc-slot { width: 176px; box-sizing: border-box; flex: none; }
+    .pc-slot { width: calc(var(--cw, 1) * 100%); box-sizing: border-box; min-width: 0; }
+    .codex-grid.fx.pc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    @media (max-width: 720px) { .codex-grid.fx.pc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .pc-slot > .pc-card { width: 100%; box-sizing: border-box; }
-    .pc-slot[style*="height"] > .pc-card { height: 100%; overflow: hidden; }
+    .pc-slot[style*="aspect-ratio"] > .pc-card { height: 100%; overflow: hidden; }
     .codex-grid.fx.pc-join { display: flex; flex-wrap: nowrap; gap: 0; overflow-x: auto; align-items: flex-start; padding: 4px 0 8px; }
+    .codex-grid.fx.pc-join .pc-slot { flex: none; width: calc(var(--cw, 1) * 20%); }
     .codex-grid.fx.pc-join .pc-card { border-radius: 0 !important; }
     .tl-tray { flex-wrap: wrap; max-height: 230px; overflow-y: auto; overflow-x: hidden; }
     .tl-mini { flex-shrink: 0; cursor: pointer; zoom: .5; transition: transform .12s; }
@@ -1382,6 +1386,7 @@
         </div>
         <button class="btn btn-primary btn-icon-top" id="top-add-btn" onclick="handleTopAddButton()" title="퀘스트 추가" aria-label="퀘스트 추가"><img class="ico-img top-ico" src="" data-ico="feather" alt=""></button>
         <button class="btn btn-secondary btn-icon-top" onclick="gsOpen()" title="통합 검색 (Ctrl+K)" aria-label="통합 검색"><img class="ico-img top-ico" id="gs-ico" src="" data-ico="search" alt=""></button>
+        <button class="btn btn-secondary btn-icon-top" id="pcjoin-btn" onclick="pcJoinToggle()" title="PC 카드 한 줄로 붙이기 / 풀기 (인물 도감)" aria-label="PC 카드 붙이기" style="display:none;"><img class="ico-img" width="30" height="30" src="data:image/webp;base64,UklGRjIDAABXRUJQVlA4ICYDAABQEACdASpIAEgAPlEijkUjoiEVy4yAOAUEs4BqsMC4AHzz9+/JjkxM3K8/vNGRzJeM38df0z7AX6zf8bsVehf+xxk3y3H1KjIRV42bcL4npqfg5CzfUdjP+Sw9vYYPkUv8PnDjjxwsBcVhEO7at7wdasRpJrl6Wt1J6L2az212gecev+ZHpqiwrRMAAP79wNe4cuCccQb3qc/l8Gkd9hvzfsedengh3Lq+EM4IfeUfNe4sQxpxF63l8vy6dX5pd8K3jCdDHlq/wPeU6hcDnIOwa73DEHCssL4Y1A8l6fSV6y1+9P/2c1Ci/02fy5YoM3la9LRJuj/E5bXNrBNU0x96UO4kSdrfBa3mXhoblalKc1f3+eZYcvnXlTS2+28sXXlZaNaH8y+Gv4e5b0MZCimIFSps+7HO0YNYEHME9kFS6ua71AsgKHFbMn2G/EvwOkF0j8XLIjFegXmobt9WVX0W/7OTJVq2WOwiod/tw0p0ezBKjiS3zDENbvqjM+Y6ZlWvltnML3hwGGy8+T7mHBrGjbP0G3JNdxRg8FbpgNQFeVS663S5SVGSy6PKa17QLpZTI/+PvP8Rqscpy6Dvu1u9IeuDR33DSAu7jjYkgDZ95Q4J7vl6mYvIvr1ZaDVQQwvjaWVqvL5nEth6G7mQyegq8nv7mChieOdb0m16YBj83qm3o4UOstMiCY3Hb1+OKDK5fSQn+MGt+7iCM9yjCzT9E7AhXZnE2FvRTjOnLaeW12mhs0JH0F1Y9UCE2dELQGxqxFOcTWKz3yDF6GAL8hNQUorPFI9KTqpSq5GqV7DFlDdUjHG6bdLj0N6yxU1785bITnFD8UIRAtFvX0pCViK+RP+J7feCKQwaBKXUhK8jZUjGcLyZ3I2hSErTc/4Etdg5/Gmom37oZRMr1gO7zJvzz6tXAxtxGjP1fy9JxyZTvjeMk+t+JAQJfHvXbiq872Ws7J+9q6aGl9SPkB/Ql6JkWfOTIGRHh5OuXGJfBRcS6c8uXD1AFMspRFP7ATwbtQ2agN38v+qPPReskUt+kzANfcNQe2mSvadO9Pf4DmsdSL7AAAAAAA==" alt="" style="border-radius:6px;"></button>
         <button class="btn btn-secondary btn-icon-top" onclick="loadFromSheet()" title="새로고침" aria-label="새로고침"><img class="ico-img top-ico" src="" data-ico="needle" alt=""></button>
         <button class="btn btn-secondary btn-icon-top" onclick="openFolderModal()" title="환경 설정, 폴더 및 백업 관리" aria-label="환경 설정"><img class="ico-img top-ico" src="" data-ico="gear" alt=""></button>
       </div>
@@ -2151,7 +2156,7 @@
     function setViewMode(mode, status) {
       { const so = document.getElementById('sheet-ov'); if (so && so.classList.contains('open')) { try { sheetFlushClose(); } catch (e) {} } }
       if (mode !== 'board' && state.boardPopup) closeBoardPopup(true);
-      state.viewMode = mode;
+      state.viewMode = mode; try { pcJoinSync(); } catch (e) {}
       if (mode === 'quests') state.statusFilter = status;
       renderAll();
     }
@@ -4542,18 +4547,21 @@
       }
       return `<div class="codex-card pc-card pcl-mini"${click}${cs}><div class="pm-nm">${nm}</div>${inf2 ? `<div class="pm-in">${inf2}</div>` : ''}<div class="pm-im">${src ? `<img src="${escapeHtml(src)}" alt="" style="transform:scale(${(Number(p.imgS) || 100) / 100});transform-origin:bottom center;" />` : ICONS.npc}</div></div>`;
     }
+    function pcJoinOn() { try { return localStorage.getItem('pc_join') === '1'; } catch (e) { return false; } }
+    function pcJoinToggle() { try { localStorage.setItem('pc_join', pcJoinOn() ? '0' : '1'); } catch (e) {} pcJoinSync(); if (state.viewMode === 'npcs') renderNpcCodex(); }
+    function pcJoinSync() { const b = document.getElementById('pcjoin-btn'); if (!b) return; b.style.display = state.viewMode === 'npcs' ? '' : 'none'; b.classList.toggle('on', pcJoinOn()); }
     function pcSlotStyle(p) {
       const cw = Number(p.cw) || 100, ch = Number(p.ch) || 100, dy = Number(p.dy) || 0, o = [];
-      if (cw !== 100) o.push('width:' + Math.round(176 * cw / 100) + 'px');
-      if (ch !== 100) o.push('height:' + Math.round(246 * ch / 100) + 'px');
+      if (cw !== 100) o.push('--cw:' + (cw / 100));
+      if (ch !== 100) o.push('aspect-ratio:' + (500 / (7 * ch)).toFixed(4));
       if (dy) o.push('margin-top:' + dy + 'px');
       return o.join(';');
     }
     function pcCodexHtml(keyword) {
       const pcs = (state.boardTex.pcs || []).map((p, i) => ({ p, i })).filter(({ p }) => !keyword || (String(p.name || '') + ' ' + String((p.sheet || {}).charClass || '')).toLowerCase().includes(keyword));
       let pj = false; try { pj = localStorage.getItem('pc_join') === '1'; } catch (e) {}
-      const tg = pcs.length > 1 ? `<div style="margin-bottom:6px;"><button class="btn ${pj ? 'on' : ''}" style="padding:3px 8px;line-height:0;" onclick="try{localStorage.setItem('pc_join','${pj ? '0' : '1'}')}catch(e){};renderNpcCodex()" title="PC 카드를 한 줄로 붙이기 / 풀기 (카드 우클릭 → 가로·세로·높낮이로 어긋나게)" aria-label="PC 카드 붙이기"><img src="data:image/webp;base64,UklGRjIDAABXRUJQVlA4ICYDAABQEACdASpIAEgAPlEijkUjoiEVy4yAOAUEs4BqsMC4AHzz9+/JjkxM3K8/vNGRzJeM38df0z7AX6zf8bsVehf+xxk3y3H1KjIRV42bcL4npqfg5CzfUdjP+Sw9vYYPkUv8PnDjjxwsBcVhEO7at7wdasRpJrl6Wt1J6L2az212gecev+ZHpqiwrRMAAP79wNe4cuCccQb3qc/l8Gkd9hvzfsedengh3Lq+EM4IfeUfNe4sQxpxF63l8vy6dX5pd8K3jCdDHlq/wPeU6hcDnIOwa73DEHCssL4Y1A8l6fSV6y1+9P/2c1Ci/02fy5YoM3la9LRJuj/E5bXNrBNU0x96UO4kSdrfBa3mXhoblalKc1f3+eZYcvnXlTS2+28sXXlZaNaH8y+Gv4e5b0MZCimIFSps+7HO0YNYEHME9kFS6ua71AsgKHFbMn2G/EvwOkF0j8XLIjFegXmobt9WVX0W/7OTJVq2WOwiod/tw0p0ezBKjiS3zDENbvqjM+Y6ZlWvltnML3hwGGy8+T7mHBrGjbP0G3JNdxRg8FbpgNQFeVS663S5SVGSy6PKa17QLpZTI/+PvP8Rqscpy6Dvu1u9IeuDR33DSAu7jjYkgDZ95Q4J7vl6mYvIvr1ZaDVQQwvjaWVqvL5nEth6G7mQyegq8nv7mChieOdb0m16YBj83qm3o4UOstMiCY3Hb1+OKDK5fSQn+MGt+7iCM9yjCzT9E7AhXZnE2FvRTjOnLaeW12mhs0JH0F1Y9UCE2dELQGxqxFOcTWKz3yDF6GAL8hNQUorPFI9KTqpSq5GqV7DFlDdUjHG6bdLj0N6yxU1785bITnFD8UIRAtFvX0pCViK+RP+J7feCKQwaBKXUhK8jZUjGcLyZ3I2hSErTc/4Etdg5/Gmom37oZRMr1gO7zJvzz6tXAxtxGjP1fy9JxyZTvjeMk+t+JAQJfHvXbiq872Ws7J+9q6aGl9SPkB/Ql6JkWfOTIGRHh5OuXGJfBRcS6c8uXD1AFMspRFP7ATwbtQ2agN38v+qPPReskUt+kzANfcNQe2mSvadO9Pf4DmsdSL7AAAAAAA==" alt="" width="26" height="26" style="border-radius:5px;"></button></div>` : '';
-      return tg + `<div class="codex-grid fx${pj ? ' pc-join' : ''}" style="margin-bottom:18px;">${pcs.map(({ p, i }) => `<div class="pc-slot" data-dnd="pc" data-did="${escapeHtml(p.id)}" style="${pcSlotStyle(p)}">${pcCardHtml(p, i)}</div>`).join('')}</div>`;
+      const tg = '';
+      return tg + `<div class="codex-grid fx pc-grid${pj ? ' pc-join' : ''}" style="margin-bottom:18px;">${pcs.map(({ p, i }) => `<div class="pc-slot" data-dnd="pc" data-did="${escapeHtml(p.id)}" style="${pcSlotStyle(p)}">${pcCardHtml(p, i)}</div>`).join('')}</div>`;
     }
     // ---- PC 카드 꾸미기 창 (우클릭) ----
     let pccId = null;
@@ -4866,7 +4874,7 @@
         return matchName || matchMemo;
       });
 
-      const pcSec = pcCodexHtml(keyword);
+      const pcSec = pcCodexHtml(keyword); pcJoinSync();
       const emptyBox = msg => `
           <div style="text-align:center; padding:48px 16px; color:var(--text-muted); background:rgba(255,255,255,0.92); border:1px dashed var(--border-subtle); border-radius:var(--radius-lg);">${msg}</div>`;
       if (!state.globalNpcs.length) {
@@ -5081,7 +5089,6 @@
               ${canDrag ? `<span class="drag-handle" title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기" onmousedown="this.closest('.quest-card').draggable = true" onmouseup="this.closest('.quest-card').draggable = false" onclick="event.stopPropagation()">⠿</span>` : ''}
               ${folderImg ? `<img class="folder-ico-only" src="${escapeHtml(folderImg)}" alt="" title="${escapeHtml(q.folder)}" />` : ''}
               <span class="qt-title">${escapeHtml(q.title || '제목 없음')}</span>
-              <button type="button" class="qt-edit" title="수정" aria-label="수정" onclick="event.stopPropagation();openQuestDetail('${q.id}')"><img src="${IC_FEATHER}" alt="" draggable="false"></button>
             </div>
             <div class="qt-meta">${escapeHtml(meta)}</div>
             ${npcLine ? `<div class="qt-npc">${npcLine}</div>` : ''}
@@ -5778,6 +5785,9 @@
       if (n && isFinite(n.pat)) return ((Number(n.pat) % TL_PAT_N) + TL_PAT_N) % TL_PAT_N;
       let h = 0; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h) % TL_PAT_N;
     }
+    function tlFillCss(c) { return c ? `background:linear-gradient(color-mix(in srgb, ${c} 70%, #fff), ${c});` : ''; }
+    function tlFillLive(id, c) { const n = state.timeline.nodes[id]; if (!n) return; n.fill = c; const el = document.querySelector('.tl-node[data-node-id="' + id + '"] .tl-in'); if (el) el.style.cssText += tlFillCss(c); }
+    function tlFillReset(id) { const n = state.timeline.nodes[id]; if (!n) return; delete n.fill; persistState(); renderTimeline(); }
     function tlCyclePat(id) { const n = state.timeline.nodes[id]; if (!n) return; n.pat = (tlPatOf(id, n) + 1) % TL_PAT_N; persistState(); renderTimeline(); }
     function tlDeco(n) {
       if (!n || (!n.paper && !n.shape)) return { cls: '', style: '', bg: '' };
@@ -5822,7 +5832,8 @@
           <div class="tl-resize" title="끌어서 가로 크기 조절"></div><div class="tl-resize tl-resize-b" title="끌어서 세로 길이 조절 (여러 날에 걸친 퀘스트)"></div>
           <button class="tl-btn del" title="타임라인에서 빼기" onclick="tlRemoveNode('${id}')">×</button>
           <button class="tl-btn pat" title="문양 바꾸기" aria-label="문양 바꾸기" onclick="tlCyclePat('${id}')">◈</button>
-          <div class="tl-in">
+          <label class="tl-btn col" title="안쪽 색 바꾸기" aria-label="안쪽 색 바꾸기"><input type="color" value="${n.fill || '#f4e6bd'}" oninput="tlFillLive('${id}',this.value)" onchange="persistState()"></label>${n.fill ? `<button class="tl-btn colr" title="안쪽 색 원래대로" aria-label="안쪽 색 원래대로" onclick="tlFillReset('${id}')">↺</button>` : ''}
+          <div class="tl-in" style="${tlFillCss(n.fill)}">
             <div class="tl-title">${escapeHtml(n.title != null ? n.title : (q.title || '제목 없음'))}</div>
             <div class="tl-desc">${escapeHtml(n.desc != null ? n.desc : (q.description || ''))}</div>
           </div>
@@ -6266,7 +6277,7 @@
 
       area.addEventListener('dblclick', e => {
         if (state.viewMode !== 'timeline' || tlConnectMode) return;
-        if (e.target.closest('button') || e.target.closest('.tl-resize')) return;
+        if (e.target.closest('button') || e.target.closest('.tl-btn') || e.target.closest('.tl-resize')) return;
         const note = e.target.closest('.tl-note');
         if (note) { editTimelineNote(note.getAttribute('data-node-id')); return; }
         const qn = e.target.closest('.tl-quest');
