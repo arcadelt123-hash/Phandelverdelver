@@ -464,6 +464,13 @@
     #qt-menu .qt-h, #nv-menu .qt-h { font-weight: 800; font-size: 14px; margin-bottom: 8px; }
     #qt-menu .qt-r { display: flex; align-items: center; gap: 8px; font-weight: 700; } #qt-menu .qt-r input { flex: 1; } #qt-menu .qt-r span { width: 40px; text-align: right; font-weight: 800; }
     .qt-sub { margin: 10px 0 5px; font-weight: 700; opacity: .8; }
+    .qt-add { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+    .qt-add button { width: 40px; height: 36px; border: 1.5px solid #000; border-radius: 10px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+    .qt-add img { height: 28px; }
+    .qt-add input { flex: 1 1 100%; padding: 4px 8px; border: 1.5px solid #b8893a; border-radius: 8px; font-size: .8rem; }
+    #pcc-prev .pt-win > img, #pcc-prev .pp-art > img, .tc-sk .pt-win > img, .tc-sk .pp-art > img { pointer-events: auto; cursor: move; touch-action: none; }
+    .dl-grip { cursor: grab; opacity: .55; padding: 0 4px; user-select: none; font-size: .9rem; letter-spacing: -2px; }
+    .dl-drag { opacity: .4; } .dl-over { outline: 2px dashed #b8893a; outline-offset: 1px; }
     .qt-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-height: 240px; overflow-y: auto; padding: 2px; }
     .qt-th { aspect-ratio: 1; border: 2px solid #e3d3a6; border-radius: 8px; background-color: #d9cdb0; background-size: contain; background-repeat: no-repeat; background-position: center; cursor: pointer; padding: 0; }
     .qt-th:hover { border-color: #b8893a; } .qt-th.on { border-color: #b8893a; box-shadow: 0 0 0 2px rgba(184,137,58,.4); }
@@ -1591,6 +1598,14 @@
     #fan-cap { text-align: center; max-width: 620px; margin: 4px auto 18px; color: #3b2410; }
     #fan-cap .fan-nm { font-weight: 800; font-size: 1.35rem; font-family: 'Cinzel', 'Noto Serif KR', serif; }
     #fan-cap .fan-ds { white-space: pre-wrap; font-size: .85rem; line-height: 1.6; margin-top: 4px; color: #5a4524; }
+    .land-sep { margin-top: 10px; font-size: .78rem; font-weight: 800; color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: 8px; } .land-sep:first-child { border-top: 0; margin-top: 4px; padding-top: 0; }
+
+    /* v158 떠 있는 하위 메뉴 투명화 */
+    .fl-panel { background: transparent !important; border-color: transparent !important; box-shadow: none !important; backdrop-filter: none !important; text-shadow: 0 0 3px rgba(255,255,255,.85); }
+    .fl-panel .btn, .fl-panel .btn:hover, .fl-panel .btn-secondary, .fl-panel .btn-primary, .fl-panel .cat-chip:not(.on) { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+    .fl-panel .btn-primary { color: #7a4a00; text-shadow: 0 0 2px rgba(255,214,90,.95), 0 0 7px rgba(255,190,40,.85); }
+    .fl-panel .j-pc, .fl-panel .j-pc:hover { background: transparent !important; }
+    .fl-panel select, .fl-panel input[type=text] { background: rgba(255,255,255,.55); }
 </style>
 </head>
 <body>
@@ -1759,7 +1774,7 @@
   <div class="modal-backdrop" id="folder-modal">
     <div class="modal-box">
       <div class="modal-title">환경 설정 · 백업 · 폴더 관리</div>
-      <details class="land-box" id="land-box" open><summary>기본 랜딩 페이지</summary><div id="land-body"></div></details>
+      <details class="land-box" id="land-box" open><summary>기본 랜딩 페이지 · 인물 보기 모드</summary><div id="land-body"></div></details>
       
       <div class="folder-mgmt-item">
         <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">데이터 수동 백업 및 복원 (자동 백업: 시트 내 일 1회)</div>
@@ -2188,15 +2203,25 @@
     // ---- 기본 랜딩 페이지 (전체 / PL별) ----
     const LAND_OPTS = [['quests:all', '전체 퀘스트'], ['quests:active', '진행 중 퀘스트'], ['quests:completed', '완료 퀘스트'], ['npcs', '도감'], ['board', '퀘스트 보드'], ['timeline', '타임라인'], ['journal:pc', '기록실 · 일지'], ['journal:items', '기록실 · 창고'], ['journal:clues', '기록실 · 단서'], ['map', '지도']];
     function landCfg() { const b = state.boardTex; b.landing = b.landing || {}; b.landing.pl = b.landing.pl || {}; return b.landing; }
-    function landMe() { let id = ''; try { id = localStorage.getItem('adv_me_pl') || ''; } catch (e) {} const pcs = state.boardTex.pcs || []; if (id && pcs.some(p => p.id === id)) return id; const nm = (presName() || '').toLowerCase(); const m = nm && pcs.find(p => String(p.name || '').toLowerCase() === nm); return m ? m.id : ''; }
+    function landPls() { return [{ id: 'gm', name: '시금치 (GM)', key: '시금치', img: IC_HUMAN }].concat(state.boardTex.pcs || []); }
+    function landMe() { let id = ''; try { id = localStorage.getItem('adv_me_pl') || ''; } catch (e) {} const pcs = landPls(); if (id && pcs.some(p => p.id === id)) return id; const nm = (presName() || '').toLowerCase(); const m = nm && pcs.find(p => String(p.key || p.name || '').toLowerCase() === nm); return m ? m.id : ''; }
     function landSetMe(v) { try { localStorage.setItem('adv_me_pl', v); } catch (e) {} landRender(); }
     function landSet(pc, v) { const L = landCfg(); if (pc) { if (v) L.pl[pc] = v; else delete L.pl[pc]; } else L.def = v; persistState(); }
     function landRender() {
-      const el = document.getElementById('land-body'); if (!el) return; const L = landCfg(), pcs = state.boardTex.pcs || [], me = landMe();
+      const el = document.getElementById('land-body'); if (!el) return; const L = landCfg(), pcs = landPls(), me = landMe();
       const sel = (cur, pc, blank) => `<select onchange="landSet('${pc}',this.value)">${blank ? `<option value="">${blank}</option>` : ''}${LAND_OPTS.map(o => `<option value="${o[0]}"${cur === o[0] ? ' selected' : ''}>${o[1]}</option>`).join('')}</select>`;
-      el.innerHTML = `<div class="land-row"><span>기본</span>${sel(L.def || 'quests:all', '', '')}</div>`
-        + (pcs.length ? pcs.map(p => `<div class="land-row"><span><img src="${escapeHtml(p.img || IC_NPC)}" alt="">${escapeHtml(p.name || 'PL')}</span>${sel(L.pl[p.id] || '', p.id, '기본 따름')}</div>`).join('') + `<div class="land-row"><span>이 기기의 PL</span><select onchange="landSetMe(this.value)"><option value="">자동 (접속 이름으로 찾기)</option>${pcs.map(p => `<option value="${escapeHtml(p.id)}"${localStorage.getItem('adv_me_pl') === p.id ? ' selected' : ''}>${escapeHtml(p.name || 'PL')}</option>`).join('')}</select></div>` : '');
+      const selV = (cur, pc, blank) => `<select onchange="landSetVm('${pc}',this.value)">${blank ? `<option value="">${blank}</option>` : ''}${VM_OPTS.map(o => `<option value="${o[0]}"${cur === o[0] ? ' selected' : ''}>${o[1]}</option>`).join('')}</select>`;
+      const plRow = (p, f) => `<div class="land-row"><span><img src="${escapeHtml(p.img || IC_NPC)}" alt="">${escapeHtml(p.name || 'PL')}</span>${f(p)}</div>`;
+      let curMe = ''; try { curMe = localStorage.getItem('adv_me_pl') || ''; } catch (e) {}
+      el.innerHTML = `<div class="land-sep">시작 페이지</div><div class="land-row"><span>기본</span>${sel(L.def || 'quests:all', '', '')}</div>`
+        + pcs.map(p => plRow(p, q => sel(L.pl[q.id] || '', q.id, '기본 따름'))).join('')
+        + `<div class="land-sep">인물 보기 모드</div><div class="land-row"><span>기본</span>${selV(L.vm || 'simple', '', '')}</div>`
+        + pcs.map(p => plRow(p, q => selV((L.vmPl || {})[q.id] || '', q.id, '기본 따름'))).join('')
+        + (pcs.length ? `<div class="land-sep">이 기기</div><div class="land-row"><span>이 기기의 PL</span><select onchange="landSetMe(this.value)"><option value="">자동 (접속 이름으로 찾기)</option>${pcs.map(p => `<option value="${escapeHtml(p.id)}"${curMe === p.id ? ' selected' : ''}>${escapeHtml(p.name || 'PL')}</option>`).join('')}</select></div>` : '');
     }
+    const VM_OPTS = [['simple', '간단히 보기'], ['card', 'NPC 카드로 보기'], ['fan', '부채꼴 펼쳐 보기']];
+    function landVm() { try { const L = (state.boardTex || {}).landing || {}, v = (L.vmPl && L.vmPl[landMe()]) || L.vm; return VM_OPTS.some(o => o[0] === v) ? v : 'simple'; } catch (e) { return 'simple'; } }
+    function landSetVm(pc, v) { const L = landCfg(); L.vmPl = L.vmPl || {}; if (pc) { if (v) L.vmPl[pc] = v; else delete L.vmPl[pc]; } else L.vm = v; persistState(); window.__vm = null; }
     function landApply(canPersist) {
       if (window.__landed) return; const L = (state.boardTex || {}).landing;
       const v = L && ((L.pl && L.pl[landMe()]) || L.def);
@@ -3145,6 +3170,7 @@
       const out = [{ key: 'slate', name: '석판', paper: false }];
       Object.keys(NOTE_TEX).forEach(k => { if (k !== 'slate' && !hid.includes(k)) out.push({ key: k, name: NOTE_TEX[k].name, paper: true, url: NOTE_TEX[k].url, builtin: true, full: !!NOTE_TEX[k].full }); });
       (state.boardTex.custom || []).forEach(t => out.push({ key: t.id, name: t.name, paper: true, url: t.url, builtin: false }));
+      const o = state.boardTex.texOrder; if (o && o.length) { const sl = out.filter(t => !t.paper), pp = orderBy(out.filter(t => t.paper), t => t.key, o); return sl.concat(pp); }
       return out;
     }
     const NOTE_W = 230, NOTE_H = 250, NOTE_GAP = 22, NOTE_MIN_W = 150, NOTE_MIN_H = 130;
@@ -4051,7 +4077,7 @@
       fbMgrRender();
       try { if (state.viewMode === 'board') renderBoard(); } catch (e) {}
     }
-    function bgOptions() { return CLUE_BGS.filter(x => !isHid('bg', x[0])); }
+    function bgOptions() { return clueBgList().filter(x => !isHid('bg', x[0])); }
     function patMgrOpen() {
       let ov = document.getElementById('patmgr');
       if (!ov) { ov = document.createElement('div'); ov.id = 'patmgr'; ov.onclick = e => { if (e.target === ov) ov.remove(); }; document.body.appendChild(ov); }
@@ -4059,16 +4085,16 @@
     }
     function patMgrRender() {
       const ov = document.getElementById('patmgr'); if (!ov) return;
-      const cells = CLUE_BGS.map(x => { const pp = patOf(x[0]), off = isHid('bg', x[0]);
+      const cells = clueBgList().map(x => { const pp = patOf(x[0]), off = isHid('bg', x[0]);
         return `<div class="pm-c${off ? ' off' : ''}"><div class="pm-sw ${pp && pp.cls ? pp.cls : ''}" style="${pp ? pp.st.replace(/\"/g, '&quot;') : ''}"></div><span>${x[1]}</span>${off ? `<button class="pm-b" onclick="unhideItem('bg','${x[0]}')">복원</button>` : `<button class="pm-b" onclick="armX(this,()=>hideItem('bg','${x[0]}'))">지우기</button>`}</div>`; }).join('');
       ov.innerHTML = `<div class="pm-box"><div style="display:flex;align-items:center;gap:8px;"><b style="flex:1;">배경 무늬 정리</b>${hidList('bg').length ? `<button class="btn btn-secondary" onclick="restoreHidden('bg')">모두 복원</button>` : ''}<button class="btn btn-secondary" onclick="document.getElementById('patmgr').remove()">닫기</button></div><div class="pm-grid">${cells}</div></div>`;
     }
     function unhideItem(t, k) { const a = hidList(t), i = a.indexOf(k); if (i >= 0) a.splice(i, 1); persistState(); hiddenRefresh(); }
     function patSel(prop, cur, fn, withDefault) {
-      return `<label style="display:flex;gap:6px;align-items:center;font-size:.85rem;white-space:nowrap;">배경 무늬 <select onchange="${fn}">${withDefault ? `<option value=""${!cur ? ' selected' : ''}>기본</option>` : ''}${CLUE_BGS.filter(x => !isHid('bg', x[0]) || cur === x[0]).map(x => `<option value="${x[0]}"${cur === x[0] ? ' selected' : ''}>${x[1]}</option>`).join('')}</select></label>`;
+      return `<label style="display:flex;gap:6px;align-items:center;font-size:.85rem;white-space:nowrap;">배경 무늬 <select onchange="${fn}">${withDefault ? `<option value=""${!cur ? ' selected' : ''}>기본</option>` : ''}${clueBgList().filter(x => !isHid('bg', x[0]) || cur === x[0]).map(x => `<option value="${x[0]}"${cur === x[0] ? ' selected' : ''}>${x[1]}</option>`).join('')}</select></label>`;
     }
     function patOf(k) {
-      if (/^i_/.test(k || '')) { const q = PAT_IMGS.find(x => 'i_' + x.k === k); if (q) return { cls: '', st: `background-image:url(img/pat/tile_${q.k}.webp);background-size:${q.w}px ${q.h}px;background-repeat:repeat;background-position:0 0;` }; }
+      if (/^i_/.test(k || '')) { const q = PAT_IMGS.find(x => 'i_' + x.k === k) || (state.boardTex.customBgs || []).find(x => 'i_' + x.k === k); if (q) return { cls: '', st: `background-image:url(${q.url ? "'" + q.url + "'" : 'img/pat/tile_' + q.k + '.webp'});background-size:${q.w}px ${q.h}px;background-repeat:repeat;background-position:0 0;` }; }
       if (/^g[1-3]$/.test(k || '')) return { cls: '', st: `background-image:url("${arabTile(k)}");background-size:110px 110px;background-repeat:repeat;background-position:0 0;` };
       if (/^m[0-4]$/.test(k || '')) { const p = CLUE_PATS[+k[1]]; return { cls: '', st: `background-image:url(${p[0]});background-size:${Math.round(p[1] * 0.6)}px ${Math.round(p[2] * 0.6)}px;background-repeat:repeat;background-position:0 0;` }; }
       if (/^p[1-3]$/.test(k || '')) return { cls: 'tl-' + k, st: 'background:var(--pat) 0 0 / 110px 110px;' };
@@ -4079,7 +4105,7 @@
     function setTlPat(v) { state.timeline.pat = v; persistState(); renderTimeline(); }
     function mbBg(kind) {
       let k = kind === 'clue' ? (state.boardTex.clueBg || 'p1') : (state.boardTex.storeBg || 'paper');
-      if (kind === 'clue' && !CLUE_BGS.some(x => x[0] === k)) k = 'p1';
+      if (kind === 'clue' && !clueBgList().some(x => x[0] === k)) k = 'p1';
       if (kind !== 'clue') { const pp = patOf(k); if (pp) return pp; }
       if (/^g[1-3]$/.test(k) || /^i_/.test(k)) return patOf(k);
       if (/^m[0-4]$/.test(k)) { const p = CLUE_PATS[+k[1]]; return { cls: '', st: `background-image:url(${p[0]});background-size:${Math.round(p[1] * 0.6)}px ${Math.round(p[2] * 0.6)}px;background-repeat:repeat;background-position:0 0;` }; }
@@ -4130,9 +4156,12 @@
       });
     }
     function mbCanvasSize(kind, d) {
-      if (kind === 'store') { let b = 700; d.items.forEach(i => { b = Math.max(b, i.y + i.h + 120); }); return { W: 1900, H: b }; }
-      const rs = mbLaneRects(d); let b = 400, W = MB_W; rs.forEach(r => { b = Math.max(b, r.y + r.h + 40); W = Math.max(W, r.x + r.w + 80); });
-      d.cards.forEach(c => { b = Math.max(b, c.y + c.h + 40); }); return { W, H: b };
+      let R;
+      if (kind === 'store') { let b = 700; d.items.forEach(i => { b = Math.max(b, i.y + i.h + 120); }); R = { W: 1900, H: b }; }
+      else { const rs = mbLaneRects(d); let b = 400, W = MB_W; rs.forEach(r => { b = Math.max(b, r.y + r.h + 40); W = Math.max(W, r.x + r.w + 80); });
+        d.cards.forEach(c => { b = Math.max(b, c.y + c.h + 40); }); R = { W, H: b }; }
+      try { const z = mbZoom(kind) || 1, ar = document.getElementById('main-content-area'), vw = ar ? ar.clientWidth : 0, vh = Math.round(window.innerHeight * 0.74); R.W = Math.max(R.W, Math.ceil((vw - 6) / z)); R.H = Math.max(R.H, Math.ceil((vh - 6) / z)); } catch (e) {}
+      return R;
     }
     function mbCards(kind, d) { return kind === 'store' ? d.items : d.cards; }
     function mbById(kind, id) { return mbCards(kind, mbData(kind)).find(c => c.id === id); }
@@ -4233,6 +4262,10 @@
       persistState(); renderJournal();
     }
     function jdr(id) { return `draggable="true" ondragstart="_jDrag='${id}';event.dataTransfer.effectAllowed='move';try{event.dataTransfer.setData('text/plain','${id}')}catch(x){}" ondragover="event.preventDefault()" ondrop="jDrop(event,'${id}')"`; }
+    let mbDim = null;
+    function mbFit() { const v0 = document.getElementById('mb-view'), iv = document.getElementById('mb-inner'), sz = document.getElementById('mb-sizer'); if (!v0 || !iv || !sz || !mbDim) return; const { W, H, z } = mbDim, nw = Math.max(W, Math.ceil(v0.clientWidth / z)), nh = Math.max(H, Math.ceil(v0.clientHeight / z));
+      if (nw > W || nh > H) { iv.style.width = nw + 'px'; iv.style.height = nh + 'px'; sz.style.width = nw * z + 'px'; sz.style.height = nh * z + 'px'; const sv = document.getElementById('mb-svg'); if (sv) { sv.setAttribute('width', nw); sv.setAttribute('height', nh); } } }
+    window.addEventListener('resize', () => { try { mbFit(); } catch (e) {} });
     function renderMini(kind) {
       const listEl = document.getElementById('main-content-area'); if (!listEl) return;
       listEl.className = '';
@@ -4254,8 +4287,9 @@
           ${kind === 'store' && state.jStorePc === '-' ? mbFundHtml() : ''}${lanes}<svg class="mb-svg" id="mb-svg" width="${W}" height="${H}"></svg>${mbCards(kind, d).filter(c => kind !== 'store' || ((!state.jStorePc || (state.jStorePc === '-' ? !c.pc : c.pc === state.jStorePc)) && (!state.jStoreCat || c.cat === state.jStoreCat) && (!state.jStoreRar || c.rar === state.jStoreRar))).map(c => mbCardHtml(kind, c)).join('')}
           ${!mbCards(kind, d).length ? `<div class="qn-empty">${kind === 'store' ? '보드판에 붙인 이미지가 있으면 자동으로 들어와요.' : '빈 곳을 우클릭해서 추가 단서·추가 회차를 만들어 보세요.'}</div>` : ''}
         </div></div></div>`;
+      mbDim = { W, H, z }; mbFit();
       const v = document.getElementById('mb-view'); if (sc) { v.scrollLeft = sc.l; v.scrollTop = sc.t; }
-      flApply('#mb-view', 'journal');
+      flApply('#mb-view', 'journal'); mbFit();
       if (kind === 'clue') mbDrawConns();
     }
     function mbCenter() { const v = document.getElementById('mb-view'), z = mbZoom('clue'); return v ? { x: Math.round((v.scrollLeft + 80) / z), y: Math.round((v.scrollTop + 60) / z) } : { x: 100, y: 60 }; }
@@ -4376,7 +4410,7 @@
     function itemTaxList(kind) { const bt = state.boardTex, key = kind === 'cat' ? 'itemCats' : 'itemRar'; if (!Array.isArray(bt[key])) bt[key] = (kind === 'cat' ? ITEM_CATS_DEF : ITEM_RAR_DEF).map(x => x.slice()); return bt[key]; }
     function renderItemTax() {
       const el = document.getElementById('item-tax'); if (!el) return; itemTaxSync();
-      const blk = (kind, title, arr) => `<div style="font-weight:700;font-size:.85rem;margin-top:6px;">${title}</div>` + arr.map((x, i) => `<div class="nm-row" style="align-items:center;"><input type="color" value="${escapeHtml(/^#[0-9a-f]{6}$/i.test(x[2]) ? x[2] : '#999999')}" style="width:38px;height:30px;padding:0;" onchange="itemTaxSet('${kind}',${i},2,this.value)"><input type="text" value="${escapeHtml(x[1])}" style="flex:1;min-width:120px;" onchange="itemTaxSet('${kind}',${i},1,this.value)"><button class="btn btn-danger" style="padding:4px 9px;font-size:.78rem;" data-label="삭제" onclick="armDel(this,()=>itemTaxDel('${kind}',${i}))">삭제</button></div>`).join('') + `<div style="display:flex;gap:6px;"><button class="btn btn-secondary" style="font-size:.8rem;padding:5px 10px;" onclick="itemTaxAdd('${kind}')">+ 추가</button><button class="btn btn-secondary" style="font-size:.8rem;padding:5px 10px;" onclick="itemTaxReset('${kind}')">기본값 복원</button></div>`;
+      const blk = (kind, title, arr) => `<div style="font-weight:700;font-size:.85rem;margin-top:6px;">${title}</div>` + arr.map((x, i) => `<div class="nm-row" data-dl="${kind}" data-di="${i}" style="align-items:center;"><span class="dl-grip" title="끌어서 순서 변경">⋮⋮</span><input type="color" value="${escapeHtml(/^#[0-9a-f]{6}$/i.test(x[2]) ? x[2] : '#999999')}" style="width:38px;height:30px;padding:0;" onchange="itemTaxSet('${kind}',${i},2,this.value)"><input type="text" value="${escapeHtml(x[1])}" style="flex:1;min-width:120px;" onchange="itemTaxSet('${kind}',${i},1,this.value)"><button class="btn btn-danger" style="padding:4px 9px;font-size:.78rem;" data-label="삭제" onclick="armDel(this,()=>itemTaxDel('${kind}',${i}))">삭제</button></div>`).join('') + `<div style="display:flex;gap:6px;"><button class="btn btn-secondary" style="font-size:.8rem;padding:5px 10px;" onclick="itemTaxAdd('${kind}')">+ 추가</button><button class="btn btn-secondary" style="font-size:.8rem;padding:5px 10px;" onclick="itemTaxReset('${kind}')">기본값 복원</button></div>`;
       el.innerHTML = blk('cat', '아이템 종류', ITEM_CATS) + blk('rar', '아이템 등급', ITEM_RAR);
     }
     function itemTaxSet(kind, i, f, v) { const a = itemTaxList(kind); if (!a[i]) return; a[i][f] = f === 1 ? (String(v).trim() || a[i][1]) : v; itemTaxSync(); persistState(); itemRefresh(); }
@@ -4422,8 +4456,8 @@
     // ---- 카드 뽑기 보기 (아이템 · 캐릭터 공용) ----
     const TCG_TH = [['dark', '#2b2f36', '다크'], ['parch', '#e0cd9c', '양피지'], ['gold', '#3a2c0c', '골드'], ['ice', '#1d4a78', '아이스'], ['rose', '#6b2a49', '로즈'], ['forest', '#24503a', '포레스트']];
     let tcgSpec = null, tcgPanel = false;
-    function tcgSkin(sp) { const d = sp.deco || {}; return !!(d.frame || d.fBgi || d.fBgc); }
-    function tcgPseudo(sp) { const d = sp.deco || {}; return Object.assign({}, d, { id: 'tcgx', name: sp.name || '이름 없음', art: sp.img || '', img: sp.img || '', cardType: 'custom', extra: (sp.plain || []).join('\n'), showInfo: false }); }
+    function tcgSkin(sp) { if (sp.card) return true; const d = sp.deco || {}; return !!(d.frame || d.fBgi || d.fBgc); }
+    function tcgPseudo(sp) { if (sp.card) return sp.card; const d = sp.deco || {}; return Object.assign({}, d, { id: 'tcgx', name: sp.name || '이름 없음', art: sp.img || '', img: sp.img || '', cardType: 'custom', extra: (sp.plain || []).join('\n'), showInfo: false }); }
     function tcgHtml(sp, anim) {
       if (tcgSkin(sp)) { const dd = sp.deco; return `<div class="tc-sk${anim && dd.anim !== 0 ? ' anim' : ''}">${pcCardHtml(tcgPseudo(sp), -1, true)}</div>${sp.desc ? `<div class="tc-descsk">${escapeHtml(sp.desc)}</div>` : ''}`; }
       const d = sp.deco, rc = d.ac || sp.rc || '#b8893a', th = d.th || 'dark', band = (sp.band || []).filter(Boolean).join(' • ');
@@ -4434,11 +4468,11 @@
       const panel = tcgPanel ? `<div class="tcg-panel"><div class="th">${TCG_TH.map(t => `<i class="${(d.th || 'dark') === t[0] ? 'on' : ''}" title="${t[2]}" style="background:${t[1]}" onclick="tcgSet('th','${t[0]}')"></i>`).join('')}<label style="margin-left:6px;">강조색 <input type="color" value="${d.ac || sp.rc || '#b8893a'}" oninput="tcgSet('ac',this.value,true)"></label>${d.ac ? '<button class="tcg-mini" onclick="tcgSet(\'ac\',\'\')">원래 색</button>' : ''}</div><div class="th"><label><input type="checkbox" ${d.foil !== 0 ? 'checked' : ''} onchange="tcgSet('foil',this.checked?1:0)"> 반짝임</label><label><input type="checkbox" ${d.anim !== 0 ? 'checked' : ''} onchange="tcgSet('anim',this.checked?1:0)"> 뽑기 연출</label></div></div>` : '';
       const rgS = (lab, k, min, max, step, def) => `<label class="pcc-sl"><span>${lab}</span><input type="range" min="${min}" max="${max}" step="${step}" value="${d[k] == null ? def : d[k]}" oninput="tcgSkinSet('${k}',Number(this.value))"></label>`;
       const sk = tcgSkin(sp);
-      const sliders = sk ? (d.frame && !d.fHole ? '' : rgS('칸 왼쪽', 'wx', 0, 60, 1, 15) + rgS('칸 위', 'wy', 0, 60, 1, 12) + rgS('칸 너비', 'ww', 20, 100, 1, 70) + rgS('칸 높이', 'wh', 20, 100, 1, 76) + rgS('모서리', 'wr', 0, 50, 1, 0)) + (d.frame ? '' : rgS('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)) + rgS('확대', 'imgZ', 100, 220, 5, 100) + rgS('세로 위치', 'imgY', 0, 100, 5, 50) : '<div class="pcc-none">틀이나 배경을 고르면 조절할 수 있어요</div>';
-      const right = tcgPanel ? `<div class="tcg-r">${panel}<div class="tcg-panel tcg-skinp"><div class="pcc-top2"><button class="tcg-ib" onclick="tcgUpOpen()" title="이미지 올리기 (틀 · 배경)" aria-label="이미지 올리기"><img src="${IC_UPSPLASH}" alt=""></button><button class="tcg-mini" onclick="tcgTxtFree()" title="미리보기에서 글자를 끌어 원하는 곳에 놓아요">${d.tx != null ? '글자 위치 원래대로' : '✥ 글자 위치'}</button>${sk ? '<button class="tcg-mini" onclick="tcgSkinClear()">틀 · 배경 해제</button>' : ''}</div>
+      const sliders = sk ? (d.frame && !d.fHole ? '' : rgS('칸 왼쪽', 'wx', 0, 60, 1, 15) + rgS('칸 위', 'wy', 0, 60, 1, 12) + rgS('칸 너비', 'ww', 20, 100, 1, 70) + rgS('칸 높이', 'wh', 20, 100, 1, 76) + rgS('모서리', 'wr', 0, 50, 1, 0)) + (d.frame ? '' : rgS('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)) + rgS('확대', 'imgZ', 100, 300, 5, 100) + rgS('가로 위치', 'imgX', 0, 100, 5, 50) + rgS('세로 위치', 'imgY', 0, 100, 5, 50) : '<div class="pcc-none">틀이나 배경을 고르면 조절할 수 있어요</div>';
+      const right = tcgPanel ? `<div class="tcg-r">${sp.card ? '' : panel}<div class="tcg-panel tcg-skinp"><div class="pcc-top2"><button class="tcg-ib" onclick="tcgUpOpen()" title="이미지 올리기 (틀 · 배경)" aria-label="이미지 올리기"><img src="${IC_UPSPLASH}" alt=""></button><button class="tcg-mini" onclick="tcgTxtFree()" title="미리보기에서 글자를 끌어 원하는 곳에 놓아요">${d.tx != null ? '글자 위치 원래대로' : '✥ 글자 위치'}</button>${sk ? '<button class="tcg-mini" onclick="tcgSkinClear()">틀 · 배경 해제</button>' : ''}</div>
         <div class="pcc-cols pcc-cols3"><div class="pcc-c pcc-c2"><b class="pcc-h">조절</b>${sliders}</div>
-          <div class="pcc-c pcc-c3"><b class="pcc-h">틀</b><div class="pcc-grid">${PC_FRAMES.filter(f => !isHid('fr', f.k)).map(f => `<button class="${d.frame === 'img/frames/' + f.k + '.webp' ? 'on' : ''}" title="${f.n}" onclick="tcgUseFrame('${f.k}')"><img src="img/frames/${f.k}.webp" alt="${f.n}" loading="lazy"></button>`).join('')}</div></div>
-          <div class="pcc-c pcc-c4"><b class="pcc-h">배경</b><div class="pcc-grid pcc-grid-bg"><label class="pcc-col" title="배경 색"><input type="color" value="${d.fBgc || '#f4ecd8'}" oninput="tcgSkinSet('fBgc',this.value)"></label>${PAT_IMGS.filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<button class="${d.fBgi === 'img/pat/bg_' + x.k + '.webp' ? 'on' : ''}" title="${x.n}" onclick="tcgToggleBg('img/pat/bg_${x.k}.webp')"><img src="img/pat/bg_${x.k}.webp" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"></button>`).join('')}</div></div></div></div></div>` : '';
+          <div class="pcc-c pcc-c3"><b class="pcc-h">틀</b><div class="pcc-grid">${frameList().filter(f => !isHid('fr', f.k)).map(f => `<button class="${d.frame === frUrl(f) ? 'on' : ''}" title="${f.n}" onclick="tcgUseFrame('${f.k}')"><img src="${escapeHtml(frUrl(f))}" alt="${f.n}" loading="lazy"></button>`).join('')}</div></div>
+          <div class="pcc-c pcc-c4"><b class="pcc-h">배경</b><div class="pcc-grid pcc-grid-bg"><label class="pcc-col" title="배경 색"><input type="color" value="${d.fBgc || '#f4ecd8'}" oninput="tcgSkinSet('fBgc',this.value)"></label>${patList().filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<button class="${d.fBgi === bgUrl(x) ? 'on' : ''}" title="${x.n}" onclick="tcgToggleBg('${x.k}')"><img src="${escapeHtml(bgUrl(x))}" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"></button>`).join('')}</div></div></div></div></div>` : '';
       ov.innerHTML = `<div class="tcg-wrap${tcgPanel ? ' wide' : ''}"><div class="tcg-l">${tcgHtml(sp, anim)}<div class="tcg-bar"><button class="tcg-ib" onclick="tcgPanelToggle()" title="꾸미기" aria-label="꾸미기"><img src="${IC_BRUSH}" alt=""></button>${sp.edit ? (sp.editLabel === '내용 수정' ? `<button class="tcg-ib" onclick="tcgEdit()" title="내용 수정" aria-label="내용 수정"><img src="${IC_FEATHER}" alt=""></button>` : `<button onclick="tcgEdit()">${sp.editLabel || '수정'}</button>`) : ''}<button class="tcg-ib" onclick="tcgClose()" title="닫기" aria-label="닫기"><img src="${IC_BROOM}" alt=""></button></div></div>${right}</div>`;
     }
     function tcgOpen(sp) {
@@ -4455,27 +4489,29 @@
       tcgRender(k === 'anim' && v === 1);
     }
     function tcgSave() { if (tcgSpec && tcgSpec.save) tcgSpec.save(); }
-    function tcgUseFrame(k) { const d = tcgSpec && tcgSpec.deco, f = PC_FRAMES.find(a => a.k === k); if (!d || !f) return;
+    function tcgUseFrame(k) { const d = tcgSpec && tcgSpec.deco, f = frameList().find(a => a.k === k); if (!d || !f) return;
       if (d.frame === 'img/frames/' + k + '.webp') { ['frame', 'fBg', 'fHole', 'frameR'].forEach(x => { delete d[x]; }); }
-      else { d.frame = 'img/frames/' + k + '.webp'; d.fBg = f.bg ? 'img/frames/' + k + '_bg.webp' : ''; d.frameR = f.r; d.fHole = 1; d.wx = f.x; d.wy = f.y; d.ww = f.w; d.wh = f.h; d.wr = 0; }
+      else { d.frame = frUrl(f); d.fBg = f.bg ? 'img/frames/' + k + '_bg.webp' : ''; d.frameR = f.r; d.fHole = 1; d.wx = f.x; d.wy = f.y; d.ww = f.w; d.wh = f.h; d.wr = 0; }
       tcgSave(); tcgRender(false); }
-    function tcgToggleBg(url) { const d = tcgSpec && tcgSpec.deco; if (!d) return; if (d.fBgi === url) delete d.fBgi; else { delete d.fBgc; d.fBgi = url; } tcgSave(); tcgRender(false); }
+    function tcgToggleBg(k) { const x = patList().find(a => a.k === k); if (!x) return; const url = bgUrl(x), d = tcgSpec && tcgSpec.deco; if (!d) return; if (d.fBgi === url) delete d.fBgi; else { delete d.fBgc; d.fBgi = url; } tcgSave(); tcgRender(false); }
     function tcgSkinSet(k, v) { const d = tcgSpec && tcgSpec.deco; if (!d) return; const was = tcgSkin(tcgSpec); d[k] = v; tcgSave(); if (!was) { tcgRender(false); return; } const w = document.querySelector('#tcg-ov .tc-sk'); if (w) w.innerHTML = pcCardHtml(tcgPseudo(tcgSpec), -1, true); }
-    function tcgSkinClear() { const d = tcgSpec && tcgSpec.deco; if (!d) return; ['frame', 'fBg', 'fHole', 'frameR', 'fBgc', 'fBgi', 'wx', 'wy', 'ww', 'wh', 'wr', 'imgZ', 'imgY'].forEach(x => { delete d[x]; }); tcgSave(); tcgRender(false); }
+    function tcgSkinClear() { const d = tcgSpec && tcgSpec.deco; if (!d) return; ['frame', 'fBg', 'fHole', 'frameR', 'fBgc', 'fBgi', 'wx', 'wy', 'ww', 'wh', 'wr', 'imgZ', 'imgY', 'imgX'].forEach(x => { delete d[x]; }); tcgSave(); tcgRender(false); }
     function tcgTxtFree() { const d = tcgSpec && tcgSpec.deco; if (!d) return; if (d.tx != null) { delete d.tx; delete d.ty; } else { d.tx = 50; d.ty = 86; } tcgSave(); tcgRender(false); }
-    function tcgUpOpen() { if (!tcgSpec) return; pccVirt = tcgSpec.deco; pccVirt.id = 'tcgx'; pccId = 'tcgx'; pccNpc = false; pcUpOpen(); }
+    function tcgUpOpen() { if (!tcgSpec) return; if (tcgSpec.card) { pccVirt = null; pccNpc = !!tcgSpec.npc; pccId = tcgSpec.card.id; pcUpOpen(); return; } pccVirt = tcgSpec.deco; pccVirt.id = 'tcgx'; pccId = 'tcgx'; pccNpc = false; pcUpOpen(); }
     function tcgEdit() { const sp = tcgSpec; tcgClose(); if (sp && sp.edit) sp.edit(); }
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('tcg-ov')) tcgClose(); });
     function tcgPc(id) {
       const i = pcIdx(id), p = (state.boardTex.pcs || [])[i]; if (!p) return; const sh = p.sheet || {}, info = pcInfoLines(p);
       const boxes = (sh.boxes || []).filter(b => b && (b.title || b.content)).slice(0, 2).map(b => (b.title ? b.title + '\n' : '') + (b.content || '')).join('\n\n');
-      tcgOpen({ img: p.art || p.img || sh.artUrl || '', name: p.name || 'PC', band: info.map(escapeHtml), desc: [p.extra, boxes].filter(Boolean).join('\n\n'), rc: p.cBorder || '#b8893a', deco: (p.tcg = p.tcg || {}), save: () => persistState(), edit: () => openSheet(p.id), editLabel: '시트 열기' });
+      tcgOpen({ img: p.art || p.img || sh.artUrl || '', name: p.name || 'PC', band: info.map(escapeHtml), desc: [p.extra, boxes].filter(Boolean).join('\n\n'), rc: p.cBorder || '#b8893a', card: p, deco: p, save: () => persistState(), edit: () => openSheet(p.id), editLabel: '시트 열기' });
     }
     function tcgNpc(id) {
       const n = state.globalNpcs.find(x => x.id === id); if (!n) return; const st = npcInfoNorm(n), boxes = st ? (st.boxes || []).filter(x => x.title || x.text).map(x => (x.title ? x.title + ': ' : '') + (x.text || '')).join('\n') : '';
       const o = npcCardObj(n);
-      tcgOpen({ img: n.image || '', name: n.name || '이름 없음', band: [], desc: [n.memo, boxes].filter(Boolean).join('\n\n'), rc: o.cBorder || '#b8893a', deco: (o.tcg = o.tcg || {}), save: () => persistState(), edit: () => npcViewOpen(n.id), editLabel: '상세 보기' });
+      tcgOpen({ img: n.image || '', name: n.name || '이름 없음', band: [], desc: [n.memo, boxes].filter(Boolean).join('\n\n'), rc: o.cBorder || '#b8893a', card: o, npc: true, deco: o, save: () => persistState(), edit: () => npcViewOpen(n.id), editLabel: '상세 보기' });
     }
+    function itemSib(c, mode) { if (mode === 'board') return ((state.boardTex.store || {}).items || []).find(i => i.src === c.id) || null; if (mode === 'store') return c.src ? bcardFind(c.src) : null; return null; }
+    function itemDeco(c, mode) { const sb = itemSib(c, mode), has = o => o && o.tcg && Object.keys(o.tcg).length; const d = has(c) ? c.tcg : (has(sb) ? sb.tcg : (c.tcg || {})); c.tcg = d; if (sb) sb.tcg = d; return d; }
     let ivCur = null;
     function openItemView(id, mode) {
       itemTaxSync();
@@ -4487,7 +4523,7 @@
         const cc = mode === 'board' ? c : (mode === 'store' ? c : c);
         const pcTag = pc ? `<span class="iv-tag"><img src="${escapeHtml(pc.img || IC_NPC)}" alt="" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">${escapeHtml(pc.name || 'PC')}</span>` : '';
         document.getElementById('item-view').classList.remove('open');
-        tcgOpen({ img: c.img || '', name: c.label || '이름 없는 아이템', plain: [ct ? 'Type: ' + ct[1] : '', rr ? 'Rarity: ' + rr[1] : ''].filter(Boolean), band: [ct ? `Type: <b>${escapeHtml(ct[1])}</b>` : '', rr ? `Rarity: <b style="color:${rr[2]};filter:brightness(1.35);">${escapeHtml(rr[1])}</b>` : ''], desc: c.detail || '', tags: pcTag, rc: rr ? rr[2] : '#b8893a', deco: (c.tcg = c.tcg || {}), save: () => { const bc = c.src ? bcardFind(c.src) : null; if (bc) bc.tcg = c.tcg; persistState(); }, edit: () => { itemViewEdit(); }, editLabel: '내용 수정' });
+        tcgOpen({ img: c.img || '', name: c.label || '이름 없는 아이템', plain: [ct ? 'Type: ' + ct[1] : '', rr ? 'Rarity: ' + rr[1] : ''].filter(Boolean), band: [ct ? `Type: <b>${escapeHtml(ct[1])}</b>` : '', rr ? `Rarity: <b style="color:${rr[2]};filter:brightness(1.35);">${escapeHtml(rr[1])}</b>` : ''], desc: c.detail || '', tags: pcTag, rc: rr ? rr[2] : '#b8893a', deco: itemDeco(c, mode), save: () => { const sb = itemSib(c, mode); if (sb) sb.tcg = c.tcg; persistState(); }, edit: () => { itemViewEdit(); }, editLabel: '내용 수정' });
         ivCur = { id, mode }; return;
       }
       document.getElementById('iv-box').innerHTML = `<div class="iv-imgwrap"><img src="${escapeHtml(c.img || '')}" alt=""></div><div class="iv-name">${escapeHtml(c.label || (isImg ? '이미지' : '이름 없는 아이템'))}<button class="iv-quill" title="내용 수정" aria-label="내용 수정" onclick="itemViewEdit()"><img src="${IC_FEATHER}" alt=""></button></div>${tags ? `<div class="iv-tags">${tags}</div>` : ''}${!isImg && c.detail ? `<div class="iv-detail">${escapeHtml(c.detail)}</div>` : ''}`;
@@ -4797,7 +4833,7 @@
       const el = document.getElementById('pc-list'); if (!el) return;
       const pcs = state.boardTex.pcs || [];
       const fonts = k => MEMO_FONTS.map(f => `<option value="${f.k}"${(k || 'batang') === f.k ? ' selected' : ''} style="font-family:${f.f}">${f.n}</option>`).join('');
-      el.innerHTML = pcs.length ? pcs.map((p, i) => `<div class="pc-row" id="pc-row-${i}">
+      el.innerHTML = pcs.length ? pcs.map((p, i) => `<div class="pc-row" id="pc-row-${i}" data-dl="pc" data-di="${i}"><span class="dl-grip" title="끌어서 순서 변경">⋮⋮</span>
           <img src="${escapeHtml(p.img || IC_NPC)}" alt="" title="${p.img ? '이미지 바꾸기' : '이미지 연결 (없으면 도감 기본 이미지)'}" onclick="pcPickImg(${i})" style="width:38px;height:38px;object-fit:cover;border-radius:8px;border:1px solid var(--border-subtle);cursor:pointer;background:#fff;">
           ${p.img ? `<button class="btn btn-secondary" style="padding:2px 7px;" title="이미지 해제" onclick="pcSet(${i},'img','');renderPcList()">해제</button>` : ''}
           <input type="text" value="${escapeHtml(p.name || '')}" placeholder="PC 이름" style="width:120px;" oninput="pcSet(${i},'name',this.value)">
@@ -4891,7 +4927,7 @@
       const el = document.getElementById('tex-lib');
       if (!el) return;
       const list = visibleTexList().filter(t => t.paper);
-      el.innerHTML = list.length ? list.map(t => `<div class="tex-lib-item${t.full ? ' full' : ''}" style="background-image:url('${String(t.url).replace(/'/g, '%27')}')">${escapeHtml(t.name)}<button class="tl-x" title="제거" aria-label="제거" data-key="${escapeHtml(t.key)}" onclick="removeBoardTex(this.dataset.key)">✕</button></div>`).join('')
+      el.innerHTML = list.length ? list.map((t, i) => `<div class="tex-lib-item${t.full ? ' full' : ''}" data-dl="tex" data-di="${i}" draggable="true" style="background-image:url('${String(t.url).replace(/'/g, '%27')}')">${escapeHtml(t.name)}<button class="tl-x" title="제거" aria-label="제거" data-key="${escapeHtml(t.key)}" onclick="removeBoardTex(this.dataset.key)">✕</button></div>`).join('')
         : '<div style="font-size:.8rem;color:var(--text-muted);">종이 텍스처가 없어요. 아래에서 추가하거나 기본 텍스처를 복원하세요.</div>';
     }
     function removeBoardTex(key) {
@@ -5156,8 +5192,8 @@
       const nm = escapeHtml(p.name || 'PC');
       const cv = [p.cBorder ? '--pcb:' + p.cBorder : '', p.cText ? '--pct:' + p.cText : '', p.cBg ? '--pcbg:' + p.cBg : ''].filter(Boolean).join(';'), cs = cv ? ` style="${escapeHtml(cv)}"` : '';
       const exT = p.extra ? escapeHtml(p.extra).replace(/\n/g, '<br>') : '', inf2 = [info.length ? info.map(escapeHtml).join(' · ') : '', exT].filter(Boolean).join('<br>');
-      const z = Number(p.imgZ) || 100, y = p.imgY == null ? 50 : Number(p.imgY);
-      const artImg = src ? `<img src="${escapeHtml(src)}" alt="" style="transform:scale(${z / 100});object-position:50% ${y}%;" />` : ICONS.npc;
+      const z = Number(p.imgZ) || 100, y = p.imgY == null ? 50 : Number(p.imgY), xx = p.imgX == null ? 50 : Number(p.imgX);
+      const artImg = src ? `<img src="${escapeHtml(src)}" alt="" style="transform:scale(${z / 100});transform-origin:${xx}% ${y}%;object-position:${xx}% ${y}%;" />` : ICONS.npc;
       if (ty === 'classic') {
         return `<div class="codex-card pc-card pcl-classic"${click}${cs}>
           <div class="pc-img" style="width:${Number(p.imgS) || 100}%;margin:0 auto;aspect-ratio:1 / ${Number(p.imgR) || 1.2};">${p.img || p.art ? `<img src="${escapeHtml(p.img || p.art)}" alt="" />` : ICONS.npc}</div>
@@ -5234,7 +5270,7 @@
       const pcs = (state.boardTex.pcs || []).map((p, i) => ({ p, i })).filter(({ p }) => !keyword || (String(p.name || '') + ' ' + String((p.sheet || {}).charClass || '')).toLowerCase().includes(keyword));
       let pj = false; try { pj = localStorage.getItem('pc_join') === '1'; } catch (e) {}
       const tg = '';
-      return tg + `<div class="codex-grid fx pc-grid${pj ? ' pc-join' : ''}" style="margin-bottom:18px;">${pcs.map(({ p, i }) => `<div class="pc-slot" data-dnd="pc" data-did="${escapeHtml(p.id)}" style="${pcSlotStyle(p)}">${pcCardHtml(p, i)}<button class="tcg-btn" title="카드 뽑기로 보기" onclick="event.stopPropagation();tcgPc('${escapeHtml(p.id)}')">✦</button></div>`).join('')}</div>`;
+      return tg + `<div class="codex-grid fx pc-grid${pj ? ' pc-join' : ''}" style="margin-bottom:18px;">${pcs.map(({ p, i }) => `<div class="pc-slot" data-dnd="pc" data-did="${escapeHtml(p.id)}" style="${pcSlotStyle(p)}">${pcCardHtml(p, i)}</div>`).join('')}</div>`;
     }
     // ---- PC 카드 꾸미기 창 (우클릭) ----
     let pccId = null;
@@ -5242,8 +5278,8 @@
     let pccVirt = null;
     function pcList() { if (pccVirt && pccId === 'tcgx') return [pccVirt]; return pccNpc ? (state.boardTex.npcCards = state.boardTex.npcCards || []) : (state.boardTex.pcs || []); }
     function pcIdx(id) { return pcList().findIndex(p => p.id === id); }
-    function npcVm() { try { const v = localStorage.getItem('npc_vm'); return v === 'card' || v === 'fan' ? v : 'simple'; } catch (e) { return 'simple'; } }
-    function npcVmSet(v) { try { localStorage.setItem('npc_vm', v); } catch (e) {} renderNpcCodex(); }
+    function npcVm() { return window.__vm || landVm(); }
+    function npcVmSet(v) { window.__vm = v; renderNpcCodex(); }
     function npcCardObj(npc) {
       const a = (state.boardTex.npcCards = state.boardTex.npcCards || []);
       let o = a.find(x => x.id === npc.id);
@@ -5265,6 +5301,19 @@
       const up = () => { document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up); if (pos && t.closest('.tc-sk')) { if (tcgSpec) { tcgSpec.deco.tx = +pos[0].toFixed(1); tcgSpec.deco.ty = +pos[1].toFixed(1); tcgSave(); } return; } if (pos) { const i = pcIdx(id); if (i >= 0) { pcSet(i, 'tx', +pos[0].toFixed(1)); pcSet(i, 'ty', +pos[1].toFixed(1)); } } };
       document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
     });
+    // 사진 끌어서 보이는 부분(마스크 안 위치) 조절
+    document.addEventListener('pointerdown', e => {
+      const im = e.target.closest && e.target.closest('#pcc-prev .pt-win > img, #pcc-prev .pp-art > img, .tc-sk .pt-win > img, .tc-sk .pp-art > img'); if (!im) return;
+      const tcg = !!im.closest('.tc-sk'), win = im.parentElement.getBoundingClientRect(); if (!win.width) return; e.preventDefault();
+      const i = tcg ? -1 : pcIdx(pccId), P = tcg ? (tcgSpec && tcgSpec.deco) : (pcList()[i]); if (!P) return;
+      const x0 = P.imgX == null ? 50 : Number(P.imgX), y0 = P.imgY == null ? 50 : Number(P.imgY), sx = e.clientX, sy = e.clientY; let nx = x0, ny = y0;
+      const cl = v => Math.max(0, Math.min(100, v));
+      const mv = ev => { nx = cl(x0 - (ev.clientX - sx) / win.width * 140); ny = cl(y0 - (ev.clientY - sy) / win.height * 140); im.style.objectPosition = nx + '% ' + ny + '%'; im.style.transformOrigin = nx + '% ' + ny + '%'; };
+      const up = () => { document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up); nx = Math.round(nx); ny = Math.round(ny);
+        if (tcg) { P.imgX = nx; P.imgY = ny; tcgSave(); } else { pcSet(i, 'imgX', nx); pcSet(i, 'imgY', ny); }
+        document.querySelectorAll('input[oninput*="\'imgX\'"]').forEach(r => { r.value = nx; }); document.querySelectorAll('input[oninput*="\'imgY\'"]').forEach(r => { r.value = ny; }); };
+      document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
+    });
     function pcCfgPrev() { const i = pcIdx(pccId), p = pcList()[i], el = document.getElementById('pcc-prev'); if (p && el) el.innerHTML = pcCardHtml(p, i, true); }
     function pcCfgSet(k, v, full) { const i = pcIdx(pccId); if (i < 0) return; pcSet(i, k, v); if (full) pcCfgRender(); else pcCfgPrev(); }
     function pcCfgRender() {
@@ -5275,9 +5324,9 @@
       const rg = (lab, k, min, max, step, def) => `<label>${lab} <input type="range" min="${min}" max="${max}" step="${step}" value="${p[k] == null ? def : p[k]}" oninput="pcCfgSet('${k}',Number(this.value))"></label>`;
       const sl = (lab, k, min, max, step, def) => `<label class="pcc-sl"><span>${lab}</span><input type="range" min="${min}" max="${max}" step="${step}" value="${p[k] == null ? def : p[k]}" oninput="pcCfgSet('${k}',Number(this.value))"></label>`;
       const isFree = p.tx != null && p.ty != null && p.tx !== '';
-      const frameGrid = ty === 'custom' ? `<div class="pcc-grid">${PC_FRAMES.filter(f => !isHid('fr', f.k)).map(f => `<button class="${p.frame === 'img/frames/' + f.k + '.webp' ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="img/frames/${f.k}.webp" alt="${f.n}" loading="lazy"></button>`).join('')}</div>` : '';
-      const bgGrid = ty === 'custom' && (p.fHole || !p.frame) ? `<div class="pcc-grid pcc-grid-bg"><label class="pcc-col" title="배경 색"><input type="color" value="${p.fBgc || '#f4ecd8'}" oninput="pcCfgSet('fBgc',this.value)"></label>${PAT_IMGS.filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<button class="${p.fBgi === 'img/pat/bg_' + x.k + '.webp' ? 'on' : ''}" title="${x.n}" onclick="pcCfgToggleBg('img/pat/bg_${x.k}.webp')"><img src="img/pat/bg_${x.k}.webp" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"></button>`).join('')}</div>` : '<div class="pcc-none">틀을 고르면 배경을 고를 수 있어요</div>';
-      const sliders = (ty === 'custom' ? (p.frame ? '' : sl('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)) + sl('칸 왼쪽', 'wx', 0, 60, 1, 15) + sl('칸 위', 'wy', 0, 60, 1, 12) + sl('칸 너비', 'ww', 20, 100, 1, 70) + sl('칸 높이', 'wh', 20, 100, 1, 76) + sl('모서리', 'wr', 0, 50, 1, 0) : '') + (full ? sl('확대', 'imgZ', 100, 220, 5, 100) + sl('세로 위치', 'imgY', 0, 100, 5, 50) : sl('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? sl('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : ''));
+      const frameGrid = ty === 'custom' ? `<div class="pcc-grid">${frameList().filter(f => !isHid('fr', f.k)).map(f => `<button class="${p.frame === frUrl(f) ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="${escapeHtml(frUrl(f))}" alt="${f.n}" loading="lazy"></button>`).join('')}</div>` : '';
+      const bgGrid = ty === 'custom' && (p.fHole || !p.frame) ? `<div class="pcc-grid pcc-grid-bg"><label class="pcc-col" title="배경 색"><input type="color" value="${p.fBgc || '#f4ecd8'}" oninput="pcCfgSet('fBgc',this.value)"></label>${patList().filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<button class="${p.fBgi === bgUrl(x) ? 'on' : ''}" title="${x.n}" onclick="pcCfgToggleBg('${x.k}')"><img src="${escapeHtml(bgUrl(x))}" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"></button>`).join('')}</div>` : '<div class="pcc-none">틀을 고르면 배경을 고를 수 있어요</div>';
+      const sliders = (ty === 'custom' ? (p.frame ? '' : sl('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)) + sl('칸 왼쪽', 'wx', 0, 60, 1, 15) + sl('칸 위', 'wy', 0, 60, 1, 12) + sl('칸 너비', 'ww', 20, 100, 1, 70) + sl('칸 높이', 'wh', 20, 100, 1, 76) + sl('모서리', 'wr', 0, 50, 1, 0) : '') + (full ? sl('확대', 'imgZ', 100, 300, 5, 100) + sl('가로 위치', 'imgX', 0, 100, 5, 50) + sl('세로 위치', 'imgY', 0, 100, 5, 50) : sl('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? sl('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : ''));
       const memo = pccNpc ? '' : `<div class="pcc-memo"><b>메모 기본 설정</b><select onchange="pcCfgSet('font',this.value)">${fonts}</select><span><input type="color" title="글자색" value="${p.fc || '#2d2410'}" oninput="pcCfgSet('fc',this.value)"><input type="number" title="크기" min="10" max="48" value="${Number(p.fs) || 16}" oninput="pcCfgSet('fs',Number(this.value))"></span></div>`;
       box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;"><b style="flex:1;font-size:1.05rem;">${pccNpc ? 'NPC' : 'PC'} 카드 꾸미기</b>${pccNpc ? '' : `<button class="btn btn-danger btn-icon-only" title="PC 삭제 (두 번 눌러 삭제)" aria-label="PC 삭제" onclick="armIcon(this,()=>{const k=pcIdx(pccId);if(k>=0)pcDel(k);closePcCfg();})">${ICONS.del}</button>`}<button class="btn btn-secondary" style="padding:3px 10px;" onclick="closePcCfg()" aria-label="닫기">✕</button></div>
         <div class="pcc-cols">
@@ -5297,15 +5346,15 @@
     }
     const PC_FRAMES = [{"k": "b_arab", "n": "아라베스크", "r": 0.7, "x": 15.2, "y": 4.3, "w": 69.5, "h": 91.3}, {"k": "b_frame", "n": "금박 액자", "r": 0.7, "x": 17.6, "y": 12.2, "w": 64.8, "h": 75.6}, {"k": "frame1_floral", "n": "꽃무늬 아치", "r": 0.6091, "x": 3.9, "y": 2.4, "w": 92.2, "h": 95.3}, {"k": "frame2_lattice", "n": "격자 네이비", "r": 0.6772, "x": 14.4, "y": 9.9, "w": 71.1, "h": 79.8}, {"k": "frame3_cream", "n": "청록 패턴", "r": 0.7034, "x": 12.7, "y": 6.7, "w": 74.7, "h": 86.6}, {"k": "frame5_navy", "n": "네이비 문양", "r": 0.701, "x": 12.0, "y": 7.3, "w": 75.6, "h": 87.2}, {"k": "frame6_teal_arch", "n": "청록 아치", "r": 0.6667, "x": 17.0, "y": 29.1, "w": 66.0, "h": 58.4, "bg": 1}, {"k": "frame7_floral_arch", "n": "꽃 아치", "r": 0.7152, "x": 11.9, "y": 12.7, "w": 84.7, "h": 77.0, "bg": 1}, {"k": "frame8_lantern", "n": "랜턴", "r": 0.5632, "x": 8.1, "y": 8.8, "w": 83.9, "h": 83.1, "bg": 1}, {"k": "frame9_blue_mandala", "n": "블루 만다라", "r": 0.7144, "x": 19.8, "y": 0, "w": 60.5, "h": 67.9}, {"k": "frame10_swirl", "n": "물감 소용돌이", "r": 0.7, "x": 14, "y": 11, "w": 72, "h": 78}];
     function pcCfgUseFrame(k) {
-      const f = PC_FRAMES.find(a => a.k === k), i = pcIdx(pccId); if (!f || i < 0) return;
-      if (pcList()[i].frame === 'img/frames/' + f.k + '.webp') { pcSet(i, 'frame', ''); pcSet(i, 'fBg', ''); pcSet(i, 'fHole', 0); pcSet(i, 'frameR', 0); pcCfgRender(); return; }
-      pcSet(i, 'frame', 'img/frames/' + f.k + '.webp'); pcSet(i, 'fBg', f.bg ? 'img/frames/' + f.k + '_bg.webp' : ''); pcSet(i, 'frameR', f.r); pcSet(i, 'fHole', 1);
+      const f = frameList().find(a => a.k === k), i = pcIdx(pccId); if (!f || i < 0) return;
+      if (pcList()[i].frame === frUrl(f)) { pcSet(i, 'frame', ''); pcSet(i, 'fBg', ''); pcSet(i, 'fHole', 0); pcSet(i, 'frameR', 0); pcCfgRender(); return; }
+      pcSet(i, 'frame', frUrl(f)); pcSet(i, 'fBg', f.bg ? 'img/frames/' + f.k + '_bg.webp' : ''); pcSet(i, 'frameR', f.r); pcSet(i, 'fHole', 1);
       pcSet(i, 'wx', f.x); pcSet(i, 'wy', f.y); pcSet(i, 'ww', f.w); pcSet(i, 'wh', f.h); pcSet(i, 'wr', 0); pcCfgRender();
     }
     const IC_WICKER = 'data:image/webp;base64,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';
     const SVG_CHAIN = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
     const SVG_UP = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>';
-    function pcCfgToggleBg(url) { const i = pcIdx(pccId); if (i < 0) return; const p = pcList()[i]; if (p.fBgi === url) pcSet(i, 'fBgi', ''); else { pcSet(i, 'fBgc', ''); pcSet(i, 'fBgi', url); } pcCfgRender(); }
+    function pcCfgToggleBg(k) { const x = patList().find(a => a.k === k); if (!x) return; const url = bgUrl(x), i = pcIdx(pccId); if (i < 0) return; const p = pcList()[i]; if (p.fBgi === url) pcSet(i, 'fBgi', ''); else { pcSet(i, 'fBgc', ''); pcSet(i, 'fBgi', url); } pcCfgRender(); }
     // ---- 이미지 올리기 창 (캐릭터 · 틀 · 배경 / URL · 파일) ----
     function pcImgLoad(src, ok, fail) {
       const im = new Image(); im.crossOrigin = 'anonymous';
@@ -5359,15 +5408,54 @@
       ov.innerHTML = `<div class="pcup-box"><div style="display:flex;align-items:center;gap:8px;"><b style="flex:1;">이미지 올리기</b><button class="btn btn-secondary" style="padding:3px 10px;" onclick="document.getElementById('pcup').remove()">✕</button></div>
         <div class="pcup-body"><div class="pcup-cols">${pccVirt && pccId === 'tcgx' ? '' : panel('art', '캐릭터 이미지', p.art || p.img)}${panel('frame', '틀 이미지', p.frame)}${panel('bg', '배경 이미지', p.fBgi)}</div><div class="pcup-prev">${pccVirt && pccId === 'tcgx' ? pcCardHtml(tcgPseudo(tcgSpec), -1, true) : pcCardHtml(p, i, true)}</div></div></div>`;
       keep.forEach(([id, h, v]) => { const r = document.getElementById(id); if (r) { r.hidden = h; r.querySelector('input').value = v; } });
+      try { if (tcgSpec && tcgSpec.card && document.getElementById('tcg-ov')) tcgRender(false); } catch (e) {}
     }
     // ---- 전체 환경 설정: 틀 · 배경 정리 ----
+    // ---- 사용자 틀 · 배경 / 순서 ----
+    function orderBy(arr, kf, order) { if (!order || !order.length) return arr.slice(); const pos = new Map(order.map((k, i) => [k, i])); return arr.map((x, i) => [x, i]).sort((a, b) => { const pa = pos.has(kf(a[0])) ? pos.get(kf(a[0])) : 1e6 + a[1], pb = pos.has(kf(b[0])) ? pos.get(kf(b[0])) : 1e6 + b[1]; return pa - pb; }).map(a => a[0]); }
+    function frameList() { const bt = state.boardTex; return orderBy(PC_FRAMES.concat(bt.customFrames || []), f => f.k, bt.frOrder); }
+    function patList() { const bt = state.boardTex; return orderBy(PAT_IMGS.concat(bt.customBgs || []), x => 'i_' + x.k, bt.bgOrder); }
+    function clueBgList() { const bt = state.boardTex; return orderBy(CLUE_BGS.concat((bt.customBgs || []).map(x => ['i_' + x.k, x.n])), x => x[0], bt.bgOrder); }
+    function frUrl(f) { return f.url || ('img/frames/' + f.k + '.webp'); }
+    function bgUrl(x) { return x.url || ('img/pat/bg_' + x.k + '.webp'); }
+    function fbAddUrl(kind) { const el = document.getElementById('fba-' + kind), v = el && el.value.trim(); if (!v) return; fbAdd(kind, v, ''); el.value = ''; }
+    function fbAddFile(kind) { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
+      inp.onchange = () => { [...(inp.files || [])].forEach(f => { const rd = new FileReader(); rd.onload = () => fbAdd(kind, String(rd.result), f.name.replace(/\.[^.]+$/, '')); rd.readAsDataURL(f); }); }; inp.click(); }
+    function fbAdd(kind, src, name) {
+      pcImgLoad(src, (im, cors) => {
+        const bt = state.boardTex; let c = null; if (cors || /^data:|^blob:/.test(src)) { try { c = pcCanvas(im, kind === 'frame' ? 900 : 640); c.toDataURL('image/webp', .5); } catch (e) { c = null; } }
+        const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, id = 'c_' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), nm = name || ('내 ' + (kind === 'frame' ? '틀 ' : '배경 ') + ((kind === 'frame' ? (bt.customFrames || []).length : (bt.customBgs || []).length) + 1));
+        if (kind === 'frame') { const hb = c ? pcFrameHole(c) : null; (bt.customFrames = bt.customFrames || []).push({ k: id, n: nm, r: Number((W / H).toFixed(4)), x: hb ? hb.x : 15, y: hb ? hb.y : 12, w: hb ? hb.w : 70, h: hb ? hb.h : 76, url: c ? c.toDataURL('image/webp', 0.92) : src, custom: 1 }); if (!hb) showToast('투명 칸을 자동으로 찾지 못했어요. 카드 꾸미기에서 칸 위치를 맞춰 주세요.'); }
+        else { const tw = Math.min(W, 300); (bt.customBgs = bt.customBgs || []).push({ k: id, n: nm, w: tw, h: Math.round(tw * H / W), ar: Number((W / H).toFixed(3)), url: c ? c.toDataURL('image/webp', 0.85) : src, custom: 1 }); }
+        persistState(); fbMgrRender();
+      }, () => showToast('이미지를 불러오지 못했어요. 주소를 확인해 주세요.'));
+    }
+    function fbDelCustom(kind, k) { const bt = state.boardTex, key = kind === 'frame' ? 'customFrames' : 'customBgs'; bt[key] = (bt[key] || []).filter(x => x.k !== k); persistState(); fbMgrRender(); }
+    // ---- 드래그 앤 드롭 순서 변경 (환경 설정 목록) ----
+    let dlDrag = null;
+    function dlMove(kind, i, j) {
+      if (i === j || i < 0 || j < 0) return; const bt = state.boardTex, mv = a => { const x = a.splice(i, 1)[0]; a.splice(j, 0, x); };
+      if (kind === 'pc') { mv(bt.pcs); persistState(); renderPcList(); try { if (state.viewMode === 'npcs') renderNpcCodex(); } catch (e) {} }
+      else if (kind === 'cat' || kind === 'rar') { mv(itemTaxList(kind)); itemTaxSync(); persistState(); renderItemTax(); itemRefresh(); }
+      else if (kind === 'tex') { const l = visibleTexList().filter(t => t.paper).map(t => t.key), x = l.splice(i, 1)[0]; l.splice(j, 0, x); bt.texOrder = l; persistState(); renderTexLib(); }
+      else if (kind === 'fr') { const l = frameList().map(f => f.k), x = l.splice(i, 1)[0]; l.splice(j, 0, x); bt.frOrder = l; persistState(); fbMgrRender(); }
+      else if (kind === 'bg') { const l = clueBgList().map(f => f[0]), x = l.splice(i, 1)[0]; l.splice(j, 0, x); bt.bgOrder = l; persistState(); fbMgrRender(); }
+    }
+    document.addEventListener('pointerdown', e => { const g = e.target.closest && e.target.closest('.dl-grip'); if (g) { const it = g.closest('[data-dl]'); if (it) it.draggable = true; } }, true);
+    document.addEventListener('dragstart', e => { const it = e.target.closest && e.target.closest('[data-dl]'); if (!it || !it.draggable) return; dlDrag = { k: it.dataset.dl, i: +it.dataset.di }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'dl'); } catch (x) {} it.classList.add('dl-drag'); });
+    document.addEventListener('dragover', e => { if (!dlDrag) return; const it = e.target.closest && e.target.closest('[data-dl="' + dlDrag.k + '"]'); document.querySelectorAll('.dl-over').forEach(x => x.classList.remove('dl-over')); if (!it) return; e.preventDefault(); it.classList.add('dl-over'); });
+    document.addEventListener('drop', e => { if (!dlDrag) return; const it = e.target.closest && e.target.closest('[data-dl="' + dlDrag.k + '"]'); if (!it) return; e.preventDefault(); const d = dlDrag; dlDrag = null; dlMove(d.k, d.i, +it.dataset.di); });
+    document.addEventListener('pointerup', () => setTimeout(() => { if (!dlDrag) document.querySelectorAll('[data-dl].dl-ready,[draggable=true] > .dl-grip').forEach(x => {}); document.querySelectorAll('.pc-row[draggable=true],.nm-row[draggable=true]').forEach(x => { x.draggable = false; }); }, 50), true);
+    document.addEventListener('dragend', () => { dlDrag = null; document.querySelectorAll('.dl-drag,.dl-over').forEach(x => { x.classList.remove('dl-drag', 'dl-over'); if (x.querySelector && x.querySelector('.dl-grip')) x.draggable = false; }); });
     function fbMgrRender() {
       const el = document.getElementById('fb-mgr'); if (!el) return;
-      const cell = (inner, name, off, t, k) => `<div class="pm-c${off ? ' off' : ''}">${inner}<span>${name}</span>${off ? `<button class="pm-b" onclick="unhideItem('${t}','${k}')">복원</button>` : `<button class="pm-b" onclick="armX(this,()=>hideItem('${t}','${k}'))">지우기</button>`}</div>`;
-      const fr = PC_FRAMES.map(f => cell(`<img src="img/frames/${f.k}.webp" alt="" style="height:90px;object-fit:contain;background:#8883;border-radius:6px;">`, f.n, isHid('fr', f.k), 'fr', f.k)).join('');
-      const bg = CLUE_BGS.map(x => { const pp = patOf(x[0]); return cell(`<div class="pm-sw ${pp && pp.cls ? pp.cls : ''}" style="${pp ? pp.st.replace(/"/g, '&quot;') : ''}"></div>`, x[1], isHid('bg', x[0]), 'bg', x[0]); }).join('');
-      el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><b style="flex:1;font-size:.85rem;">카드 틀</b>${hidList('fr').length ? '<button class="pm-b" onclick="restoreHidden(\'fr\')">모두 복원</button>' : ''}</div><div class="pm-grid pm-in">${fr}</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;"><b style="flex:1;font-size:.85rem;">배경 무늬 (보드판 · 카드 뒷배경)</b>${hidList('bg').length ? '<button class="pm-b" onclick="restoreHidden(\'bg\')">모두 복원</button>' : ''}</div><div class="pm-grid pm-in">${bg}</div>`;
+      const cell = (inner, name, off, t, k, i, cust) => `<div class="pm-c${off ? ' off' : ''}" data-dl="${t}" data-di="${i}" draggable="true">${inner}<span>${escapeHtml(name)}</span>${cust ? `<button class="pm-b" onclick="armX(this,()=>fbDelCustom('${t === 'fr' ? 'frame' : 'bg'}','${k.replace(/^i_/, '')}'))">삭제</button>` : off ? `<button class="pm-b" onclick="unhideItem('${t}','${k}')">복원</button>` : `<button class="pm-b" onclick="armX(this,()=>hideItem('${t}','${k}'))">지우기</button>`}</div>`;
+      const fr = frameList().map((f, i) => cell(`<img src="${escapeHtml(frUrl(f))}" alt="" style="height:90px;object-fit:contain;background:#8883;border-radius:6px;">`, f.n, isHid('fr', f.k), 'fr', f.k, i, f.custom)).join('');
+      const cb = clueBgList(), cm = new Set((state.boardTex.customBgs || []).map(x => 'i_' + x.k));
+      const bg = cb.map((x, i) => { const pp = patOf(x[0]); return cell(`<div class="pm-sw ${pp && pp.cls ? pp.cls : ''}" style="${pp ? pp.st.replace(/"/g, '&quot;') : ''}"></div>`, x[1], isHid('bg', x[0]), 'bg', x[0], i, cm.has(x[0])); }).join('');
+      const addRow = kind => `<div class="pcup-ic" style="margin:6px 0;align-items:center;"><button title="URL로 연결" onclick="document.getElementById('fba-${kind}').style.display='block';document.getElementById('fba-${kind}').focus()">${SVG_CHAIN}</button><button title="파일 업로드" onclick="fbAddFile('${kind}')">${SVG_UP}</button><input type="text" id="fba-${kind}" placeholder="이미지 주소 + Enter" style="display:none;flex:1;padding:6px 8px;border:1.5px solid #000;border-radius:8px;font-size:.8rem;" onkeydown="if(event.key==='Enter')fbAddUrl('${kind}')"></div>`;
+      el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><b style="flex:1;font-size:.85rem;">카드 틀 <span style="font-weight:400;opacity:.6;font-size:.72rem;">(끌어서 순서 변경)</span></b>${hidList('fr').length ? '<button class="pm-b" onclick="restoreHidden(\'fr\')">모두 복원</button>' : ''}</div>${addRow('frame')}<div class="pm-grid pm-in">${fr}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;"><b style="flex:1;font-size:.85rem;">배경 무늬 (보드판 · 카드 뒷배경)</b>${hidList('bg').length ? '<button class="pm-b" onclick="restoreHidden(\'bg\')">모두 복원</button>' : ''}</div>${addRow('bg')}<div class="pm-grid pm-in">${bg}</div>`;
     }
     function pcFrameHole(c) {
       try {
@@ -5747,7 +5835,7 @@
       }
       if (vm === 'card') {
         area.innerHTML = pcSec + vmBar + `<div class="codex-grid fx pc-grid" style="margin-bottom:18px;">` + filteredNpcs.map(npc => { const o = npcCardObj(npc);
-          return `<div class="pc-slot" data-dnd="npc" data-did="${escapeHtml(npc.id)}" style="cursor:pointer;${pcSlotStyle(o)}" onclick="npcViewOpen('${npc.id}')" oncontextmenu="npcCfgOpen('${npc.id}');return false;" title="눌러서 카드 보기 · 우클릭: 카드 꾸미기">${pcCardHtml(o, -1, true)}<button class="tcg-btn" title="카드 뽑기로 보기" onclick="event.stopPropagation();tcgNpc('${npc.id}')">✦</button></div>`; }).join('') + `</div>`;
+          return `<div class="pc-slot" data-dnd="npc" data-did="${escapeHtml(npc.id)}" style="cursor:pointer;${pcSlotStyle(o)}" onclick="npcViewOpen('${npc.id}')" oncontextmenu="npcCfgOpen('${npc.id}');return false;" title="눌러서 카드 보기 · 우클릭: 카드 꾸미기">${pcCardHtml(o, -1, true)}</div>`; }).join('') + `</div>`;
         return;
       }
       area.innerHTML = pcSec + vmBar + `<div class="codex-grid fx">` + filteredNpcs.map(npc => {
@@ -5914,13 +6002,29 @@
     document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#qt-menu')) qtMenuClose(); }, true);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') qtMenuClose(); });
     function qtSet(id, k, v) { const q = state.quests.find(x => x.id === id); if (!q) return; if (v === '' || v == null) delete q[k]; else q[k] = v; if (k === 'paper' && v && q.board) { const t = texOf(v); if (t.full && t.ar) q.board.h = Math.round(Math.max(NOTE_MIN_H, Math.min(640, q.board.w / t.ar))); } persistState(); renderQuests(); }
+    const IC_POTS = 'data:image/webp;base64,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';
+    function paperAddBar(kind, id) { return `<div class="qt-add"><button type="button" title="이미지 올리기" onclick="paperAddFile('${kind}','${id}')"><img src="${IC_POTS}" alt=""></button><button type="button" title="URL로 연결" onclick="paperAddUrl('${kind}','${id}')">${SVG_CHAIN}</button><input type="text" id="qt-add-url" placeholder="이미지 주소" style="display:none" onkeydown="if(event.key==='Enter')paperAddUrl('${kind}','${id}',1)"></div>`; }
+    function paperAddFile(kind, id) { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.onchange = () => { const f = inp.files && inp.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => paperAddSrc(kind, id, String(rd.result), f.name.replace(/\.[^.]+$/, '')); rd.readAsDataURL(f); }; inp.click(); }
+    function paperAddUrl(kind, id, go) { const el = document.getElementById('qt-add-url'); if (!el) return; if (!go && el.style.display === 'none') { el.style.display = 'block'; el.focus(); return; } const v = el.value.trim(); if (!v) { el.style.display = 'none'; return; } paperAddSrc(kind, id, v, ''); }
+    function paperAddSrc(kind, id, src, name) {
+      pcImgLoad(src, (im, cors) => {
+        let url = src, ar = (im.naturalWidth || im.width) / (im.naturalHeight || im.height);
+        if (cors || /^data:|^blob:/.test(src)) { try { const c = pcCanvas(im, 700); url = c.toDataURL('image/webp', 0.88); } catch (e) {} }
+        const bt = state.boardTex, nid = 'ct_' + Date.now(); bt.custom.push({ id: nid, name: name || ('내 종이 ' + (bt.custom.length + 1)), url, ar: Number(ar.toFixed(3)) });
+        persistState(); try { renderTexLib(); } catch (e) {}
+        const m = document.getElementById('qt-menu'), x = m ? m.style.left : '', y = m ? m.style.top : '';
+        if (kind === 'q') { qtSet(id, 'paper', nid); qtMenuClose(); qtileMenu({ preventDefault() {}, stopPropagation() {}, clientX: parseFloat(x) || 100, clientY: parseFloat(y) || 100 }, id); }
+        else tlDecoSet(id, 'paper', nid);
+        paperDimsKick();
+      }, () => showToast('이미지를 불러오지 못했어요.'));
+    }
     function qtileMenu(e, id) {
       e.preventDefault(); e.stopPropagation(); qtMenuClose(); paperDimsKick();
       const q = state.quests.find(x => x.id === id); if (!q) return;
       const cur = qPaperOf(q).key, sw = Math.max(0.6, Math.min(1.9, Number(q.tw) || Number(q.tscale) || 1)), sh_ = Math.max(0.6, Math.min(1.9, Number(q.th) || Number(q.tscale) || 1));
       const thumbs = paperCat().map(p => `<button type="button" class="qt-th${p.key === cur ? ' on' : ''}${p.key === q.paper ? ' set' : ''}" style="background-image:url(${p.url})" title="${escapeHtml(p.name)}" aria-label="${escapeHtml(p.name)}" onclick="qtSet('${id}','paper','${p.key}');qtileMenuRefresh('${id}')"></button>`).join('');
       const m = document.createElement('div'); m.id = 'qt-menu'; m.dataset.qid = id;
-      m.innerHTML = `<div class="qt-h">카드 꾸미기</div><label class="qt-r">가로<input type="range" min="0.6" max="1.9" step="0.05" value="${sw}" oninput="qtSet('${id}','tw',Number(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span>${Math.round(sw * 100)}%</span></label><label class="qt-r">세로<input type="range" min="0.6" max="1.9" step="0.05" value="${sh_}" oninput="qtSet('${id}','th',Number(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span>${Math.round(sh_ * 100)}%</span></label><div class="qt-sub">종이</div><div class="qt-grid">${thumbs}</div><div class="qt-sub">종이 모양 (테두리)</div><div class="qt-row${qPaperOf(q).full ? ' off' : ''}" id="qt-shapes"><button type="button" class="qt-sh${!q.tshape ? ' on' : ''}" data-k="tshape" data-v="" onclick="qtSet('${id}','tshape','');qtileMenuRefresh('${id}')"><i style="background:#c4a26b"></i></button>${Object.keys(NOTE_SHAPE).map(k => `<button type="button" class="qt-sh${q.tshape === k ? ' on' : ''}" data-k="tshape" data-v="${k}" title="${escapeHtml(NOTE_SHAPE[k].name)}" onclick="qtSet('${id}','tshape','${k}');qtileMenuRefresh('${id}')"><i style="-webkit-mask-image:url(${NOTE_SHAPE[k].mask});mask-image:url(${NOTE_SHAPE[k].mask})"></i></button>`).join('')}</div><div class="qt-ft"><button type="button" onclick="qtSet('${id}','paper','');qtSet('${id}','tscale','');qtSet('${id}','tw','');qtSet('${id}','th','');qtSet('${id}','tshape','');qtMenuClose()">기본으로</button><button type="button" onclick="qtMenuClose()">닫기</button></div>`;
+      m.innerHTML = `<div class="qt-h">카드 꾸미기</div><label class="qt-r">가로<input type="range" min="0.6" max="1.9" step="0.05" value="${sw}" oninput="qtSet('${id}','tw',Number(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span>${Math.round(sw * 100)}%</span></label><label class="qt-r">세로<input type="range" min="0.6" max="1.9" step="0.05" value="${sh_}" oninput="qtSet('${id}','th',Number(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span>${Math.round(sh_ * 100)}%</span></label><div class="qt-sub">종이</div><div class="qt-grid">${thumbs}</div>${paperAddBar('q', id)}<div class="qt-sub">종이 모양 (테두리)</div><div class="qt-row${qPaperOf(q).full ? ' off' : ''}" id="qt-shapes"><button type="button" class="qt-sh${!q.tshape ? ' on' : ''}" data-k="tshape" data-v="" onclick="qtSet('${id}','tshape','');qtileMenuRefresh('${id}')"><i style="background:#c4a26b"></i></button>${Object.keys(NOTE_SHAPE).map(k => `<button type="button" class="qt-sh${q.tshape === k ? ' on' : ''}" data-k="tshape" data-v="${k}" title="${escapeHtml(NOTE_SHAPE[k].name)}" onclick="qtSet('${id}','tshape','${k}');qtileMenuRefresh('${id}')"><i style="-webkit-mask-image:url(${NOTE_SHAPE[k].mask});mask-image:url(${NOTE_SHAPE[k].mask})"></i></button>`).join('')}</div><div class="qt-ft"><button type="button" onclick="qtSet('${id}','paper','');qtSet('${id}','tscale','');qtSet('${id}','tw','');qtSet('${id}','th','');qtSet('${id}','tshape','');qtMenuClose()">기본으로</button><button type="button" onclick="qtMenuClose()">닫기</button></div>`;
       document.body.appendChild(m);
       const r = m.getBoundingClientRect(); m.style.left = Math.max(8, Math.min(e.clientX, innerWidth - r.width - 8)) + 'px'; m.style.top = Math.max(8, Math.min(e.clientY, innerHeight - r.height - 8)) + 'px';
     }
@@ -6655,7 +6759,7 @@
       qtMenuClose(); const n = state.timeline.nodes[id]; if (!n) return;
       const cat = paperCat().map(paperNorm), cur = n.paper || '', full = !!((cat.find(p => p.key === (cur || 'f7')) || {}).full);
       const m = document.createElement('div'); m.id = 'qt-menu';
-      m.innerHTML = `<div class="qt-h">카드 꾸미기</div><div class="qt-sub">종이</div><div class="qt-grid"><button type="button" class="qt-th${!cur ? ' on' : ''}" title="기본" style="background:#f3e3b5" onclick="tlDecoSet('${id}','paper','')"></button>${cat.map(p => `<button type="button" class="qt-th${p.key === cur ? ' on' : ''}" style="background-image:url(${p.url})" title="${escapeHtml(p.name)}" onclick="tlDecoSet('${id}','paper','${p.key}')"></button>`).join('')}</div>`
+      m.innerHTML = `<div class="qt-h">카드 꾸미기</div><div class="qt-sub">종이</div><div class="qt-grid"><button type="button" class="qt-th${!cur ? ' on' : ''}" title="기본" style="background:#f3e3b5" onclick="tlDecoSet('${id}','paper','')"></button>${cat.map(p => `<button type="button" class="qt-th${p.key === cur ? ' on' : ''}" style="background-image:url(${p.url})" title="${escapeHtml(p.name)}" onclick="tlDecoSet('${id}','paper','${p.key}')"></button>`).join('')}</div>${paperAddBar('t', id)}`
         + `<div class="qt-sub">종이 모양 (테두리)</div><div class="qt-row${full ? ' off' : ''}"><button type="button" class="qt-sh${!n.shape ? ' on' : ''}" onclick="tlDecoSet('${id}','shape','')"><i style="background:#c4a26b"></i></button>${Object.keys(NOTE_SHAPE).map(k => `<button type="button" class="qt-sh${n.shape === k ? ' on' : ''}" title="${escapeHtml(NOTE_SHAPE[k].name)}" onclick="tlDecoSet('${id}','shape','${k}')"><i style="-webkit-mask-image:url(${NOTE_SHAPE[k].mask});mask-image:url(${NOTE_SHAPE[k].mask})"></i></button>`).join('')}</div>`;
       document.body.appendChild(m);
       const r = m.getBoundingClientRect(), px = lx ? parseFloat(lx) : e.clientX, py = ly ? parseFloat(ly) : e.clientY;
