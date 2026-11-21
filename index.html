@@ -1574,14 +1574,19 @@
     .pcc-cols3 .pcc-c2 { width: 170px; } .pcc-top2 { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .tcg-skinp .pcc-grid { max-height: 440px; } .tcg-skinp .pcc-c { border-left-color: #ca8a0455; color: #f1e6c8; }
 
-    /* v153 카루셀 카드 보기 */
-    .fan-stage { position: relative; height: 430px; margin: 6px 0 0; overflow: hidden; }
-    .fan-stage .fan-c { position: absolute; left: 50%; top: 26px; width: min(220px, 52vw); margin: 0; transform-origin: 50% 90%; transition: transform .35s cubic-bezier(.2,.8,.3,1), opacity .35s; cursor: pointer; filter: drop-shadow(0 8px 14px rgba(0,0,0,.4)); }
-    .fan-stage .fan-c.sel { filter: drop-shadow(0 12px 22px rgba(0,0,0,.5)); }
-    .fan-stage .fan-c:hover { filter: drop-shadow(0 12px 20px rgba(0,0,0,.55)) brightness(1.05); }
-    .fan-stage .fan-c .pc-card { pointer-events: none; }
-    .fan-arr { position: absolute; top: 150px; z-index: 300; border: 0; background: transparent; color: #f97316; font-size: 3rem; line-height: 1; cursor: pointer; text-shadow: 0 2px 6px rgba(0,0,0,.45); padding: 0 6px; }
-    .fan-arr.l { left: calc(50% - min(110px, 26vw) - 40px); } .fan-arr.r { left: calc(50% + min(110px, 26vw) + 8px); }
+    /* v154 두 줄 카루셀 카드 보기 */
+    .fan-stage { --cw: 240px; position: relative; height: calc(var(--cw) * 1.75); margin: 6px 0 0; overflow: hidden; } .fan-stage.two { height: calc(var(--cw) * 2.6); }
+    .fan-row { position: absolute; left: 0; right: 0; top: 0; height: calc(var(--cw) * 1.75); pointer-events: none; transition: filter .3s; filter: brightness(.82) saturate(.85); } .fan-row.act { filter: none; }
+    .fan-row[data-r="npc"] { top: 0; } .fan-stage.two .fan-row[data-r="npc"] { top: calc(var(--cw) * 0.85); }
+    .fan-row .fan-c { pointer-events: auto; }
+    .fan-lab { position: absolute; left: 10px; top: 8px; font-weight: 800; letter-spacing: .08em; color: #5a4524; font-size: .8rem; z-index: 400; }
+    .fan-row .fan-c { position: absolute; left: 50%; top: 24px; width: var(--cw); margin: 0; transform-origin: 50% 90%; transition: transform .35s cubic-bezier(.2,.8,.3,1), opacity .35s; cursor: pointer; filter: drop-shadow(0 8px 14px rgba(0,0,0,.4)); }
+    .fan-row .fan-c.sel { filter: drop-shadow(0 12px 22px rgba(0,0,0,.5)); }
+    .fan-row .fan-c:hover { filter: drop-shadow(0 12px 20px rgba(0,0,0,.55)) brightness(1.05); }
+    .fan-row .fan-c .pc-card { pointer-events: none; }
+    .fan-arr { position: absolute; top: calc(var(--cw) * .62); z-index: 300; border: 0; background: transparent; color: #f97316; font-size: 3rem; line-height: 1; cursor: pointer; text-shadow: 0 2px 6px rgba(0,0,0,.45); padding: 0 6px; display: none; pointer-events: auto; }
+    .fan-row.act .fan-arr { display: block; }
+    .fan-arr.l { left: calc(50% - var(--cw) / 2 - 40px); } .fan-arr.r { left: calc(50% + var(--cw) / 2 + 8px); }
     .fan-arr:hover { color: #fb923c; transform: scale(1.15); }
     #fan-cap { text-align: center; max-width: 620px; margin: 4px auto 18px; color: #3b2410; }
     #fan-cap .fan-nm { font-weight: 800; font-size: 1.35rem; font-family: 'Cinzel', 'Noto Serif KR', serif; }
@@ -5680,23 +5685,29 @@
       ov.onclick = () => ov.remove(); document.body.appendChild(ov);
     }
     function npcStatDel(id) { const n = state.globalNpcs.find(x => x.id === id); if (!n) return; delete n.stats; persistState(); npcRefresh(); }
-    let fanIdx = -1;
+    let fanIdx = { pc: -1, npc: -1 }, fanAct = 'pc', fanCW = 240;
+    function fanLayout() { const st = document.querySelector('.fan-stage'); if (!st) return; const w = st.parentElement ? st.parentElement.clientWidth : 900; fanCW = Math.max(170, Math.min(300, Math.round(w * 0.27))); st.style.setProperty('--cw', fanCW + 'px'); }
     function fanApply(instant) {
-      const els = document.querySelectorAll('.fan-stage .fan-c'); if (!els.length) return;
-      els.forEach(el => { const o = Number(el.dataset.i) - fanIdx, a = Math.abs(o), sg = Math.sign(o);
-        const x = o === 0 ? 0 : sg * (178 + (Math.min(a, 7) - 1) * 46), rot = o === 0 ? 0 : sg * Math.min(8 + (a - 1) * 2.5, 17), sc = o === 0 ? 1 : Math.max(.6, .84 - (a - 1) * .05), y = o === 0 ? 0 : 14 + Math.min(a, 6) * 5;
-        if (instant) el.style.transition = 'none';
-        el.style.transform = `translateX(calc(-50% + ${x}px)) translateY(${y}px) rotate(${rot}deg) scale(${sc})`;
-        el.style.zIndex = 100 - a; el.style.opacity = a > 7 ? 0 : (1 - Math.max(0, a - 3) * .1); el.style.pointerEvents = a > 7 ? 'none' : 'auto'; el.classList.toggle('sel', o === 0);
-        if (instant) { void el.offsetWidth; el.style.transition = ''; } });
-      const cap = document.getElementById('fan-cap'); if (cap) cap.innerHTML = (window.__fanCaps || [])[fanIdx] || '';
+      const st = document.querySelector('.fan-stage'); if (!st) return; const cw = fanCW;
+      st.querySelectorAll('.fan-row').forEach(row => { const r = row.dataset.r, act = r === fanAct, idx = fanIdx[r]; row.classList.toggle('act', act); row.style.zIndex = act ? 20 : 10;
+        row.querySelectorAll('.fan-c').forEach(el => { const o = Number(el.dataset.i) - idx, a = Math.abs(o), sg = Math.sign(o);
+          const x = o === 0 ? 0 : sg * (cw * 0.8 + (Math.min(a, 8) - 1) * cw * 0.2), rot = o === 0 ? 0 : sg * Math.min(8 + (a - 1) * 2.5, 17), sc = o === 0 ? 1 : Math.max(.6, .84 - (a - 1) * .05), y = o === 0 ? 0 : 14 + Math.min(a, 6) * 5;
+          if (instant) el.style.transition = 'none';
+          el.style.transform = `translateX(calc(-50% + ${x}px)) translateY(${y}px) rotate(${rot}deg) scale(${sc})`;
+          el.style.zIndex = 100 - a; el.style.opacity = a > 8 ? 0 : (1 - Math.max(0, a - 4) * .1); el.style.pointerEvents = a > 8 ? 'none' : 'auto'; el.classList.toggle('sel', o === 0);
+          if (instant) { void el.offsetWidth; el.style.transition = ''; } }); });
+      const cap = document.getElementById('fan-cap'), F = window.__fan || {}; if (cap) cap.innerHTML = ((F[fanAct] || {}).caps || [])[fanIdx[fanAct]] || '';
     }
-    function fanSet(i) { const n = document.querySelectorAll('.fan-stage .fan-c').length; if (!n) return; fanIdx = Math.max(0, Math.min(n - 1, i)); fanApply(); }
-    function fanGo(d) { fanSet(fanIdx + d); }
-    function fanClick(i) { if (i === fanIdx) { const a = (window.__fanActs || [])[i]; if (a) (0, eval)(a); } else fanSet(i); }
+    function fanRowN(r) { return document.querySelectorAll('.fan-row[data-r="' + r + '"] .fan-c').length; }
+    function fanSet(i) { const n = fanRowN(fanAct); if (!n) return; fanIdx[fanAct] = Math.max(0, Math.min(n - 1, i)); fanApply(); }
+    function fanGo(d) { fanSet(fanIdx[fanAct] + d); }
+    function fanRow(r) { if (fanRowN(r)) { fanAct = r; fanApply(); } }
+    function fanClick(r, i) { if (r !== fanAct) { fanAct = r; fanIdx[r] = i; fanApply(); return; } if (i === fanIdx[r]) { const a = ((window.__fan || {})[r] || {}).acts; if (a && a[i]) (0, eval)(a[i]); } else { fanIdx[r] = i; fanApply(); } }
     let fanWT = 0;
     function fanWheel(e) { const now = Date.now(); if (Math.abs(e.deltaY) + Math.abs(e.deltaX) < 8) return; e.preventDefault(); if (now - fanWT < 120) return; fanWT = now; fanGo((e.deltaY || e.deltaX) > 0 ? 1 : -1); }
-    document.addEventListener('keydown', e => { if (!document.querySelector('.fan-stage') || document.getElementById('tcg-ov')) return; if (/INPUT|TEXTAREA|SELECT/.test((e.target.tagName || ''))) return; if (e.key === 'ArrowLeft') fanGo(-1); else if (e.key === 'ArrowRight') fanGo(1); });
+    document.addEventListener('keydown', e => { if (!document.querySelector('.fan-stage') || document.getElementById('tcg-ov')) return; if (/INPUT|TEXTAREA|SELECT/.test((e.target.tagName || ''))) return;
+      const k = e.key; if (k === 'ArrowLeft') fanGo(-1); else if (k === 'ArrowRight') fanGo(1); else if (k === 'Home') fanSet(0); else if (k === 'End') fanSet(999); else if (k === 'ArrowUp') fanRow('pc'); else if (k === 'ArrowDown') fanRow('npc'); else if (k === 'Enter') fanClick(fanAct, fanIdx[fanAct]); else return; e.preventDefault(); });
+    window.addEventListener('resize', () => { if (document.querySelector('.fan-stage')) { fanLayout(); fanApply(true); } });
     function renderNpcCodex() {
       const area = document.getElementById('main-content-area');
       const keyword = state.npcSearchQuery.trim().toLowerCase();
@@ -5724,13 +5735,14 @@
 
       if (vm === 'fan') {
         const pcsF = (state.boardTex.pcs || []).map((p, i) => ({ p, i })).filter(({ p }) => !keyword || (String(p.name || '') + ' ' + String((p.sheet || {}).charClass || '')).toLowerCase().includes(keyword));
-        const arr = pcsF.map(({ p, i }) => ({ html: pcCardHtml(p, i, true), act: `tcgPc('${escapeHtml(p.id)}')`, name: p.name || 'PC', desc: [pcInfoLines(p).join(' · '), p.extra].filter(Boolean).join('\n') }))
-          .concat(filteredNpcs.map(npc => ({ html: pcCardHtml(npcCardObj(npc), -1, true), act: `tcgNpc('${npc.id}')`, name: npc.name || '이름 없음', desc: npc.memo || '' })));
-        if (!arr.length) { area.innerHTML = emptyBox('표시할 인물이 없습니다.'); return; }
-        window.__fanActs = arr.map(c => c.act); window.__fanCaps = arr.map(c => `<div class="fan-nm">${escapeHtml(c.name)}</div>${c.desc ? `<div class="fan-ds">${escapeHtml(c.desc)}</div>` : ''}`);
-        if (fanIdx < 0 || fanIdx >= arr.length) fanIdx = Math.floor((arr.length - 1) / 2);
-        area.innerHTML = `<div class="fan-stage" onwheel="fanWheel(event)"><button class="fan-arr l" onclick="fanGo(-1)" aria-label="이전">‹</button><button class="fan-arr r" onclick="fanGo(1)" aria-label="다음">›</button>${arr.map((c, i) => `<div class="fan-c" data-i="${i}" onclick="fanClick(${i})">${c.html}</div>`).join('')}</div><div id="fan-cap"></div>`;
-        fanApply(true);
+        const rows = { pc: pcsF.map(({ p, i }) => ({ html: pcCardHtml(p, i, true), act: `tcgPc('${escapeHtml(p.id)}')`, name: p.name || 'PC', desc: [pcInfoLines(p).join(' · '), p.extra].filter(Boolean).join('\n') })),
+          npc: filteredNpcs.map(npc => ({ html: pcCardHtml(npcCardObj(npc), -1, true), act: `tcgNpc('${npc.id}')`, name: npc.name || '이름 없음', desc: npc.memo || '' })) };
+        if (!rows.pc.length && !rows.npc.length) { area.innerHTML = emptyBox('표시할 인물이 없습니다.'); return; }
+        window.__fan = {}; ['pc', 'npc'].forEach(r => { window.__fan[r] = { acts: rows[r].map(c => c.act), caps: rows[r].map(c => `<div class="fan-nm">${escapeHtml(c.name)}</div>${c.desc ? `<div class="fan-ds">${escapeHtml(c.desc)}</div>` : ''}`) }; if (fanIdx[r] < 0 || fanIdx[r] >= rows[r].length) fanIdx[r] = Math.floor((rows[r].length - 1) / 2); });
+        if (!rows[fanAct].length) fanAct = rows.pc.length ? 'pc' : 'npc';
+        const two = rows.pc.length && rows.npc.length;
+        area.innerHTML = `<div class="fan-stage${two ? ' two' : ''}" onwheel="fanWheel(event)">${['pc', 'npc'].filter(r => rows[r].length).map(r => `<div class="fan-row" data-r="${r}"><span class="fan-lab">${r === 'pc' ? 'PC' : 'NPC'}</span><button class="fan-arr l" onclick="fanGo(-1)" aria-label="이전">‹</button><button class="fan-arr r" onclick="fanGo(1)" aria-label="다음">›</button>${rows[r].map((c, i) => `<div class="fan-c" data-i="${i}" onclick="fanClick('${r}',${i})">${c.html}</div>`).join('')}</div>`).join('')}</div><div id="fan-cap"></div>`;
+        fanLayout(); fanApply(true);
         return;
       }
       if (vm === 'card') {
