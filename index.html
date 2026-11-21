@@ -1119,7 +1119,7 @@
     .tc::after { content: ''; position: absolute; inset: 8px; border-radius: 11px; border: 1px dashed color-mix(in srgb, var(--rc) 35%, transparent); pointer-events: none; z-index: 3; }
     .tc-cn { position: absolute; width: 14px; height: 14px; background: var(--rc); transform: rotate(45deg); z-index: 5; box-shadow: 0 0 10px var(--rc); }
     .tc-cn.a { top: -7px; left: -7px; } .tc-cn.b { top: -7px; right: -7px; } .tc-cn.c { bottom: -7px; left: -7px; } .tc-cn.d { bottom: -7px; right: -7px; }
-    .tc-foil { position: absolute; inset: 0; z-index: 4; pointer-events: none; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.3) 46%, color-mix(in srgb, var(--rc) 45%, rgba(255,255,255,.2)) 50%, transparent 64%); background-size: 260% 100%; background-position: 130% 0; mix-blend-mode: screen; animation: tcFoil 2.6s .4s ease-out infinite; }
+    .tc-foil { position: absolute; inset: 0; z-index: 4; pointer-events: none; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.3) 46%, color-mix(in srgb, var(--rc) 45%, rgba(255,255,255,.2)) 50%, transparent 64%); background-size: 260% 100%; background-position: 130% 0; mix-blend-mode: screen; animation: tcFoil 2.6s .4s ease-out 3 forwards; }
     .tc-art { position: relative; border-radius: 12px; overflow: hidden; background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--rc) 50%, #0b0c0e) 0%, color-mix(in srgb, var(--b2) 90%, #000) 72%); border: 1px solid color-mix(in srgb, var(--rc) 65%, transparent); display: flex; align-items: center; justify-content: center; min-height: 190px; max-height: 310px; padding: 8px; }
     .tc-art::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.4)); pointer-events: none; }
     .tc-art img { max-width: 100%; max-height: 290px; object-fit: contain; filter: drop-shadow(0 6px 14px rgba(0,0,0,.55)); animation: tcFloat 4s ease-in-out infinite; }
@@ -1510,11 +1510,16 @@
     #toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 24px); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; padding: 10px 18px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); opacity: 0; pointer-events: none; transition: all 0.25s ease; z-index: 300; max-width: 90vw; text-align: center; }
     #toast.show { opacity: 1; transform: translate(-50%, 0); }
   
-    /* v148 top-bar icons: transparent, outline glow */
-    .top-bar .btn-tab, .top-bar .btn-icon-top, .top-bar .btn-tab.active, .top-bar .btn-icon-top:hover, .top-bar .btn-tab:hover, .top-bar .btn-primary { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
-    .top-bar .btn-tab img, .top-bar .btn-icon-top img { transition: transform .18s, filter .18s; }
-    .top-bar .btn-tab.active img { transform: scale(1.22); filter: drop-shadow(0 0 2px rgba(255,214,90,.95)) drop-shadow(0 0 7px rgba(255,190,40,.85)) drop-shadow(0 0 14px rgba(255,170,0,.55)); }
-    .top-bar .btn-icon-top:hover img { transform: scale(1.08); }
+    /* v148/151 menu icons: transparent, outline glow */
+    .btn-tab, .btn-icon-top, .btn-tab.active, .btn-icon-top:hover, .btn-tab:hover, .top-bar .btn-primary { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+    .btn-tab img, .btn-icon-top img, .bs-pop button img { transition: transform .18s, filter .18s; }
+    .btn-tab.active img, .bs-pop button.on img, .btn-tab.active .q-cnt { transform: scale(1.4); filter: drop-shadow(0 0 2px rgba(255,214,90,.95)) drop-shadow(0 0 7px rgba(255,190,40,.85)) drop-shadow(0 0 14px rgba(255,170,0,.55)); }
+    .btn-tab.active .q-cnt { transform: none; filter: none; text-shadow: 0 0 6px rgba(255,190,40,.9); color: #b45309; font-weight: 800; }
+    .btn-icon-top:hover img { transform: scale(1.08); }
+    .bs-pop button, .bs-pop button:hover, .bs-pop button.on { background: transparent !important; }
+    .bs-pop { background: rgba(255,255,255,.55); backdrop-filter: blur(3px); }
+    .j-tabs .btn, .j-tabs .btn:hover { background: transparent !important; border-color: transparent !important; box-shadow: none !important; color: var(--text-muted); font-weight: 700; transition: transform .18s, text-shadow .18s; }
+    .j-tabs .btn.btn-primary { color: #7a4a00; transform: scale(1.18); text-shadow: 0 0 2px rgba(255,214,90,.95), 0 0 7px rgba(255,190,40,.85), 0 0 14px rgba(255,170,0,.55); }
 
     /* v148 부채꼴 카드 보기 */
     .fan-title { font-weight: 800; color: #4a3414; text-shadow: 0 1px 0 rgba(255,255,255,.7); margin: 6px 4px 0; letter-spacing: .08em; }
@@ -1547,6 +1552,10 @@
     .tcg-bar .tcg-ib { padding: 3px 10px; display: inline-flex; align-items: center; } .tcg-ib img { height: 30px; width: auto; max-width: 40px; object-fit: contain; }
     .tcg-panel .tcg-ib { border: 1.5px solid #ca8a04; background: rgba(255,255,255,.9); border-radius: 10px; padding: 2px 8px; cursor: pointer; display: inline-flex; }
     .tcg-skinp .pcc-row { border-top-color: #ca8a0455; color: #f1e6c8; } .tcg-skinp .pcc-row:first-child { border-top: 0; padding-top: 0; } .tcg-skinp .pcc-sl { color: #c9b98a; }
+
+    .land-box { border: 1px solid var(--border-subtle); border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; background: rgba(255,255,255,.6); }
+    .land-box > summary { cursor: pointer; font-weight: 800; font-size: .92rem; }
+    .land-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: .84rem; } .land-row > span { width: 150px; flex: none; display: flex; align-items: center; gap: 6px; font-weight: 700; } .land-row img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; } .land-row select { flex: 1; min-width: 0; }
 </style>
 </head>
 <body>
@@ -1560,7 +1569,7 @@
       <button type="button" class="nav-hide-btn" onclick="navToggle()" aria-label="메뉴 숨기기">▲</button>
       <div class="tab-group">
         <button class="btn btn-tab active" id="tab-active" onclick="setViewMode('quests', 'all')" title="전체 퀘스트" aria-label="전체 퀘스트">
-          <span class="ico-pair"><img src="" alt=""><img src="" alt=""></span>
+          <img class="ico-img tab-ico" id="tab-active-ico" data-ico="scrolls" src="" alt="">
         </button>
         <button class="btn btn-tab" id="tab-npcs" onclick="setViewMode('npcs', '')" title="도감" aria-label="도감">
           <img class="ico-img tab-ico" src="" data-ico="human" alt="">
@@ -1715,6 +1724,7 @@
   <div class="modal-backdrop" id="folder-modal">
     <div class="modal-box">
       <div class="modal-title">환경 설정 · 백업 · 폴더 관리</div>
+      <details class="land-box" id="land-box" open><summary>기본 랜딩 페이지</summary><div id="land-body"></div></details>
       
       <div class="folder-mgmt-item">
         <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">데이터 수동 백업 및 복원 (자동 백업: 시트 내 일 1회)</div>
@@ -1859,7 +1869,6 @@
     </div>
   </div>
 
-  <script>/* 같은 GitHub 계정의 다른 사이트와 브라우저 저장소가 섞이지 않게 키에 접두어를 붙임 */(function(){var P='pandelver:',g=Storage.prototype.getItem,st=Storage.prototype.setItem,r=Storage.prototype.removeItem;Storage.prototype.getItem=function(k){return g.call(this,P+k)};Storage.prototype.setItem=function(k,v){return st.call(this,P+k,v)};Storage.prototype.removeItem=function(k){return r.call(this,P+k)};})();</script>
   <script>
     (function () {
       function show(msg) {
@@ -1947,7 +1956,7 @@
 
 
     // ===== 서버 연결: google.script.run 이 응답 없으면 같은 주소로 직접 요청(fetch)으로 자동 전환 =====
-    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbzseX0DHe5gVdxZNfr8cNz46m3JM712McQ_C-uF_VtzwKhiVjym-MuSy1DhFTWnPz8j/exec';
+    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbxoFyjx0IaJDP7hphmL7QwH6PyunlNQAssqPsiYkm3qpz_Q45ayEHDMFgneFqwqLmHm/exec';
     function execUrl() { try { return localStorage.getItem('adventure_exec_url') || EXEC_URL_DEFAULT; } catch (e) { return EXEC_URL_DEFAULT; } }
     function diagShow(msg) { try { console.info('[sync]', msg); } catch (e) {} }
     function fetchT(url, opt, ms) {
@@ -2139,7 +2148,26 @@
         });
     }
 
-    function applyLoadedData(data, canPersist) { try { return applyLoadedData0(data, canPersist); } finally { gBase(); } }
+    function applyLoadedData(data, canPersist) { try { return applyLoadedData0(data, canPersist); } finally { gBase(); try { landApply(canPersist); } catch (e) {} } }
+    // ---- 기본 랜딩 페이지 (전체 / PL별) ----
+    const LAND_OPTS = [['quests:all', '전체 퀘스트'], ['quests:active', '진행 중 퀘스트'], ['quests:completed', '완료 퀘스트'], ['npcs', '도감'], ['board', '퀘스트 보드'], ['timeline', '타임라인'], ['journal:pc', '기록실 · 일지'], ['journal:items', '기록실 · 창고'], ['journal:clues', '기록실 · 단서'], ['map', '지도']];
+    function landCfg() { const b = state.boardTex; b.landing = b.landing || {}; b.landing.pl = b.landing.pl || {}; return b.landing; }
+    function landMe() { let id = ''; try { id = localStorage.getItem('adv_me_pl') || ''; } catch (e) {} const pcs = state.boardTex.pcs || []; if (id && pcs.some(p => p.id === id)) return id; const nm = (presName() || '').toLowerCase(); const m = nm && pcs.find(p => String(p.name || '').toLowerCase() === nm); return m ? m.id : ''; }
+    function landSetMe(v) { try { localStorage.setItem('adv_me_pl', v); } catch (e) {} landRender(); }
+    function landSet(pc, v) { const L = landCfg(); if (pc) { if (v) L.pl[pc] = v; else delete L.pl[pc]; } else L.def = v; persistState(); }
+    function landRender() {
+      const el = document.getElementById('land-body'); if (!el) return; const L = landCfg(), pcs = state.boardTex.pcs || [], me = landMe();
+      const sel = (cur, pc, blank) => `<select onchange="landSet('${pc}',this.value)">${blank ? `<option value="">${blank}</option>` : ''}${LAND_OPTS.map(o => `<option value="${o[0]}"${cur === o[0] ? ' selected' : ''}>${o[1]}</option>`).join('')}</select>`;
+      el.innerHTML = `<div class="land-row"><span>기본</span>${sel(L.def || 'quests:all', '', '')}</div>`
+        + (pcs.length ? pcs.map(p => `<div class="land-row"><span><img src="${escapeHtml(p.img || IC_NPC)}" alt="">${escapeHtml(p.name || 'PL')}</span>${sel(L.pl[p.id] || '', p.id, '기본 따름')}</div>`).join('') + `<div class="land-row"><span>이 기기의 PL</span><select onchange="landSetMe(this.value)"><option value="">자동 (접속 이름으로 찾기)</option>${pcs.map(p => `<option value="${escapeHtml(p.id)}"${localStorage.getItem('adv_me_pl') === p.id ? ' selected' : ''}>${escapeHtml(p.name || 'PL')}</option>`).join('')}</select></div>` : '');
+    }
+    function landApply(canPersist) {
+      if (window.__landed) return; const L = (state.boardTex || {}).landing;
+      const v = L && ((L.pl && L.pl[landMe()]) || L.def);
+      if (v && v !== 'quests:all') { const [m, sub] = v.split(':'); state.viewMode = m; if (m === 'quests') state.statusFilter = sub || 'all'; if (m === 'journal') state.jView = sub || 'pc'; }
+      if (v || canPersist) window.__landed = 1;
+    }
+
     function applyLoadedData0(data, canPersist) {
       if (data && data.boardTex) state.boardTex = normBoardTex(data.boardTex);
       if (data && typeof data.lastUpdated === 'number') {
@@ -2480,6 +2508,7 @@
     }
 
     function openFolderModal() {
+      try { landRender(); } catch (e) {}
       try { renderTexLib(); } catch (e) {}
       try { renderPcList(); } catch (e) {}
       try { renderItemTax(); } catch (e) {}
@@ -2906,7 +2935,7 @@
       try { itemTaxSync(); } catch (e) {}
       document.getElementById('main-content-area').className = 'quest-list';
       document.getElementById('tab-active').classList.toggle('active', state.viewMode === 'quests');
-      document.querySelectorAll('#tab-active .ico-pair img').forEach((im, i) => { im.src = i ? SCROLL_CLOSED : SCROLL_OPEN; });
+      { const ai = document.getElementById('tab-active-ico'); if (ai && typeof IC_SCROLLS === 'string') ai.src = IC_SCROLLS; }
       document.getElementById('tab-npcs').classList.toggle('active', state.viewMode === 'npcs');
 
       try { srchSlots(); } catch (e) { console.error(e); }
@@ -2921,7 +2950,7 @@
       document.getElementById('tab-board').classList.toggle('active', state.viewMode === 'board');
       document.querySelector('.container').classList.toggle('wide-full', state.viewMode === 'board');
       document.body.classList.toggle('fl-mode', ['board', 'journal', 'timeline'].includes(state.viewMode) && !state.boardPopup);
-      document.querySelectorAll('.tab-ico, .top-ico, .gear-img').forEach(im => { im.src = ({ open: SCROLL_OPEN, closed: SCROLL_CLOSED, human: IC_HUMAN, bonfire: IC_BONFIRE, timeline: IC_TIMELINE, gear: IC_GEAR, feather: IC_FEATHER, needle: IC_NEEDLE, journal: IC_JOURNAL, map: IC_MAP, search: (() => { try { return (SRCH_SVG.match(/src="([^"]+)"/) || [])[1]; } catch (e) { return ''; } })() })[im.dataset.ico]; });
+      document.querySelectorAll('.tab-ico, .top-ico, .gear-img').forEach(im => { im.src = ({ scrolls: IC_SCROLLS, open: SCROLL_OPEN, closed: SCROLL_CLOSED, human: IC_HUMAN, bonfire: IC_BONFIRE, timeline: IC_TIMELINE, gear: IC_GEAR, feather: IC_FEATHER, needle: IC_NEEDLE, journal: IC_JOURNAL, map: IC_MAP, search: (() => { try { return (SRCH_SVG.match(/src="([^"]+)"/) || [])[1]; } catch (e) { return ''; } })() })[im.dataset.ico]; });
       document.getElementById('tab-timeline').classList.toggle('active', state.viewMode === 'timeline');
       document.getElementById('tab-journal').classList.toggle('active', state.viewMode === 'journal');
       topAddBtn.style.display = (state.viewMode === 'journal' || state.viewMode === 'map') ? 'none' : '';
@@ -3066,7 +3095,7 @@
     state.boardPopup = false;
     function normBoardTex(v) {
       const o = (v && typeof v === 'object') ? v : {};
-      return { custom: Array.isArray(o.custom) ? o.custom.filter(t => t && t.url) : [], hidden: Array.isArray(o.hidden) ? o.hidden : [], h: Number(o.h) || 0, hFixed: !!o.hFixed, wide: !!o.wide, zoom: Number(o.zoom) || 1, memos: Array.isArray(o.memos) ? o.memos.filter(m => m && m.id) : [], pcs: Array.isArray(o.pcs) ? o.pcs.filter(x => x && x.id) : [], tabs: Array.isArray(o.tabs) ? o.tabs.filter(x => typeof x === 'string') : [], npcs: Array.isArray(o.npcs) ? o.npcs.filter(x => x && x.id) : [], conns: Array.isArray(o.conns) ? o.conns.filter(x => x && x.id) : [], sets: Array.isArray(o.sets) ? o.sets.filter(x => x && x.id) : [], active: typeof o.active === 'string' ? o.active : 'main', members: Array.isArray(o.members) ? o.members.filter(x => typeof x === 'string') : null, clues: Array.isArray(o.clues) ? o.clues.filter(x => x && x.id) : [], store: { items: (o.store && Array.isArray(o.store.items)) ? o.store.items.filter(x => x && x.id) : [] }, clueBoard: (o.clueBoard && Array.isArray(o.clueBoard.lanes)) ? { lanes: o.clueBoard.lanes.filter(x => x && x.id), cards: (o.clueBoard.cards || []).filter(x => x && x.id), conns: (o.clueBoard.conns || []).filter(x => x && x.id) } : null, sharedMoney: (o.sharedMoney && typeof o.sharedMoney === 'object') ? o.sharedMoney : undefined, bagPos: Number.isInteger(o.bagPos) ? o.bagPos : -1, mbz: (o.mbz && typeof o.mbz === 'object') ? o.mbz : {} };
+      return Object.assign({}, o, { custom: Array.isArray(o.custom) ? o.custom.filter(t => t && t.url) : [], hidden: Array.isArray(o.hidden) ? o.hidden : [], h: Number(o.h) || 0, hFixed: !!o.hFixed, wide: !!o.wide, zoom: Number(o.zoom) || 1, memos: Array.isArray(o.memos) ? o.memos.filter(m => m && m.id) : [], pcs: Array.isArray(o.pcs) ? o.pcs.filter(x => x && x.id) : [], tabs: Array.isArray(o.tabs) ? o.tabs.filter(x => typeof x === 'string') : [], npcs: Array.isArray(o.npcs) ? o.npcs.filter(x => x && x.id) : [], conns: Array.isArray(o.conns) ? o.conns.filter(x => x && x.id) : [], sets: Array.isArray(o.sets) ? o.sets.filter(x => x && x.id) : [], active: typeof o.active === 'string' ? o.active : 'main', members: Array.isArray(o.members) ? o.members.filter(x => typeof x === 'string') : null, clues: Array.isArray(o.clues) ? o.clues.filter(x => x && x.id) : [], store: { items: (o.store && Array.isArray(o.store.items)) ? o.store.items.filter(x => x && x.id) : [] }, clueBoard: (o.clueBoard && Array.isArray(o.clueBoard.lanes)) ? { lanes: o.clueBoard.lanes.filter(x => x && x.id), cards: (o.clueBoard.cards || []).filter(x => x && x.id), conns: (o.clueBoard.conns || []).filter(x => x && x.id) } : null, sharedMoney: (o.sharedMoney && typeof o.sharedMoney === 'object') ? o.sharedMoney : undefined, bagPos: Number.isInteger(o.bagPos) ? o.bagPos : -1, mbz: (o.mbz && typeof o.mbz === 'object') ? o.mbz : {} });
     }
     function texKey(k) { return NOTE_TEX[k] ? k : (NOTE_ALIAS[k] || ((state.boardTex.custom || []).some(t => t.id === k) ? k : 'slate')); }
     function texOf(k) {
@@ -4557,7 +4586,7 @@
       const r = btn.getBoundingClientRect(), cur = state.boardStatus;
       const it = (k, ic, t) => `<button class="${cur === k ? 'on' : ''}" onclick="setBoardStatus('${k}');closeBsPop()" title="${t}" aria-label="${t}">${ic}</button>`;
       const pop = document.createElement('div'); pop.id = 'bs-pop'; pop.className = 'bs-pop';
-      pop.innerHTML = it('active', `<img class="pi" src="${SCROLL_OPEN}" alt="">`, '진행 중 퀘스트') + it('completed', `<img class="pi" src="${SCROLL_CLOSED}" alt="">`, '완료 퀘스트') + it('all', `<span class="ico-pair"><img src="${SCROLL_OPEN}" alt=""><img src="${SCROLL_CLOSED}" alt=""></span>`, '전체 퀘스트');
+      pop.innerHTML = it('active', `<img class="pi" src="${SCROLL_OPEN}" alt="">`, '진행 중 퀘스트') + it('completed', `<img class="pi" src="${SCROLL_CLOSED}" alt="">`, '완료 퀘스트') + it('all', `<img class="pi" src="${IC_SCROLLS}" alt="">`, '전체 퀘스트');
       document.body.appendChild(pop);
       pop.style.left = Math.max(6, Math.min(r.left, window.innerWidth - pop.offsetWidth - 6)) + 'px'; pop.style.top = (r.bottom + 6) + 'px';
     }
@@ -5748,7 +5777,7 @@
     function questStatusBar() {
       const sf = state.statusFilter, n = k => state.quests.filter(q => k === 'all' || q.status === k).length;
       const it = (k, ic, t) => `<button class="btn btn-tab ${sf === k ? 'active' : ''}" onclick="setStatusFilter('${k}')" title="${t}" aria-label="${t}">${ic}<span class="q-cnt">${n(k)}</span></button>`;
-      return `<div class="q-sub">${it('all', `<span class="ico-pair"><img src="${SCROLL_OPEN}" alt=""><img src="${SCROLL_CLOSED}" alt=""></span>`, '전체 퀘스트')}${it('active', `<img class="ico-img tab-ico" src="${SCROLL_OPEN}" alt="">`, '진행 중')}${it('completed', `<img class="ico-img tab-ico" src="${SCROLL_CLOSED}" alt="">`, '완료')}</div>`;
+      return `<div class="q-sub">${it('all', `<img class="ico-img tab-ico" src="${IC_SCROLLS}" alt="">`, '전체 퀘스트')}${it('active', `<img class="ico-img tab-ico" src="${SCROLL_OPEN}" alt="">`, '진행 중')}${it('completed', `<img class="ico-img tab-ico" src="${SCROLL_CLOSED}" alt="">`, '완료')}</div>`;
     }
     function renderQuests() {
       if (state.sortMode === 'date-asc') state.sortMode = 'custom';
@@ -5975,6 +6004,8 @@
     function closeQuestDetail() { state.detailQid = null; renderQuestDetail(); }
 
     // ---- 아이콘 (SVG) ----
+    const IC_SCROLLS = 'img/img_2e064bf4.png';
+    try { document.getElementById('tab-active-ico').src = IC_SCROLLS; } catch (e) {}
     const SCROLL_OPEN = 'img/img_594fdbf6.png';
     const SCROLL_CLOSED = 'img/img_1c247409.png';
     const COIN_IMG = { gp: 'img/img_9185b24a.png', sp: 'img/img_0ffaf88c.png', cp: 'img/img_7e7a28a0.png' };
