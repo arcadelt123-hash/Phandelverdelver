@@ -1075,8 +1075,9 @@
     .mb-fund img { width: 30px; height: 30px; object-fit: contain; }
     .mb-fund input { width: 72px; text-align: center; font-weight: 800; padding: 3px 4px; border: 1.5px solid #d8c79a; border-radius: 8px; background: #fff; }
     .j-fund input { width: 64px; text-align: center; font-weight: 800; padding: 2px 4px; border: 1.5px solid var(--border-subtle); border-radius: 8px; }
-    .j-pc img { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; }
-    .j-pc.on { border-color: var(--accent-primary, #ca8a04); background: #fef3c7; }
+    .j-pc img { width: 100%; height: 100%; object-fit: cover; border-radius: 0; display:block; }
+    .j-pc.on { border-color: transparent; background: transparent; box-shadow: 0 0 0 3px var(--accent-primary, #ca8a04); }
+    .j-pc { width: 64px !important; height: 64px; padding: 0 !important; gap: 0 !important; border: 0 !important; background: transparent !important; overflow: hidden; border-radius: 10px; }
     .mb { height: 74vh; min-height: 420px; overflow: auto; border: 2px solid var(--border-subtle); border-radius: 14px; background: #3b3024; }
     .mb-inner { position: relative; transform-origin: 0 0; background-size: cover; background-position: center; }
     .mb-svg { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; }
@@ -1508,7 +1509,13 @@
     .tl-note-text { white-space: pre-wrap; }
     #toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 24px); background: #1e293b; color: #fff; font-size: 0.9rem; font-weight: 600; padding: 10px 18px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); opacity: 0; pointer-events: none; transition: all 0.25s ease; z-index: 300; max-width: 90vw; text-align: center; }
     #toast.show { opacity: 1; transform: translate(-50%, 0); }
-  </style>
+  
+    /* v148 top-bar icons: transparent, outline glow */
+    .top-bar .btn-tab, .top-bar .btn-icon-top, .top-bar .btn-tab.active, .top-bar .btn-icon-top:hover, .top-bar .btn-tab:hover, .top-bar .btn-primary { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+    .top-bar .btn-tab img, .top-bar .btn-icon-top img { transition: transform .18s, filter .18s; }
+    .top-bar .btn-tab.active img { transform: scale(1.22); filter: drop-shadow(0 0 2px rgba(255,214,90,.95)) drop-shadow(0 0 7px rgba(255,190,40,.85)) drop-shadow(0 0 14px rgba(255,170,0,.55)); }
+    .top-bar .btn-icon-top:hover img { transform: scale(1.08); }
+</style>
 </head>
 <body>
   <div id="toast" role="status" aria-live="polite"></div>
@@ -3892,13 +3899,13 @@
       let h = `<div class="j-tabs">${tab('pc', '일지')}${tab('items', '창고')}${tab('clues', '단서')}</div>`;
       if (V === 'pc') {
         const pcs = state.boardTex.pcs || []; if (state.jPc == null && pcs.length) state.jPc = pcs[0].id;
-        h += `<div class="j-pcs">${pcs.map(p => `<button class="j-pc${p.id === state.jPc ? ' on' : ''}" ${jdr(p.id)} title="${escapeHtml(p.name || '')}" onclick="jSet('jPc','${p.id}')"><img src="${escapeHtml(p.img || IC_NPC)}" alt=""><span>${escapeHtml(p.name || 'PC')}</span></button>`).join('')}
+        h += `<div class="j-pcs">${pcs.map(p => `<button class="j-pc${p.id === state.jPc ? ' on' : ''}" ${jdr(p.id)} title="${escapeHtml(p.name || '')}" onclick="jSet('jPc','${p.id}')"><img src="${escapeHtml(p.img || IC_NPC)}" alt=""></button>`).join('')}
           <button class="j-pc${pcs.some(p => p.id === state.jPc) ? '' : ' on'}" title="이름 없는 메모" onclick="jSet('jPc','')"><span class="cx-blank" style="width:44px;height:44px;"></span></button></div>`;
       }
       if (V === 'items') {
         const pcs = state.boardTex.pcs || [], cur = state.jStorePc || '';
         const pcMap = {}; pcs.forEach(p => { pcMap[p.id] = p; });
-        const btns = jStoreOrder().map(id => id === '-' ? `<button class="j-pc${cur === '-' ? ' on' : ''}" ${jdr('-')} title="소유주 없음 (공용 가방)" onclick="jSet('jStorePc','-')"><img src="${IC_BAG}" alt="공용" style="object-fit:contain;border-radius:0;"></button>` : (pcMap[id] ? `<button class="j-pc${id === cur ? ' on' : ''}" ${jdr(id)} title="${escapeHtml(pcMap[id].name || '')}" onclick="jSet('jStorePc','${id}')"><img src="${escapeHtml(pcMap[id].img || IC_NPC)}" alt=""><span>${escapeHtml(pcMap[id].name || 'PC')}</span></button>` : '')).join('');
+        const btns = jStoreOrder().map(id => id === '-' ? `<button class="j-pc${cur === '-' ? ' on' : ''}" ${jdr('-')} title="소유주 없음 (공용 가방)" onclick="jSet('jStorePc','-')"><img src="${IC_BAG}" alt="공용" style="object-fit:contain;border-radius:0;"></button>` : (pcMap[id] ? `<button class="j-pc${id === cur ? ' on' : ''}" ${jdr(id)} title="${escapeHtml(pcMap[id].name || '')}" onclick="jSet('jStorePc','${id}')"><img src="${escapeHtml(pcMap[id].img || IC_NPC)}" alt=""></button>` : '')).join('');
         h += `<div class="j-pcs"><button class="j-pc${cur === '' ? ' on' : ''}" onclick="jSet('jStorePc','')"><span style="font-weight:800;">전체</span></button>${btns}</div>`;
       }
       return h;
