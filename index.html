@@ -1233,6 +1233,27 @@
     .pcf-w:hover .pcf-x, .pcf-x.armed { opacity: 1; }
     .pcf-x.armed { background: #d33; }
     @media (hover: none) { .pcf-x { opacity: .85; } }
+    #pcup { position: fixed; inset: 0; z-index: 9800; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 12px; overflow: auto; }
+    #pcup .pcup-box { background: var(--bg-card, #fff); color: var(--text, #222); border-radius: 14px; padding: 14px; width: min(760px, 96vw); display: flex; flex-direction: column; gap: 10px; margin: auto; }
+    .pcup-body { display: flex; gap: 14px; flex-wrap: wrap; }
+    .pcup-cols { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 10px; }
+    .pcup-p { border: 1.5px dashed #8886; border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+    .pcup-th { position: relative; height: 84px; border-radius: 8px; background: #8882; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: .78rem; color: var(--text-muted); }
+    .pcup-th img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .pcup-x { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; cursor: pointer; padding: 0; }
+    .pcup-ic { display: flex; gap: 10px; justify-content: center; }
+    .pcup-ic button { width: 40px; height: 36px; border: 1.5px solid #000; border-radius: 10px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+    .pcup-ic button:hover { background: #f1f1f1; }
+    .pcup-url { display: flex; gap: 6px; } .pcup-url[hidden] { display: none; } .pcup-url input { flex: 1; min-width: 0; font-size: .82rem; padding: 5px 8px; }
+    .pcup-url button { border: 1.5px solid #000; background: #fff; border-radius: 8px; padding: 2px 10px; cursor: pointer; color: #000; }
+    .pcup-prev { width: 190px; flex: none; margin: 0 auto; position: sticky; top: 4px; align-self: flex-start; }
+    .pcup-prev .codex-card { cursor: default; }
+    .pm-grid.pm-in { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; margin-top: 4px; }
+    .pm-grid.pm-in .pm-c { display: flex; flex-direction: column; gap: 3px; font-size: .7rem; text-align: center; }
+    .pm-grid.pm-in .pm-c.off { opacity: .45; }
+    .pm-grid.pm-in .pm-sw { height: 60px; border-radius: 6px; border: 1px solid #8884; }
+    .pm-grid.pm-in .pm-b, .pm-b { font-size: .7rem; padding: 2px 6px; border-radius: 6px; border: 1px solid #8887; background: transparent; color: inherit; cursor: pointer; }
+    .pm-b.armed { background: #d33; color: #fff; }
     #patmgr { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 9800; display: flex; align-items: center; justify-content: center; }
     #patmgr .pm-box { background: var(--bg-card, #fff); color: var(--text, #222); border-radius: 12px; padding: 14px; width: min(560px, 94vw); max-height: 82vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
     #patmgr .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
@@ -1284,7 +1305,7 @@
     .pcl-mini .pm-im svg { width: 40%; opacity: .3; }
     .pc-cfgm { max-width: 640px; width: 94vw; max-height: 92vh; overflow-y: auto; gap: 12px; }
     .pcc-top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-    .pcc-prev { width: 176px; flex: none; }
+    .pcc-prev { width: 176px; flex: none; position: sticky; top: 4px; align-self: flex-start; z-index: 5; }
     .pcc-prev .codex-card { cursor: default; } .pcc-prev .pc-card:hover { transform: none; }
     .pcc-form { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 8px; }
     #npc-tray { display: flex; gap: 6px; align-items: center; padding: 8px; background: rgba(255,250,240,.97); border: 1.5px solid #b8893a; border-radius: 14px; box-shadow: 0 10px 26px rgba(40,20,0,.3); }
@@ -1680,6 +1701,12 @@
         <div><button class="btn btn-secondary" style="font-size:.8rem;padding:5px 10px;" onclick="resetBoardTex()">기본 텍스처 복원</button></div>
       </details>
 
+
+      <details class="folder-mgmt-item" style="cursor:default;" ontoggle="if(this.open)fbMgrRender()">
+        <summary>카드 틀 · 배경 정리</summary>
+        <div style="font-size:.78rem;color:var(--text-muted);">목록에서 안 쓰는 틀과 배경 무늬를 지우거나 되살릴 수 있어요. 이미 쓰고 있는 카드는 그대로예요.</div>
+        <div id="fb-mgr"></div>
+      </details>
 
       <details class="folder-mgmt-item" style="cursor:default;">
         <summary>아이템 종류 · 등급</summary>
@@ -3902,7 +3929,7 @@
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" fill="${c[0]}"/><g fill="none" stroke="${c[1]}" stroke-width="1.1" stroke-linejoin="round">${arabLatticeG()}</g></svg>`;
       return 'data:image/svg+xml,' + encodeURIComponent(svg);
     }
-    const PAT_IMGS = [{"k": "teal", "n": "청록 격자", "w": 300, "h": 732, "ar": 0.41}, {"k": "navy", "n": "남색 금박", "w": 300, "h": 525, "ar": 0.571}, {"k": "mandala", "n": "금빛 만다라", "w": 300, "h": 560, "ar": 0.537}, {"k": "dan1", "n": "단청 1", "w": 300, "h": 116, "ar": 2.59}, {"k": "dan2", "n": "단청 2", "w": 300, "h": 96, "ar": 3.125}, {"k": "dan3", "n": "단청 3", "w": 300, "h": 86, "ar": 3.472}, {"k": "dan4", "n": "단청 4", "w": 300, "h": 115, "ar": 2.609}, {"k": "dan5", "n": "단청 5", "w": 300, "h": 107, "ar": 2.809}, {"k": "dan6", "n": "단청 6", "w": 300, "h": 115, "ar": 2.609}, {"k": "dan7", "n": "단청 7", "w": 300, "h": 104, "ar": 2.874}, {"k": "dan8", "n": "단청 8", "w": 300, "h": 89, "ar": 3.355}, {"k": "dan9", "n": "단청 9", "w": 300, "h": 103, "ar": 2.907}, {"k": "stamp", "n": "초록 판화", "w": 440, "h": 247, "ar": 1.781}, {"k": "maze", "n": "올리브 미로", "w": 440, "h": 293, "ar": 1.502}, {"k": "ikat", "n": "이카트 블루", "w": 520, "h": 347, "ar": 1.5}, {"k": "thai", "n": "연꽃 장식띠", "w": 400, "h": 667, "ar": 0.6}, {"k": "olv", "n": "올리브 장식띠", "w": 400, "h": 400, "ar": 1.0}, {"k": "dmk", "n": "청록 다마스크", "w": 480, "h": 314, "ar": 1.528}, {"k": "sw1", "n": "흑 꽃무늬", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw2", "n": "잎사귀", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw3", "n": "버섯", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw4", "n": "도트", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw5", "n": "마름모", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw6", "n": "무지개", "w": 220, "h": 619, "ar": 0.355}, {"k": "sw7", "n": "줄무늬", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw8", "n": "해와 달", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw9", "n": "새싹", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw10", "n": "덩굴잎", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw11", "n": "나비", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw12", "n": "눈", "w": 220, "h": 614, "ar": 0.358}, {"k": "jp1", "n": "초승달 물결", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp2", "n": "부채 구름", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp3", "n": "폭포 부채", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp4", "n": "푸른 물결", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp5", "n": "국화 문양", "w": 220, "h": 570, "ar": 0.386}];
+    const PAT_IMGS = [{"k": "teal", "n": "청록 격자", "w": 300, "h": 732, "ar": 0.41}, {"k": "navy", "n": "남색 금박", "w": 300, "h": 525, "ar": 0.571}, {"k": "mandala", "n": "금빛 만다라", "w": 300, "h": 560, "ar": 0.537}, {"k": "dan1", "n": "단청 1", "w": 300, "h": 116, "ar": 2.59}, {"k": "dan2", "n": "단청 2", "w": 300, "h": 96, "ar": 3.125}, {"k": "dan3", "n": "단청 3", "w": 300, "h": 86, "ar": 3.472}, {"k": "dan4", "n": "단청 4", "w": 300, "h": 115, "ar": 2.609}, {"k": "dan5", "n": "단청 5", "w": 300, "h": 107, "ar": 2.809}, {"k": "dan6", "n": "단청 6", "w": 300, "h": 115, "ar": 2.609}, {"k": "dan7", "n": "단청 7", "w": 300, "h": 104, "ar": 2.874}, {"k": "dan8", "n": "단청 8", "w": 300, "h": 89, "ar": 3.355}, {"k": "dan9", "n": "단청 9", "w": 300, "h": 103, "ar": 2.907}, {"k": "stamp", "n": "초록 판화", "w": 440, "h": 247, "ar": 1.781}, {"k": "maze", "n": "올리브 미로", "w": 440, "h": 293, "ar": 1.502}, {"k": "ikat", "n": "이카트 블루", "w": 520, "h": 347, "ar": 1.5}, {"k": "thai", "n": "연꽃 장식띠", "w": 400, "h": 667, "ar": 0.6}, {"k": "olv", "n": "올리브 장식띠", "w": 400, "h": 400, "ar": 1.0}, {"k": "dmk", "n": "청록 다마스크", "w": 480, "h": 314, "ar": 1.528}, {"k": "sw1", "n": "흑 꽃무늬", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw2", "n": "잎사귀", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw3", "n": "버섯", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw4", "n": "도트", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw5", "n": "마름모", "w": 220, "h": 612, "ar": 0.36}, {"k": "sw6", "n": "무지개", "w": 220, "h": 619, "ar": 0.355}, {"k": "sw7", "n": "줄무늬", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw8", "n": "해와 달", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw9", "n": "새싹", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw10", "n": "덩굴잎", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw11", "n": "나비", "w": 220, "h": 607, "ar": 0.362}, {"k": "sw12", "n": "눈", "w": 220, "h": 614, "ar": 0.358}, {"k": "jp1", "n": "초승달 물결", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp2", "n": "부채 구름", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp3", "n": "폭포 부채", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp4", "n": "푸른 물결", "w": 220, "h": 565, "ar": 0.389}, {"k": "jp5", "n": "국화 문양", "w": 220, "h": 570, "ar": 0.386}, {"k": "bl1", "n": "청화 꽃무늬", "w": 260, "h": 260, "ar": 1.0}, {"k": "bl2", "n": "수채 페이즐리", "w": 600, "h": 596, "ar": 1.006}, {"k": "tl", "n": "타일 체크", "w": 480, "h": 853, "ar": 0.562}, {"k": "pz", "n": "페이즐리", "w": 200, "h": 200, "ar": 1.0}, {"k": "bc", "n": "블루 카펫", "w": 240, "h": 416, "ar": 0.576}, {"k": "el", "n": "코끼리 띠", "w": 520, "h": 524, "ar": 0.993}, {"k": "tk", "n": "터키 문양", "w": 400, "h": 811, "ar": 0.493}];
     const CLUE_BGS = [['g1', '아라베스크 남색'], ['g2', '아라베스크 크림'], ['g3', '아라베스크 청록'], ['p1', '문양 1'], ['p2', '문양 2'], ['p3', '문양 3'], ['m0', '문양 4'], ['m1', '문양 5'], ['m2', '문양 6'], ['m3', '문양 7'], ['m4', '문양 8']].concat(PAT_IMGS.map(x => ['i_' + x.k, x.n]));
     function hidList(t) { const h = (state.boardTex.hide = state.boardTex.hide || {}); return (h[t] = h[t] || []); }
     function isHid(t, k) { return hidList(t).indexOf(k) >= 0; }
@@ -3916,6 +3943,7 @@
     function hiddenRefresh() {
       if (document.getElementById('pcc-box') && document.getElementById('pcc-box').offsetParent) { try { pcCfgRender(); } catch (e) {} }
       if (document.getElementById('patmgr')) patMgrRender();
+      fbMgrRender();
       try { if (state.viewMode === 'board') renderBoard(); } catch (e) {}
     }
     function bgOptions() { return CLUE_BGS.filter(x => !isHid('bg', x[0])); }
@@ -3932,7 +3960,7 @@
     }
     function unhideItem(t, k) { const a = hidList(t), i = a.indexOf(k); if (i >= 0) a.splice(i, 1); persistState(); hiddenRefresh(); }
     function patSel(prop, cur, fn, withDefault) {
-      return `<label style="display:flex;gap:6px;align-items:center;font-size:.85rem;white-space:nowrap;">배경 무늬 <select onchange="${fn}">${withDefault ? `<option value=""${!cur ? ' selected' : ''}>기본</option>` : ''}${CLUE_BGS.filter(x => !isHid('bg', x[0]) || cur === x[0]).map(x => `<option value="${x[0]}"${cur === x[0] ? ' selected' : ''}>${x[1]}</option>`).join('')}</select><button class="btn btn-secondary" style="padding:2px 8px;font-size:.74rem;" onclick="patMgrOpen()" title="배경 무늬 정리">정리</button></label>`;
+      return `<label style="display:flex;gap:6px;align-items:center;font-size:.85rem;white-space:nowrap;">배경 무늬 <select onchange="${fn}">${withDefault ? `<option value=""${!cur ? ' selected' : ''}>기본</option>` : ''}${CLUE_BGS.filter(x => !isHid('bg', x[0]) || cur === x[0]).map(x => `<option value="${x[0]}"${cur === x[0] ? ' selected' : ''}>${x[1]}</option>`).join('')}</select></label>`;
     }
     function patOf(k) {
       if (/^i_/.test(k || '')) { const q = PAT_IMGS.find(x => 'i_' + x.k === k); if (q) return { cls: '', st: `background-image:url(img/pat/tile_${q.k}.webp);background-size:${q.w}px ${q.h}px;background-repeat:repeat;background-position:0 0;` }; }
@@ -4927,7 +4955,7 @@
 
     // ===== v29: PC 시트(인물 도감) + NPC 공개 스탯 =====
     const STAT_KEYS = [['str', 'STR'], ['dex', 'DEX'], ['con', 'CON'], ['int', 'INT'], ['wis', 'WIS'], ['cha', 'CHA']];
-    const PC_TYPES = [['classic', '기본'], ['custom', '내 틀 이미지']];
+    const PC_TYPES = [['custom', '내 틀 이미지']];
 
     // ---- 타로/트럼프 카드 장식 테두리 (코드로 생성하는 덩굴·소용돌이 문양) ----
     const PC_ORN = (() => {
@@ -4997,7 +5025,7 @@
       return [sh.charClass, sh.charTag].filter(x => x && !/^종족 · 클래스|^Lv\. 1 · 배경/.test(x));
     }
     function pcCardHtml(p, i, prev) {
-      const sh = p.sheet || {}, ty = PC_TYPES.some(t => t[0] === p.cardType) ? p.cardType : 'classic', src = p.art || p.img || '';
+      const sh = p.sheet || {}, ty = PC_TYPES.some(t => t[0] === p.cardType) ? p.cardType : 'custom', src = p.art || p.img || '';
       const info = p.showInfo ? pcInfoLines(p) : [];
       const click = prev ? '' : ` onclick="openSheet('${escapeHtml(p.id)}')" oncontextmenu="event.preventDefault();pcCfgOpen('${escapeHtml(p.id)}')" title="눌러서 시트 열기 · 우클릭: 카드 꾸미기"`;
       const nm = escapeHtml(p.name || 'PC');
@@ -5019,9 +5047,9 @@
       if (ty === 'custom') {
         const R = Number(p.frameR) || 0.7, wx = p.wx == null ? 15 : Number(p.wx), wy = p.wy == null ? 12 : Number(p.wy), ww = p.ww == null ? 70 : Number(p.ww), wh = p.wh == null ? 76 : Number(p.wh), wr = Number(p.wr) || 0;
         const infoC = inf2 ? `<small>${inf2}</small>` : '';
-        if (!p.frame && (p.fBgc || p.fBgi)) {
+        if (!p.frame) {
           const ws = `left:${wx}%;top:${wy}%;width:${ww}%;height:${wh}%;border-radius:${wr}%/${wr}%;`;
-          return `<div class="codex-card pc-card pcl-custom pcl-hole pcl-bgonly"${click}${cs} style="aspect-ratio:${R};${escapeHtml(cv)}"><div class="pt-win pt-bgl" style="left:0;top:0;width:100%;height:100%;border-radius:6px;${p.fBgc ? 'background-color:' + escapeHtml(p.fBgc) + ';' : ''}${p.fBgi ? "background-image:url('" + escapeHtml(p.fBgi) + "');" : ''}"></div><div class="pt-win" style="${ws}">${artImg}</div><div class="pt-win pt-ov" style="${ws}"><div class="pa-nm"><b>${nm}</b>${infoC}</div></div></div>`;
+          return `<div class="codex-card pc-card pcl-custom pcl-hole pcl-bgonly"${click}${cs} style="aspect-ratio:${R};${escapeHtml(cv)}"><div class="pt-win pt-bgl" style="left:0;top:0;width:100%;height:100%;border-radius:6px;${p.fBgc || p.fBgi ? '' : 'background-color:#f4ecd8;'}${p.fBgc ? 'background-color:' + escapeHtml(p.fBgc) + ';' : ''}${p.fBgi ? "background-image:url('" + escapeHtml(p.fBgi) + "');" : ''}"></div><div class="pt-win" style="${ws}">${artImg}</div><div class="pt-win pt-ov" style="${ws}"><div class="pa-nm"><b>${nm}</b>${infoC}</div></div></div>`;
         }
         if (p.frame && p.fHole) {
           const ws = `left:${wx}%;top:${wy}%;width:${ww}%;height:${wh}%;`;
@@ -5063,6 +5091,7 @@
     function pcJoinToggle() { try { localStorage.setItem('pc_join', pcJoinOn() ? '0' : '1'); } catch (e) {} pcJoinSync(); if (state.viewMode === 'npcs') renderNpcCodex(); }
     function pcJoinSync() { const b = document.getElementById('pcjoin-btn'); if (!b) return; b.style.display = state.viewMode === 'npcs' ? '' : 'none'; b.style.opacity = '1'; b.style.filter = ''; if (state.viewMode !== 'npcs') npcTrayClose(); }
     function pcSlotStyle(p) {
+      return '';
       const cw = Number(p.cw) || 100, ch = Number(p.ch) || 100, dy = Number(p.dy) || 0, o = [];
       if (cw !== 100) o.push('--cw:' + (cw / 100));
       if (ch !== 100) o.push('aspect-ratio:' + (500 / (7 * ch)).toFixed(4));
@@ -5099,31 +5128,25 @@
     function pcCfgSet(k, v, full) { const i = pcIdx(pccId); if (i < 0) return; pcSet(i, k, v); if (full) pcCfgRender(); else pcCfgPrev(); }
     function pcCfgRender() {
       const i = pcIdx(pccId), p = pcList()[i], box = document.getElementById('pcc-box'); if (!p) { closePcCfg(); return; }
-      const ty = PC_TYPES.some(t => t[0] === p.cardType) ? p.cardType : 'classic', full = ty === 'poster' || ty === 'stat' || ty === 'tarot' || ty === 'trump' || ty === 'arab' || ty === 'frame' || ty === 'custom';
+      const ty = PC_TYPES.some(t => t[0] === p.cardType) ? p.cardType : 'custom', full = ty === 'poster' || ty === 'stat' || ty === 'tarot' || ty === 'trump' || ty === 'arab' || ty === 'frame' || ty === 'custom';
       const fonts = MEMO_FONTS.map(f => `<option value="${f.k}"${(p.font || 'batang') === f.k ? ' selected' : ''} style="font-family:${f.f}">${f.n}</option>`).join('');
       const rg = (lab, k, min, max, step, def) => `<label>${lab} <input type="range" min="${min}" max="${max}" step="${step}" value="${p[k] == null ? def : p[k]}" oninput="pcCfgSet('${k}',Number(this.value))"></label>`;
       box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;"><b style="flex:1;font-size:1.05rem;">${pccNpc ? 'NPC' : 'PC'} 카드 꾸미기</b><button class="btn btn-secondary" style="padding:3px 10px;" onclick="closePcCfg()" aria-label="닫기">✕</button></div>
         <div class="pcc-top"><div class="pcc-prev" id="pcc-prev"></div><div class="pcc-form">
-          <div class="pcc-types">${PC_TYPES.map(t => `<button class="${t[0] === ty ? 'on' : ''}" onclick="pcCfgSet('cardType','${t[0]}',true)">${t[1]}</button>`).join('')}</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="pcCfgPickArt()">이미지 올리기</button>${p.art || p.img ? `<button class="btn btn-secondary" onclick="pcCfgSet('art','',false);pcCfgSet('img','',true)">해제</button>` : ''}</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="pcUpOpen()" style="display:inline-flex;align-items:center;gap:8px;"><img src="${IC_WICKER}" alt="" style="height:26px;width:auto;">이미지 올리기</button></div>
           <input type="text" value="${escapeHtml(p.name || '')}" placeholder="${pccNpc ? 'NPC 이름' : 'PC 이름'}" oninput="pcCfgSet('name',this.value)">
-          ${ty === 'custom' ? `<div class="pcc-sec"><b>내 틀 이미지</b><div style="font-size:.76rem;color:var(--text-muted);">아래 기본 틀을 고르거나(일부는 배경 · 캐릭터 · 무늬 3겹), 가운데가 투명하게 뚫린 PNG를 올리면 칸 위치를 자동으로 맞추고, 캐릭터가 틀 아래에 깔려요. 뚫리지 않은 이미지는 칸 위치를 직접 맞춰 주세요.</div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="pcCfgPickFrame()">틀 이미지 올리기</button>${p.frame ? `<button class="btn btn-secondary" onclick="pcCfgSet('frame','');pcCfgSet('fHole',0);pcCfgSet('fBg','');pcCfgSet('frameR',0,true)">틀 해제</button>` : ''}</div>
-            <div class="pcc-frames">${PC_FRAMES.filter(f => !isHid('fr', f.k)).map(f => `<div class="pcf-w"><button class="${p.frame === 'img/frames/' + f.k + '.webp' ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="img/frames/${f.k}.webp" alt="${f.n}" loading="lazy"><span>${f.n}</span></button><i class="pcf-x" title="목록에서 지우기" onclick="armX(this,()=>hideItem('fr','${f.k}'))">×</i></div>`).join('')}</div>${hidList('fr').length ? `<button class="btn btn-secondary" style="font-size:.72rem;padding:2px 8px;" onclick="restoreHidden('fr')">지운 틀 복원 (${hidList('fr').length})</button>` : ''}
-            ${(p.fHole || !p.frame) ? `<div class="pcc-sec" style="margin-top:6px;"><b>${p.frame ? '투명한 칸 배경' : '카드 배경 (틀 없이도 사용)'}</b><div style="font-size:.76rem;color:var(--text-muted);">캐릭터 뒤, 틀 뒤쪽 빈 칸에 깔리는 색이나 이미지예요.</div>
+          ${ty === 'custom' ? `<div class="pcc-sec"><b>틀</b>
+            <div class="pcc-frames">${PC_FRAMES.filter(f => !isHid('fr', f.k)).map(f => `<div class="pcf-w"><button class="${p.frame === 'img/frames/' + f.k + '.webp' ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="img/frames/${f.k}.webp" alt="${f.n}" loading="lazy"><span>${f.n}</span></button></div>`).join('')}</div>
+            ${(p.fHole || !p.frame) ? `<div class="pcc-sec" style="margin-top:6px;"><b>배경</b>
               <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><label style="display:flex;gap:4px;align-items:center;">색 <input type="color" value="${p.fBgc || '#f4ecd8'}" oninput="pcCfgSet('fBgc',this.value)"></label>
-              <button class="btn btn-secondary" onclick="pcCfgPickBgi()">배경 이미지 올리기</button>
-              <div class="pcc-frames" style="width:100%;">${PAT_IMGS.filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<div class="pcf-w"><button class="${p.fBgi === 'img/pat/bg_' + x.k + '.webp' ? 'on' : ''}" title="${x.n}" onclick="pcCfgSet('fBgc','');pcCfgSet('fBgi','img/pat/bg_${x.k}.webp',true)"><img src="img/pat/bg_${x.k}.webp" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"><span>${x.n}</span></button><i class="pcf-x" title="목록에서 지우기" onclick="armX(this,()=>hideItem('bg','i_${x.k}'))">×</i></div>`).join('')}</div>${PAT_IMGS.some(x => isHid('bg', 'i_' + x.k)) ? `<button class="btn btn-secondary" style="font-size:.72rem;padding:2px 8px;" onclick="patMgrOpen()">지운 무늬 복원…</button>` : ''}
-              ${p.fBgc || p.fBgi ? `<button class="btn btn-secondary" onclick="pcCfgSet('fBgc','');pcCfgSet('fBgi','',true)">배경 해제</button>` : ''}</div></div>` : ''}
+              <div class="pcc-frames" style="width:100%;">${PAT_IMGS.filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<div class="pcf-w"><button class="${p.fBgi === 'img/pat/bg_' + x.k + '.webp' ? 'on' : ''}" title="${x.n}" onclick="pcCfgToggleBg('img/pat/bg_${x.k}.webp')"><img src="img/pat/bg_${x.k}.webp" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"><span>${x.n}</span></button></div>`).join('')}</div>
+              </div></div>` : ''}
             ${p.frame ? '' : rg('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)}${rg('칸 왼쪽', 'wx', 0, 60, 1, 15)}${rg('칸 위', 'wy', 0, 60, 1, 12)}${rg('칸 너비', 'ww', 20, 100, 1, 70)}${rg('칸 높이', 'wh', 20, 100, 1, 76)}${rg('모서리 둥글기', 'wr', 0, 50, 1, 0)}</div>` : ''}
           <div class="pcc-sec">${full ? rg('확대', 'imgZ', 100, 220, 5, 100) + rg('세로 위치', 'imgY', 0, 100, 5, 50) : rg('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? rg('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : '')}
             <label><input type="checkbox" ${p.showInfo ? 'checked' : ''} onchange="pcCfgSet('showInfo',this.checked)"> 기타 정보(클래스 · 태그) 표시</label>
             <textarea rows="2" maxlength="90" placeholder="추가 문구 (한두 줄)" oninput="pcCfgSet('extra',this.value)" style="resize:none;">${escapeHtml(p.extra || '')}</textarea>
             <label>테두리 <input type="color" value="${p.cBorder || '#b8893a'}" oninput="pcCfgSet('cBorder',this.value)"> 글자 <input type="color" value="${p.cText || '#3b2410'}" oninput="pcCfgSet('cText',this.value)"> 배경 <input type="color" value="${p.cBg || '#fbf1d9'}" oninput="pcCfgSet('cBg',this.value)"> <button class="btn btn-secondary" style="padding:2px 8px;" onclick="['cBorder','cText','cBg'].forEach(k=>pcCfgSet(k,'',false));pcCfgRender()">색 초기화</button></label></div>
         </div></div>
-        <div class="pcc-sec"><b>도감 배치</b><div style="font-size:.76rem;color:var(--text-muted);">한 줄로 붙였을 때 카드마다 크기·높이를 달리해서 어긋난 느낌을 줄 수 있어요.</div>
-          ${rg('가로 %', 'cw', 60, 150, 5, 100)}${rg('세로 %', 'ch', 60, 150, 5, 100)}${rg('위아래 이동', 'dy', -40, 60, 2, 0)}
-          <button class="btn btn-secondary" style="align-self:flex-start;" onclick="pcCfgSet('cw',100);pcCfgSet('ch',100);pcCfgSet('dy',0,true)">초기화</button></div>
         ${pccNpc ? '' : `<div class="pcc-sec"><b>메모 기본 설정</b><div style="font-size:.76rem;color:var(--text-muted);">보드에서 메모를 추가할 때 이 PC 이름을 고르면 아래 글꼴로 만들어져요.</div>
           <label>글꼴 <select onchange="pcCfgSet('font',this.value)">${fonts}</select> 글자색 <input type="color" value="${p.fc || '#2d2410'}" oninput="pcCfgSet('fc',this.value)"> 크기 <input type="number" min="10" max="48" value="${Number(p.fs) || 16}" style="width:62px;" oninput="pcCfgSet('fs',Number(this.value))"></label></div>
         <div style="display:flex;justify-content:flex-end;"><button class="btn btn-danger" data-label="PC 삭제" onclick="armDel(this,()=>{const k=pcIdx(pccId);if(k>=0)pcDel(k);closePcCfg();})">PC 삭제</button></div>`}`;
@@ -5132,8 +5155,76 @@
     const PC_FRAMES = [{"k": "b_arab", "n": "아라베스크", "r": 0.7, "x": 15.2, "y": 4.3, "w": 69.5, "h": 91.3}, {"k": "b_frame", "n": "금박 액자", "r": 0.7, "x": 17.6, "y": 12.2, "w": 64.8, "h": 75.6}, {"k": "frame1_floral", "n": "꽃무늬 아치", "r": 0.6091, "x": 3.9, "y": 2.4, "w": 92.2, "h": 95.3}, {"k": "frame2_lattice", "n": "격자 네이비", "r": 0.6772, "x": 14.4, "y": 9.9, "w": 71.1, "h": 79.8}, {"k": "frame3_cream", "n": "청록 패턴", "r": 0.7034, "x": 12.7, "y": 6.7, "w": 74.7, "h": 86.6}, {"k": "frame5_navy", "n": "네이비 문양", "r": 0.701, "x": 12.0, "y": 7.3, "w": 75.6, "h": 87.2}, {"k": "frame6_teal_arch", "n": "청록 아치", "r": 0.6667, "x": 17.0, "y": 29.1, "w": 66.0, "h": 58.4, "bg": 1}, {"k": "frame7_floral_arch", "n": "꽃 아치", "r": 0.7152, "x": 11.9, "y": 12.7, "w": 84.7, "h": 77.0, "bg": 1}, {"k": "frame8_lantern", "n": "랜턴", "r": 0.5632, "x": 8.1, "y": 8.8, "w": 83.9, "h": 83.1, "bg": 1}, {"k": "frame9_blue_mandala", "n": "블루 만다라", "r": 0.7144, "x": 19.8, "y": 0, "w": 60.5, "h": 67.9}];
     function pcCfgUseFrame(k) {
       const f = PC_FRAMES.find(a => a.k === k), i = pcIdx(pccId); if (!f || i < 0) return;
+      if (pcList()[i].frame === 'img/frames/' + f.k + '.webp') { pcSet(i, 'frame', ''); pcSet(i, 'fBg', ''); pcSet(i, 'fHole', 0); pcSet(i, 'frameR', 0); pcCfgRender(); return; }
       pcSet(i, 'frame', 'img/frames/' + f.k + '.webp'); pcSet(i, 'fBg', f.bg ? 'img/frames/' + f.k + '_bg.webp' : ''); pcSet(i, 'frameR', f.r); pcSet(i, 'fHole', 1);
       pcSet(i, 'wx', f.x); pcSet(i, 'wy', f.y); pcSet(i, 'ww', f.w); pcSet(i, 'wh', f.h); pcSet(i, 'wr', 0); pcCfgRender();
+    }
+    const IC_WICKER = 'data:image/webp;base64,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';
+    const SVG_CHAIN = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
+    const SVG_UP = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>';
+    function pcCfgToggleBg(url) { const i = pcIdx(pccId); if (i < 0) return; const p = pcList()[i]; if (p.fBgi === url) pcSet(i, 'fBgi', ''); else { pcSet(i, 'fBgc', ''); pcSet(i, 'fBgi', url); } pcCfgRender(); }
+    // ---- 이미지 올리기 창 (캐릭터 · 틀 · 배경 / URL · 파일) ----
+    function pcImgLoad(src, ok, fail) {
+      const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => ok(im, true);
+      im.onerror = () => { const i2 = new Image(); i2.onload = () => ok(i2, false); i2.onerror = () => fail && fail(); i2.src = src; };
+      im.src = src;
+    }
+    function pcCanvas(im, max) { const k = Math.min(1, max / Math.max(im.naturalWidth || im.width, im.naturalHeight || im.height)), c = document.createElement('canvas'); c.width = Math.round((im.naturalWidth || im.width) * k); c.height = Math.round((im.naturalHeight || im.height) * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); return c; }
+    function pcLoad(kind, src) {
+      const i = pcIdx(pccId); if (i < 0) return;
+      pcImgLoad(src, (im, cors) => {
+        let c = null; if (cors || /^data:|^blob:/.test(src)) { try { c = pcCanvas(im, kind === 'frame' ? 900 : 640); c.toDataURL('image/webp', .5); } catch (e) { c = null; } }
+        const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height;
+        if (kind === 'art') {
+          pcSet(i, 'art', c ? c.toDataURL('image/webp', 0.88) : src);
+          let th = src; if (c) { try { const S = 128, c2 = document.createElement('canvas'); c2.width = c2.height = S; const m = Math.min(W, H), x = c2.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, S, S); x.drawImage(im, (W - m) / 2, (H - m) / 2, m, m, 0, 0, S, S); th = c2.toDataURL('image/jpeg', 0.85); } catch (e) {} }
+          pcSet(i, 'img', th);
+        } else if (kind === 'frame') {
+          pcSet(i, 'frame', c ? c.toDataURL('image/webp', 0.9) : src); pcSet(i, 'frameR', Number((W / H).toFixed(4))); pcSet(i, 'fBg', '');
+          const hb = c ? pcFrameHole(c) : null; pcSet(i, 'fHole', hb ? 1 : 0);
+          if (hb) { pcSet(i, 'wx', hb.x); pcSet(i, 'wy', hb.y); pcSet(i, 'ww', hb.w); pcSet(i, 'wh', hb.h); pcSet(i, 'wr', 0); }
+          else if (!c) showToast('이 주소의 이미지는 투명 칸을 자동으로 찾지 못해요. 칸 위치를 직접 맞춰 주세요.');
+        } else { pcSet(i, 'fBgc', ''); pcSet(i, 'fBgi', c ? c.toDataURL('image/webp', 0.85) : src); }
+        pcCfgRender(); pcupRender();
+      }, () => showToast('이미지를 불러오지 못했어요. 주소를 확인해 주세요.'));
+    }
+    function pcupFile(kind) {
+      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+      inp.onchange = () => { const f = inp.files && inp.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => pcLoad(kind, String(rd.result)); rd.readAsDataURL(f); };
+      inp.click();
+    }
+    function pcupUrlToggle(kind) { const r = document.getElementById('pcup-url-' + kind); if (!r) return; r.hidden = !r.hidden; if (!r.hidden) { const t = r.querySelector('input'); t && t.focus(); } }
+    function pcupUrlGo(kind) { const r = document.getElementById('pcup-url-' + kind), v = r && r.querySelector('input').value.trim(); if (!v) return; pcLoad(kind, v); }
+    function pcupClear(kind) {
+      const i = pcIdx(pccId); if (i < 0) return;
+      if (kind === 'art') { pcSet(i, 'art', ''); pcSet(i, 'img', ''); }
+      else if (kind === 'frame') { pcSet(i, 'frame', ''); pcSet(i, 'fBg', ''); pcSet(i, 'fHole', 0); pcSet(i, 'frameR', 0); }
+      else { pcSet(i, 'fBgi', ''); pcSet(i, 'fBgc', ''); }
+      pcCfgRender(); pcupRender();
+    }
+    function pcUpOpen() {
+      let ov = document.getElementById('pcup'); if (!ov) { ov = document.createElement('div'); ov.id = 'pcup'; ov.onclick = e => { if (e.target === ov) ov.remove(); }; document.body.appendChild(ov); }
+      pcupRender();
+    }
+    function pcupRender() {
+      const ov = document.getElementById('pcup'); if (!ov) return; const i = pcIdx(pccId), p = pcList()[i]; if (!p) { ov.remove(); return; }
+      const panel = (kind, title, cur) => `<div class="pcup-p"><b>${title}</b><div class="pcup-th">${cur ? `<img src="${escapeHtml(cur)}" alt="">` : '<span>비어 있음</span>'}${cur ? `<button class="pcup-x" title="지우기" onclick="pcupClear('${kind}')">✕</button>` : ''}</div>
+        <div class="pcup-ic"><button title="URL로 연결" onclick="pcupUrlToggle('${kind}')">${SVG_CHAIN}</button><button title="파일 업로드" onclick="pcupFile('${kind}')">${SVG_UP}</button></div>
+        <div class="pcup-url" id="pcup-url-${kind}" hidden><input type="text" placeholder="https://..." onkeydown="if(event.key==='Enter')pcupUrlGo('${kind}')"><button onclick="pcupUrlGo('${kind}')">확인</button></div></div>`;
+      const keep = [...ov.querySelectorAll('.pcup-url')].map(r => [r.id, r.hidden, r.querySelector('input').value]);
+      ov.innerHTML = `<div class="pcup-box"><div style="display:flex;align-items:center;gap:8px;"><b style="flex:1;">이미지 올리기</b><button class="btn btn-secondary" style="padding:3px 10px;" onclick="document.getElementById('pcup').remove()">✕</button></div>
+        <div class="pcup-body"><div class="pcup-cols">${panel('art', '캐릭터 이미지', p.art || p.img)}${panel('frame', '틀 이미지', p.frame)}${panel('bg', '배경 이미지', p.fBgi)}</div><div class="pcup-prev">${pcCardHtml(p, i, true)}</div></div></div>`;
+      keep.forEach(([id, h, v]) => { const r = document.getElementById(id); if (r) { r.hidden = h; r.querySelector('input').value = v; } });
+    }
+    // ---- 전체 환경 설정: 틀 · 배경 정리 ----
+    function fbMgrRender() {
+      const el = document.getElementById('fb-mgr'); if (!el) return;
+      const cell = (inner, name, off, t, k) => `<div class="pm-c${off ? ' off' : ''}">${inner}<span>${name}</span>${off ? `<button class="pm-b" onclick="unhideItem('${t}','${k}')">복원</button>` : `<button class="pm-b" onclick="armX(this,()=>hideItem('${t}','${k}'))">지우기</button>`}</div>`;
+      const fr = PC_FRAMES.map(f => cell(`<img src="img/frames/${f.k}.webp" alt="" style="height:90px;object-fit:contain;background:#8883;border-radius:6px;">`, f.n, isHid('fr', f.k), 'fr', f.k)).join('');
+      const bg = CLUE_BGS.map(x => { const pp = patOf(x[0]); return cell(`<div class="pm-sw ${pp && pp.cls ? pp.cls : ''}" style="${pp ? pp.st.replace(/"/g, '&quot;') : ''}"></div>`, x[1], isHid('bg', x[0]), 'bg', x[0]); }).join('');
+      el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><b style="flex:1;font-size:.85rem;">카드 틀</b>${hidList('fr').length ? '<button class="pm-b" onclick="restoreHidden(\'fr\')">모두 복원</button>' : ''}</div><div class="pm-grid pm-in">${fr}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;"><b style="flex:1;font-size:.85rem;">배경 무늬 (보드판 · 카드 뒷배경)</b>${hidList('bg').length ? '<button class="pm-b" onclick="restoreHidden(\'bg\')">모두 복원</button>' : ''}</div><div class="pm-grid pm-in">${bg}</div>`;
     }
     function pcFrameHole(c) {
       try {
