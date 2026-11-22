@@ -2448,7 +2448,7 @@
 
 
     // ===== 서버 연결: google.script.run 이 응답 없으면 같은 주소로 직접 요청(fetch)으로 자동 전환 =====
-    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyRFq1rySvuZJD9dV_u926zdsF7wffCVKMTXNKYg-fQ47cqpLNuBP8Fqr2u5ZcDdanU/exec;
+    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwN-Z0MmwI1NxpYTCUAeA0k-HgpcKPBa2G9eD-2SRrtamC90AmImXmhdhaLAXo1ljvg/exec';
     function execUrl() { try { return localStorage.getItem('adventure_exec_url') || EXEC_URL_DEFAULT; } catch (e) { return EXEC_URL_DEFAULT; } }
     function diagShow(msg) { try { console.info('[sync]', msg); } catch (e) {} }
     const AUTH_S = { tk: (() => { try { return localStorage.getItem('adv_dev_tk') || ''; } catch (e) { return ''; } })(), gm: false, off: false, st: null, gate: false, bg: '' };
