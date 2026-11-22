@@ -6907,7 +6907,7 @@
     // ---- 사용자 틀 · 배경 / 순서 ----
     function orderBy(arr, kf, order) { if (!order || !order.length) return arr.slice(); const pos = new Map(order.map((k, i) => [k, i])); return arr.map((x, i) => [x, i]).sort((a, b) => { const pa = pos.has(kf(a[0])) ? pos.get(kf(a[0])) : 1e6 + a[1], pb = pos.has(kf(b[0])) ? pos.get(kf(b[0])) : 1e6 + b[1]; return pa - pb; }).map(a => a[0]); }
     function frameList() { const bt = state.boardTex; return orderBy(PC_FRAMES.concat(bt.customFrames || []), f => f.k, bt.frOrder); }
-    function patList() { const bt = state.boardTex; return orderBy(PAT_IMGS.filter(x => !/^n_/.test(x.k)).concat(bt.customBgs || []), x => 'i_' + x.k, bt.bgOrder); }
+    function patList() { const bt = state.boardTex; return orderBy(PAT_IMGS.filter(x => !/^n_/.test(x.k) && !/^(dan\d+|sw\d+|jp\d+|wc1|sp4|pz|dmk)$/.test(x.k)).concat(bt.customBgs || []), x => 'i_' + x.k, bt.bgOrder); }
     function clueBgList() { const bt = state.boardTex; return orderBy(CLUE_BGS.concat((bt.customBgs || []).map(x => ['i_' + x.k, x.n])), x => x[0], bt.bgOrder); }
     function frUrl(f) { return f.url || ('img/frames/' + f.k + '.webp'); }
     function bgUrl(x) { return x.url || ('img/pat/bg_' + x.k + '.webp'); }
