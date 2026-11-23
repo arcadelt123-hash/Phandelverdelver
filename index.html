@@ -2053,7 +2053,7 @@
     .fan-row .fan-c .pc-card { pointer-events: none; }
     .fan-arr { position: absolute; top: calc(var(--cw) * .62); z-index: 300; border: 0; background: transparent; color: #f97316; font-size: 3rem; line-height: 1; cursor: pointer; text-shadow: 0 2px 6px rgba(0,0,0,.45); padding: 0 6px; display: none; pointer-events: auto; }
     .fan-row.act .fan-arr { display: block; }
-    .fan-arr.l { left: calc(50% - var(--cw) / 2 - 40px); } .fan-arr.r { left: calc(50% + var(--cw) / 2 + 8px); }
+    .fan-arr.l { left: 10px; } .fan-arr.r { left: auto; right: 10px; } .fan-arr { font-size: 3.4rem; padding: 10px 12px; }
     .fan-arr:hover { color: #fb923c; transform: scale(1.15); }
     #fan-cap { text-align: center; max-width: 620px; margin: 4px auto 18px; color: #3b2410; }
     #fan-cap .fan-nm { font-weight: 800; font-size: 1.35rem; font-family: 'Cinzel', 'Noto Serif KR', serif; }
@@ -8882,7 +8882,7 @@
         window.__fan = {}; ['pc', 'npc'].forEach(r => { window.__fan[r] = { acts: rows[r].map(c => c.act), cfgs: rows[r].map(c => c.cfg), caps: rows[r].map(c => `<div class="fan-nm">${escapeHtml(c.name)}</div>${c.desc ? `<div class="fan-ds">${escapeHtml(c.desc)}</div>` : ''}${c.tools || ''}`) }; if (fanIdx[r] < 0 || fanIdx[r] >= rows[r].length) fanIdx[r] = Math.floor((rows[r].length - 1) / 2); });
         if (!rows[fanAct].length) fanAct = rows.pc.length ? 'pc' : 'npc';
         const two = rows.pc.length && rows.npc.length;
-        area.innerHTML = `<div class="fan-stage${two ? ' two' : ''}" onwheel="fanWheel(event)">${['pc', 'npc'].filter(r => rows[r].length).map(r => `<div class="fan-row" data-r="${r}"><button class="fan-arr l" onclick="fanGo(-1)" aria-label="이전">‹</button><button class="fan-arr r" onclick="fanGo(1)" aria-label="다음">›</button>${rows[r].map((c, i) => `<div class="fan-c" data-i="${i}" onclick="fanClick('${r}',${i})" oncontextmenu="fanCfg(event,'${r}',${i})">${c.html}</div>`).join('')}</div>`).join('')}</div><div id="fan-cap"></div><div class="fan-bot">${fanBarHtml(true)}</div>`;
+        area.innerHTML = `<div class="fan-stage${two ? ' two' : ''}">${['pc', 'npc'].filter(r => rows[r].length).map(r => `<div class="fan-row" data-r="${r}"><button class="fan-arr l" onclick="fanGo(-1)" aria-label="이전">‹</button><button class="fan-arr r" onclick="fanGo(1)" aria-label="다음">›</button>${rows[r].map((c, i) => `<div class="fan-c" data-i="${i}" onclick="fanClick('${r}',${i})" oncontextmenu="fanCfg(event,'${r}',${i})">${c.html}</div>`).join('')}</div>`).join('')}</div><div id="fan-cap"></div><div class="fan-bot">${fanBarHtml(true)}</div>`;
         fanLayout(); fanApply(true);
         return;
       }
