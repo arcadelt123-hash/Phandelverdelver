@@ -1876,6 +1876,11 @@
     :root[data-lpos="br"] #sync-lamp { bottom: 56px; right: 14px; left: auto; }
     #sync-status { display: none !important; } :root[data-lsync="0"] #sync-status { display: inline-flex !important; }
     .qnote .qn-ph { opacity: .6; font-style: italic; font-weight: 400; }
+    .qnote.full.fsep { filter: none !important; overflow: visible; background-image: none !important; }
+    .qnote.full.fsep .qn-fbg { background-repeat: no-repeat; filter: drop-shadow(0 0 1px var(--fc, transparent)) drop-shadow(0 0 1px var(--fc, transparent)) drop-shadow(0 6px 7px rgba(0,0,0,.5)); }
+    .qnote.full.fsep.dragging .qn-fbg { filter: drop-shadow(0 0 1px var(--fc, transparent)) drop-shadow(0 0 1px var(--fc, transparent)) drop-shadow(0 16px 14px rgba(0,0,0,.55)); }
+    .qnote.full.fsep > .qn-top, .qnote.full.fsep > .qn-meta, .qnote.full.fsep > .qn-body, .qnote.full.fsep > .qn-tags { position: relative; z-index: 1; }
+    .qnote.full.fsep > .qn-tags { position: absolute; }
     #sync-lamp.show { opacity: 1; } #sync-lamp.blink { animation: syncBlink 1.1s ease-in-out infinite; }
     #sync-lamp.err { opacity: 1; pointer-events: auto; cursor: pointer; background-image: var(--l-red-on); filter: drop-shadow(0 0 5px #ff2a2a) drop-shadow(0 0 12px #ff0000); animation: syncErrIn .8s cubic-bezier(.2,.8,.25,1), syncErrPulse 1.5s ease-in-out .8s infinite; }
     @keyframes syncBlink { 0%,100% { opacity: .2; } 50% { opacity: 1; } }
@@ -7009,6 +7014,11 @@
         bgl.style.backgroundPosition = 'center, center';
         bgl.style.webkitMaskImage = bgl.style.maskImage = `url(${shape.mask})`;
         el.insertBefore(bgl, el.firstChild);
+      }
+      if (tex.full && tex.paper && !shape) {
+        el.classList.add('fsep'); el.style.backgroundImage = 'none';
+        const fb = document.createElement('div'); fb.className = 'qn-bg qn-fbg'; fb.style.backgroundImage = `url(${tex.url})`; fb.style.backgroundSize = '100% 100%';
+        el.insertBefore(fb, el.firstChild);
       }
       const body = el.querySelector('.qn-body');
       if (body && tags) body.style.paddingBottom = '18px';
