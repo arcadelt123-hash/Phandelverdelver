@@ -1843,6 +1843,11 @@
     #pcc-prev .pc-tb { pointer-events: auto; cursor: move; touch-action: none; outline: 1px dashed rgba(230,178,74,.7); }
     .tb-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(120,90,40,.2); font-size: .76rem; } .tb-row textarea { flex: 1 1 100%; font: inherit; font-size: .82rem; padding: 4px 6px; border-radius: 6px; border: 1px solid #c9bb98; resize: vertical; }
     .bk-st { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; flex: 1 1 100%; padding-left: 18px; font-size: .72rem; } .bk-st input[type=range] { width: 90px; } .bk-st select { font-size: .72rem; max-width: 120px; }
+    .dv-tag { display: inline-block; padding: 2px 9px; margin: 1px 4px 1px 0; border-radius: 999px; background: #efe2c0; color: #4a3414; font-size: .76rem; font-weight: 700; }
+    #presence-btn .pres-dot { width: 11px; height: 11px; border-radius: 50%; animation: presBlink 1.8s ease-in-out infinite; box-shadow: 0 0 6px 1px currentColor; }
+    @keyframes presBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+    #presence-btn .pres-tip { display: none; position: absolute; top: calc(100% + 6px); right: 0; min-width: 130px; padding: 7px 10px; border-radius: 10px; background: rgba(20,18,14,.92); color: #fff; font-size: 12px; white-space: nowrap; z-index: 500; text-align: left; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+    #presence-btn:hover .pres-tip, #presence-btn:focus .pres-tip { display: block; }
     .pres-glow { box-shadow: 0 0 0 2px var(--pg, #e6b24a), 0 0 12px 3px var(--pg, #e6b24a) !important; animation: presGl 1.6s ease-in-out infinite; } @keyframes presGl { 50% { box-shadow: 0 0 0 2px var(--pg, #e6b24a), 0 0 20px 6px var(--pg, #e6b24a); } }
     .land-sec .folder-mgmt-item { border: 0 !important; padding: 0 !important; background: transparent !important; margin: 0 !important; } .land-sec .folder-mgmt-item > div:first-child { display: none; }
     .pc-altb { position: absolute; top: 6px; right: 6px; z-index: 40; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,.7); background: rgba(20,16,10,.62); color: #fff; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; } .pc-altb:hover { background: rgba(184,137,58,.9); }
@@ -2478,7 +2483,7 @@
         clearTimeout(to);
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.text();
-      }).then(t => { let j; try { j = JSON.parse(t); } catch (e) { throw new Error('JSON 아님: ' + t.slice(0, 120).replace(/\s+/g, ' ')); } if (j && j.status === 'AUTH' && !AUTH_S.off) { try { authGate('login', AUTH_S.tk ? '로그인이 풀렸어요. 다시 입력해 주세요.' : ''); } catch (e) {} throw new Error('로그인이 필요해요'); } return j; }, e => { clearTimeout(to); throw e; });
+      }).then(t => { let j; try { j = JSON.parse(t); } catch (e) { throw new Error('JSON 아님: ' + t.slice(0, 120).replace(/\s+/g, ' ')); } if (j && j.status === 'AUTH' && !AUTH_S.off && !AUTH_S.needpl) { try { authGate('login', AUTH_S.tk ? '로그인이 풀렸어요. 다시 입력해 주세요.' : ''); } catch (e) {} throw new Error('로그인이 필요해요'); } return j; }, e => { clearTimeout(to); throw e; });
     }
     function fetchGet(q) { return fetchT(execUrl() + '?action=' + q, { redirect: 'follow' }); }
 
@@ -2559,10 +2564,56 @@
         AUTH_S.st = st; if (st.bg !== undefined) { AUTH_S.bg = st.bg || ''; try { localStorage.setItem('adv_login_bg', AUTH_S.bg); } catch (e) {} const ov0 = document.getElementById('auth-ov'); if (ov0 && !ov0.querySelector('#au-pw')) authCover(ov0.innerHTML); }
         if (!st.configured) return authGate('setup');
         if (!st.valid) { if (AUTH_S.tk) { AUTH_S.tk = ''; try { localStorage.removeItem('adv_dev_tk'); } catch (e) {} } return authGate('login', AUTH_S.tk ? '' : ''); }
-        AUTH_S.gm = !!st.gm; done(); try { authSyncPc(st); } catch (e) {}
+        AUTH_S.gm = !!st.gm; if (st.needpl && !st.gm) { AUTH_S.needpl = true; authPlGate(st); return; } done(); try { authSyncPc(st); } catch (e) {}
       };
       tryIt();
     }
+    // 로그인 직후: PL을 고르지 않으면 들어올 수 없어요. 시금치(GM)는 GM 전용 비밀번호가 있어야 해요.
+    function authPlGate(st) {
+      const gmNm = '시금치 (GM)', pls = (st.pls || []).filter(p => p && p.id && p.name);
+      const ov = authCover(`<div class="ab"><p class="tt">누구로 들어올까요?</p><div class="pkw">${pls.map(p => `<button type="button" class="pk" data-id="${escapeHtml(p.id)}" data-n="${escapeHtml(p.name)}">${escapeHtml(p.name)}</button>`).join('')}<button type="button" class="pk" data-id="gm" data-n="${escapeHtml(gmNm)}">${escapeHtml(gmNm)}</button></div><div id="pk-gm" style="display:none"><label>GM 비밀번호</label><input type="password" id="pk-pw" autocomplete="off"></div><div class="er" id="pk-er">${pls.length ? '내 PL을 한 번 고르면 바꾸려면 GM에게 요청해야 해요.' : 'GM이 PL 목록을 아직 올리지 않았어요. 잠시 뒤 다시 열어 보세요.'}</div><button class="go" id="pk-go">입장</button></div>`);
+      let sel = ''; const q = id => ov.querySelector('#' + id), er = t => { q('pk-er').textContent = t; q('pk-er').style.color = '#e58a7a'; };
+      ov.querySelectorAll('.pk').forEach(b => b.onclick = () => { sel = b.dataset.id; ov.querySelectorAll('.pk').forEach(x => x.classList.toggle('on', x === b)); q('pk-gm').style.display = sel === 'gm' ? '' : 'none'; if (sel === 'gm') setTimeout(() => q('pk-pw').focus(), 30); });
+      const fin = (pcv) => { try { localStorage.setItem('adv_pc_ask', '1'); if (pcv) localStorage.setItem('adv_pcv', String(pcv)); } catch (e) {} location.reload(); };
+      const go = async () => {
+        if (!sel) return er('하나 골라 주세요.');
+        q('pk-go').disabled = true;
+        try {
+          if (sel === 'gm') {
+            const pw = q('pk-pw').value; if (!pw) { q('pk-go').disabled = false; return er('GM 비밀번호를 입력해 주세요.'); }
+            const r = await authPost({ __auth: 'gmlogin', pw });
+            if (r.status === 'OK') { myRawSave(['gm']); try { localStorage.setItem('adv_me_pl', 'gm'); } catch (e) {} return fin(); }
+            q('pk-go').disabled = false;
+            if (r.status === 'BAD') er('비밀번호가 달라요. (남은 시도 ' + r.left + '번)'); else if (r.status === 'LOCKED') er('실패가 너무 많아 ' + (r.wait || 10) + '분 동안 잠겼어요.'); else if (r.status === 'NOGPW') er('GM 비밀번호가 아직 없어요. GM 기기의 환경설정에서 먼저 정해 주세요.'); else er('처리하지 못했어요.');
+          } else {
+            const b = [...ov.querySelectorAll('.pk')].find(x => x.dataset.id === sel);
+            const r = await authPost({ __auth: 'setpc', pc: sel, pcn: b ? b.dataset.n : '' });
+            if (r.status === 'OK') { myRawSave([sel]); return fin(r.pcv); }
+            q('pk-go').disabled = false; er(r.status === 'DENY' ? '이미 PL이 정해져 있어요. GM에게 요청해 주세요.' : '처리하지 못했어요.');
+          }
+        } catch (e) { q('pk-go').disabled = false; er('서버에 연결하지 못했어요.'); }
+      };
+      q('pk-go').onclick = go; ov.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    }
+    async function authPushPls() {
+      if (!AUTH_S.gm || AUTH_S.off || plView()) return;
+      const arr = plsList().map(p => ({ id: p.id, name: p.name })), j = JSON.stringify(arr); if (j === window.__plsPushed) return;
+      try { const r = await authPost({ __auth: 'setpls', pls: arr }); if (r && r.status === 'OK') window.__plsPushed = j; } catch (e) {}
+    }
+    async function devSetGpw() {
+      const a = prompt('GM 로그인 비밀번호 (6자 이상)\n이 비밀번호를 아는 사람만 다른 기기에서 시금치(GM)로 들어올 수 있어요. 공용 비밀번호와 다르게 정해 주세요.'); if (a == null) return; if (a.length < 6) return showToast('6자 이상이어야 해요.');
+      const b = prompt('한 번 더 입력'); if (b == null) return; if (a !== b) return showToast('확인 값이 달라요.');
+      const r = await authPost({ __auth: 'setgpw', pw: a }).catch(() => null);
+      showToast(r && r.status === 'OK' ? 'GM 로그인 비밀번호를 정했어요.' : '정하지 못했어요.'); devRender();
+    }
+    function plAddMany() {
+      const t = (document.getElementById('pl-bulk') || {}).value || '', names = t.split(/[,\n、]+/).map(x => x.trim().slice(0, 20)).filter(Boolean);
+      if (!names.length) return showToast('이름을 적어 주세요. (쉼표나 줄바꿈으로 구분)');
+      const b = state.boardTex; b.pls = b.pls || []; const have = new Set(b.pls.map(p => nameKey(p.name))); let n = 0;
+      names.forEach(nm => { const k = nameKey(nm); if (!k || have.has(k)) return; have.add(k); b.pls.push({ id: 'pl_' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36) + n, name: nm }); n++; });
+      persistState(); devRender(); showToast(n ? n + '명 추가했어요.' : '이미 있는 이름이에요.');
+    }
+    function plAlias(id, v) { const p = plsList().find(x => x.id === id); if (!p) return; p.aliases = String(v || '').split(/[,\n]/).map(x => x.trim().slice(0, 20)).filter(Boolean).slice(0, 10); persistState(); showToast('다른 이름을 저장했어요.'); }
     function authLogout() {
       if (!confirm('이 기기를 로그아웃할까요?\n(다음에 들어올 때 비밀번호를 다시 입력해야 해요)')) return;
       authPost({ __auth: 'logout' }).catch(() => {}).then(() => { try { localStorage.removeItem('adv_dev_tk'); } catch (e) {} location.reload(); });
@@ -2575,7 +2626,7 @@
     function devPcSet(id, list) { if (id === (AUTH_S.st || {}).id) { const l = list.split(',').filter(Boolean); myRawSave(l); const a = myPcs(); try { localStorage.setItem('adv_me_pl', a[0] || ''); } catch (e) {} authPushPc().then(() => devRender()); try { landRender(); } catch (e) {} return; } devSetPc(id, list); }
     function plAdd() { const b = state.boardTex; b.pls = b.pls || []; b.pls.push({ id: 'pl_' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: 'PL ' + (b.pls.length + 1) }); persistState(); devRender(); }
     function plRename(id, v) { const p = plsList().find(x => x.id === id); if (!p) return; p.name = String(v || '').trim().slice(0, 20) || p.name; persistState(); devRender(); }
-    function plDel(id) { const p = plsList().find(x => x.id === id); if (!p || !confirm('‘' + (p.name || 'PL') + '’을(를) 삭제할까요?\n(그 PL의 PC 카드는 남고, 주인만 비워져요)')) return; state.boardTex.pls = plsList().filter(x => x.id !== id); (state.boardTex.pcs || []).forEach(c => { if (c.pl === id) delete c.pl; }); persistState(); devRender(); try { renderAll(); } catch (e) {} }
+    function plDel(id) { const p = plsList().find(x => x.id === id); if (!p) return; delHint(); state.boardTex.pls = plsList().filter(x => x.id !== id); (state.boardTex.pcs || []).forEach(c => { if (c.pl === id) delete c.pl; }); persistState(); devRender(); try { renderAll(); } catch (e) {} }
     function dvPcSel(cur, onch) {
       const pls = landPls(); return `<select onchange="${onch}"><option value="">연결 안 함</option>${pls.map(p => `<option value="${escapeHtml(p.id)}"${cur === p.id ? ' selected' : ''}>${escapeHtml(p.name || 'PL')}</option>`).join('')}</select>`;
     }
@@ -2593,11 +2644,11 @@
         if (r && r.status === 'OK') {
           const pls = [{ id: 'gm', name: '시금치 (GM)' }].concat(plsList()), byPc = {}; r.devices.forEach(d => { const ks = String(d.pc || '').split(',').filter(Boolean).map(k => isPlId(k) || k === 'gm' ? k : ((landPls().find(x => x.id === k) || {}).pl || '')); (ks.length ? uniq(ks).concat(ks.some(k => !k) ? [''] : []) : ['']).forEach(k => { (byPc[k] = byPc[k] || []).push(d); }); });
           const pcsOf = id => (state.boardTex.pcs || []).filter(p => p.pl === id), noOwner = (state.boardTex.pcs || []).filter(p => !p.pl || !plsList().some(x => x.id === p.pl));
-          h += `<h4>PL 목록 (캐릭터 주인)</h4><div class="dv-pls">${plsList().map(p => `<div class="dv-plr"><input type="text" value="${escapeHtml(p.name || '')}" maxlength="20" onchange="plRename('${p.id}',this.value)"><span class="dv-plpc">${pcsOf(p.id).map(c => escapeHtml(c.name || 'PC')).join(', ') || '<em>연결된 PC 없음</em>'}</span><button class="btn btn-secondary dv-del" onclick="plDel('${p.id}')">삭제</button></div>`).join('') || '<em style="opacity:.6;font-size:.8rem">아직 PL이 없어요.</em>'}</div><button class="btn btn-secondary" style="margin-top:6px;padding:3px 12px" onclick="plAdd()">＋ PL 추가</button><div class="manual-note">PL은 캐릭터(PC)의 주인이에요. 새 기기는 로그인 후 이 목록에서 자기 PL을 골라요. PC 카드는 도감에서 우클릭 → 꾸미기 창의 「주인 PL」에서 PL에 연결해요.${noOwner.length ? ' <br>주인이 없는 PC: ' + noOwner.map(c => escapeHtml(c.name || 'PC')).join(', ') : ''}</div>`;
+          h += `<h4>PL 목록 (캐릭터 주인)</h4><div class="dv-pls">${plsList().map(p => `<div class="dv-plr" style="flex-wrap:wrap"><input type="text" value="${escapeHtml(p.name || '')}" maxlength="20" onchange="plRename('${p.id}',this.value)"><span class="dv-plpc">${pcsOf(p.id).map(c => `<span class="dv-tag">${escapeHtml(c.name || 'PC')}</span>`).join('') || '<em>연결된 PC 없음</em>'}</span><button class="btn btn-secondary dv-del" onclick="plDel('${p.id}')">삭제</button><input type="text" class="dv-al" value="${escapeHtml((p.aliases || []).join(', '))}" placeholder="다른 이름 (쉼표로 구분, 닉네임을 바꿔도 같은 PL로 인식해요)" onchange="plAlias('${p.id}',this.value)" style="flex:1 1 100%;font-size:.8rem"></div>`).join('') || '<em style="opacity:.6;font-size:.8rem">아직 PL이 없어요.</em>'}</div><button class="btn btn-secondary" style="margin-top:6px;padding:3px 12px" onclick="plAdd()">＋ PL 추가</button><div style="margin-top:8px"><textarea id="pl-bulk" rows="2" placeholder="여러 명을 한 번에 (쉼표나 줄바꿈으로 구분)" style="width:100%;box-sizing:border-box"></textarea><button class="btn btn-secondary" style="padding:3px 12px" onclick="plAddMany()">한 번에 추가</button></div><div class="manual-note">PL은 캐릭터(PC)의 주인이에요. 새 기기는 로그인 후 이 목록에서 자기 PL을 골라요. PC 카드는 도감에서 우클릭 → 꾸미기 창의 「주인 PL」에서 PL에 연결해요.${noOwner.length ? ' <br>주인이 없는 PC: ' + noOwner.map(c => escapeHtml(c.name || 'PC')).join(', ') : ''}</div>`;
           h += `<h4>PL별 연결된 기기</h4><div class="dv-map">${pls.map(p => `<div class="dv-pc"><b>${escapeHtml(p.name || 'PL')}</b><span>${(byPc[p.id] || []).map(d => `<i class="${d.me ? 'me' : ''}">${escapeHtml(d.name)}</i>`).join('') || '<em>연결된 기기 없음</em>'}</span></div>`).join('')}${(byPc[''] || []).length ? `<div class="dv-pc"><b>연결 안 됨</b><span>${byPc[''].map(d => `<i>${escapeHtml(d.name)}</i>`).join('')}</span></div>` : ''}</div>`;
           h += `<h4>기기 목록 (${r.devices.length})</h4><div class="dv-list">${r.devices.map(d => `<div class="dv-row"><div class="dv-n"><b>${escapeHtml(dvLabel(d))}</b> ${d.gm ? '<span class="dv-gm">GM</span>' : ''}${d.me ? ' <small></small>' : ''}<small>마지막 접속 ${dvT(d.last)} · 등록 ${dvT(d.created)}</small></div><div class="dv-a">${dvPcMulti(d)}${d.me ? '' : `<button class="btn btn-secondary" onclick="devSetGm('${d.id}',${d.gm ? 'false' : 'true'})">${d.gm ? 'GM 해제' : 'GM 권한 주기'}</button><button class="btn btn-secondary dv-del" onclick="devDel('${d.id}')">삭제</button>`}</div></div>`).join('')}</div>`;
           h += `<h4>로그인 화면 배경</h4><div class="dv-bg"><select onchange="devSetBg(this.value)"><option value="">기본 (어두운 배경, 글씨만)</option>${Object.keys(LG_WC).map(k => `<option value="img/wc/${k}.webp"${(st.bg || '') === 'img/wc/' + k + '.webp' ? ' selected' : ''}>${escapeHtml(LG_WC[k])}</option>`).join('')}</select><input type="text" id="dv-bgurl" placeholder="또는 이미지 주소(https://…)" value="${/^https:/.test(st.bg || '') ? escapeHtml(st.bg) : ''}"><button class="btn btn-secondary" onclick="devSetBg(document.getElementById('dv-bgurl').value.trim())">적용</button></div><div class="manual-note">이 설정은 로그인 전 화면에도 보여서 모든 기기에 적용돼요. 이미지는 사이트의 img 폴더 그림이나 https 주소만 쓸 수 있어요.</div>`;
-          h += `<div style="margin-top:8px"><button class="btn btn-secondary" onclick="devChangePw()">비밀번호 변경</button></div>`;
+          h += `<div style="margin-top:8px"><button class="btn btn-secondary" onclick="devChangePw()">비밀번호 변경</button> <button class="btn btn-secondary" onclick="devSetGpw()">GM 로그인 비밀번호 ${st.gset ? '변경' : '정하기'}</button></div><div class="manual-note">PL을 고르지 않은 기기는 데이터를 못 받고, 하루가 지나면 자동으로 삭제돼요. 다른 PC에서 시금치(GM)로 들어오려면 GM 로그인 비밀번호가 필요해요. ${st.gset ? '' : '<b>아직 정하지 않았어요.</b>'}</div>`;
         } else h += '<div class="manual-note">기기 목록을 불러오지 못했어요.</div>';
       } else h += '<div class="manual-note">기기 삭제·관리는 GM 기기에서만 할 수 있어요.</div>';
       el.innerHTML = h;
@@ -2621,7 +2672,7 @@
     // ---- 접속 중인 사람 (Apps Script ping, 시트에 쓰지 않음)
     const PRES = { id: (() => { try { let v = localStorage.getItem('adv_pres_id'); if (!v) { v = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-3); localStorage.setItem('adv_pres_id', v); } return v; } catch (e) { return Math.random().toString(36).slice(2, 10); } })() };
     // 접속 표시 이름: 연결된 PC가 있으면 그 PC 이름, 없으면 직접 정한 이름
-    function presShown() { try { const id = landMe(); if (id) { const p = landPls().find(x => x.id === id); if (p) return String(p.key || p.name || '').replace(/\s*\(GM\)\s*$/i, '').trim().slice(0, 20) || presName(); } } catch (e) {} return presName(); }
+    function presShown() { try { const plr = myRaw().filter(isPlId)[0]; if (plr) { const pl = plsList().find(x => x.id === plr); if (pl && pl.name) return String(pl.name).trim().slice(0, 20); } const id = landMe(); if (id) { const p = landPls().find(x => x.id === id); if (p) return String(p.key || p.name || '').replace(/\s*\(GM\)\s*$/i, '').trim().slice(0, 20) || presName(); } } catch (e) {} return presName(); }
     function presName() { try { return (localStorage.getItem('adv_pres_name') || '').trim(); } catch (e) { return ''; } }
     function presencePanel(keep) {
       let p = document.getElementById('pres-panel');
@@ -2683,22 +2734,13 @@
     setInterval(() => { if ((window.__presList || []).some(u => u.id !== PRES.id && u.ed && String(u.ed).includes('¦'))) presGlowApply(); }, 3000);
     function presenceRender(list) {
       list = presDedupe(list); window.__presList = list; setTimeout(presGlowApply, 0);
-      let f = document.getElementById('pres-float');
-      if (!f) {
-        f = document.createElement('div'); f.id = 'pres-float';
-        let pos = {}; try { pos = JSON.parse(localStorage.getItem('adv_pres_pos') || '{}'); } catch (e) {}
-        f.style.cssText = `position:fixed;z-index:150;left:${pos.x != null ? pos.x : 12}px;top:${pos.y != null ? pos.y : Math.max(80, innerHeight - 220)}px;min-width:120px;max-width:200px;background:rgba(20,18,14,.55);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;font-size:12px;backdrop-filter:blur(3px);cursor:grab;user-select:none;touch-action:none;box-shadow:0 2px 10px rgba(0,0,0,.3);`;
-        f.title = '끌어서 옮기기 · 더블클릭하면 내 이름 변경';
-        let d = null;
-        f.addEventListener('pointerdown', e => { if (e.button !== undefined && e.button !== 0) return; const r = f.getBoundingClientRect(); d = { sx: e.clientX, sy: e.clientY, l: r.left, t: r.top }; f.setPointerCapture(e.pointerId); f.style.cursor = 'grabbing'; });
-        f.addEventListener('pointermove', e => { if (!d) return; const x = Math.max(0, Math.min(innerWidth - f.offsetWidth, d.l + e.clientX - d.sx)), y = Math.max(0, Math.min(innerHeight - f.offsetHeight, d.t + e.clientY - d.sy)); f.style.left = x + 'px'; f.style.top = y + 'px'; });
-        const end = () => { if (!d) return; d = null; f.style.cursor = 'grab'; try { localStorage.setItem('adv_pres_pos', JSON.stringify({ x: Math.round(f.offsetLeft), y: Math.round(f.offsetTop) })); } catch (e) {} };
-        f.addEventListener('pointerup', end); f.addEventListener('pointercancel', end);
-        f.addEventListener('dblclick', () => presenceRename());
-        document.body.appendChild(f);
-      }
-      try { const mx = Math.max(0, innerWidth - 60), my = Math.max(0, innerHeight - 40); if (f.offsetLeft > mx) f.style.left = '12px'; if (f.offsetTop > my || f.offsetTop < 0) f.style.top = Math.max(80, innerHeight - 220) + 'px'; f.style.display = ''; } catch (e) {}
-      f.innerHTML = list.map(u => { const nm = (u.name || '').trim() || ('손님 ' + String(u.id).slice(-2)); return `<div ${u.id === PRES.id ? 'data-me="1"' : ''} style="display:flex;align-items:center;gap:6px;padding:2px 0;font-weight:${u.id === PRES.id ? 800 : 500}"><span style="width:10px;height:10px;border-radius:3px;background:${presHue(u.id, u.id === PRES.id ? (presColor() || u.color) : u.color)};flex:none"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(nm)}${u.id === PRES.id ? ' (나)' : ''}${u.ed && u.id !== PRES.id ? ` <small style="opacity:.7;font-weight:500">✎ ${escapeHtml(String(u.ed).split('¦')[0])}</small>` : ''}</span></div>`; }).join('');
+      const pb = document.getElementById('presence-btn'); const old = document.getElementById('pres-float'); if (old) old.remove();
+      if (!pb) return;
+      pb.style.cssText = 'display:inline-flex;gap:5px;align-items:center;padding:6px 9px;position:relative;background:transparent;border:0;box-shadow:none;';
+      pb.removeAttribute('title');
+      const nmOf = u => (u.name || '').trim() || ('손님 ' + String(u.id).slice(-2));
+      pb.innerHTML = list.map(u => `<span class="pres-dot" style="background:${presHue(u.id, u.id === PRES.id ? (presColor() || u.color) : u.color)}"></span>`).join('')
+        + `<span class="pres-tip">` + list.map(u => `<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-weight:${u.id === PRES.id ? 800 : 500}"><span style="width:9px;height:9px;border-radius:50%;background:${presHue(u.id, u.id === PRES.id ? (presColor() || u.color) : u.color)};flex:none"></span><span>${escapeHtml(nmOf(u))}${u.id === PRES.id ? ' (나)' : ''}${u.ed && u.id !== PRES.id ? ` <small style="opacity:.7;font-weight:500">✎ ${escapeHtml(String(u.ed).split('¦')[0])}</small>` : ''}</span></div>`).join('') + `</span>`;
     }
     // 새 기기에서 처음 열면 이름을 물어봐서 기존 설정과 연결
     function nameAskOpen() {
@@ -2722,6 +2764,7 @@
     (function pcAskWatch() { let n = 0; const iv = setInterval(() => { n++; try { if (localStorage.getItem('adv_pc_ask') || myRaw().length || n > 60) { clearInterval(iv); return; } if (!AUTH_S.gate && AUTH_S.st && AUTH_S.st.valid && state.boardTex && (plsList().length > 0)) { clearInterval(iv); pcAskOpen(); } } catch (e) {} }, 800); })();
     function presencePing() {
       if (document.hidden) return;
+      try { authPushPls(); } catch (e) {}
       let edv = ''; try { edv = presEditing(); } catch (e) {}
       fetchGet('ping&id=' + encodeURIComponent(PRES.id) + '&name=' + encodeURIComponent(presShown()) + '&color=' + encodeURIComponent(presColor()) + '&ed=' + encodeURIComponent(edv)).then(t => { const j = typeof t === 'string' ? JSON.parse(t) : t; if (j && j.online) presenceRender(j.online); else throw 0; }).catch(() => { presenceRender([{ id: PRES.id, name: presShown() }]); });
     }
@@ -3218,7 +3261,7 @@
       const M = (state.boardTex.lgMemos = state.boardTex.lgMemos || {}); (M[id] = M[id] || []).push({ id: 'pm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), n: nm, by: me, t: t.trim(), img, ts: Date.now() });
       window.__lgPmImg = ''; persistState(); lgPmRefresh(id);
     }
-    function lgPmDel(id, mid) { if (!confirm('이 메모를 지울까요?')) return; const M = (state.boardTex.lgMemos || {}); M[id] = (M[id] || []).filter(m => m.id !== mid); persistState(); lgPmRefresh(id); }
+    function lgPmDel(id, mid) { const M = (state.boardTex.lgMemos || {}); M[id] = (M[id] || []).filter(m => m.id !== mid); persistState(); lgPmRefresh(id); delHint(); }
     function lgPmRefresh(id) { const d = document.querySelector('#lg-main .lg-pmw'); if (!d) return; const tmp = document.createElement('div'); tmp.innerHTML = lgPmHtml(id); d.replaceWith(tmp.firstElementChild); }
     // ---- 내 글씨체 (파일 올리기 / 주소) ----
     const FNT = { db: null, loaded: {} };
@@ -3249,7 +3292,7 @@
       const nm = (prompt('이 글씨체 이름', '내 글씨체') || '').trim(); if (!nm) return;
       (state.boardTex.customFonts = fntList()).push({ k: Date.now().toString(36), n: nm, url: u }); persistState(); fntRegister().then(fntUiRefresh);
     }
-    function fntRemove(k) { if (!confirm('이 글씨체를 목록에서 지울까요?')) return; state.boardTex.customFonts = fntList().filter(c => c.k !== k); const i = MEMO_FONTS.findIndex(f => f.k === 'cf_' + k); if (i >= 0) MEMO_FONTS.splice(i, 1); fntDel(k); persistState(); fntUiRefresh(); try { renderAll(); } catch (e) {} }
+    function fntRemove(k) { delHint(); state.boardTex.customFonts = fntList().filter(c => c.k !== k); const i = MEMO_FONTS.findIndex(f => f.k === 'cf_' + k); if (i >= 0) MEMO_FONTS.splice(i, 1); fntDel(k); persistState(); fntUiRefresh(); try { renderAll(); } catch (e) {} }
     function fntUiHtml() { return `<div class="fnt-up"><b>내 글씨체</b><button class="btn btn-secondary" style="font-size:.74rem" onclick="fntAddUrl()">폰트 주소로 추가</button></div>${fntList().map(c => `<div class="fnt-li"><span style="flex:1;font-family:'cf_${c.k}',serif">${escapeHtml(c.n)}${c.url ? '' : ' <small style="opacity:.6"></small>'}</span><button class="lg-rune" onclick="fntRemove('${c.k}')" title="지우기"><img src="${IC_RUNE}" alt=""></button></div>`).join('')}`; }
     function fntUiRefresh() { const e = document.getElementById('fnt-box'); if (e) e.innerHTML = fntUiHtml(); try { if (typeof tcgRender === 'function' && document.querySelector('#tcg-ov .tbk')) tcgRender(false); } catch (e2) {} try { pcCfgRender(); } catch (e3) {} }
     setTimeout(fntRegister, 2500); setTimeout(fntRegister, 7000);
@@ -3311,7 +3354,7 @@
       const id = LG.cur, M = (state.boardTex.lgCmts = state.boardTex.lgCmts || {}); (M[id] = M[id] || []).push({ id: 'cm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4), idx: window.__lgCmtIdx.slice(), n: U.nm, by: U.me, t, ts: Date.now() });
       persistState(); lgPasteClose(); lgCmtApply(id);
     }
-    function lgCmtDel(id, cid) { if (!confirm('이 메모를 지울까요?')) return; const M = state.boardTex.lgCmts || {}; M[id] = (M[id] || []).filter(c => c.id !== cid); persistState(); lgCmtApply(id); }
+    function lgCmtDel(id, cid) { delHint(); const M = state.boardTex.lgCmts || {}; M[id] = (M[id] || []).filter(c => c.id !== cid); persistState(); lgCmtApply(id); }
     function lgShow(id, hit) {
       LG.cur = id; lgList(); const main = document.getElementById('lg-main'), x = LG.idx.find(a => a.id === id); if (!LG.data[id]) main.innerHTML = '<div class="lg-empty">불러오는 중…</div>';
       lgLoad(id).then(ms => {
@@ -3525,7 +3568,7 @@
     function plView() { try { return sessionStorage.getItem('adv_plview') || ''; } catch (e) { return ''; } }
     function landMe() { const pv = plView(); if (pv) return pv; let id = ''; try { id = localStorage.getItem('adv_me_pl') || ''; } catch (e) {} const pcs = landPls(); if (id && pcs.some(p => p.id === id)) { const off = x => { const q = pcs.find(p => p.id === x); return !!(q && q.off); }; if (off(id)) { let l = []; try { l = JSON.parse(localStorage.getItem('adv_my_pcs') || '[]'); } catch (e) {} const alt = l.find(x => x !== id && pcs.some(p => p.id === x) && !off(x)); if (alt) return alt; } return id; } return landByName(presName()); }
     const nameKey = x => String(x || '').normalize('NFC').replace(/\s+/g, '').replace(/\(gm\)/i, '').toLowerCase();
-    function landByName(n) { const k = nameKey(n); if (!k) return ''; const m = landPls().find(p => nameKey(p.key || p.name) === k || nameKey(p.name) === k); return m ? m.id : ''; }
+    function landByName(n) { const k = nameKey(n); if (!k) return ''; const m = landPls().find(p => nameKey(p.key || p.name) === k || nameKey(p.name) === k); if (m) return m.id; const pl = plsList().find(x => (x.aliases || []).some(a => nameKey(a) === k)); if (pl) { const pc = (state.boardTex.pcs || []).find(c => c.pl === pl.id); return pc ? pc.id : pl.id; } return ''; }
     // 같은 이름 = 같은 사람: 이름을 저장하면 등록된 PL(설정)과 연결하고, 그 사람의 첫 화면 · 보기 방식을 바로 적용
     function presLink(n, applyNow) {
       const id = landByName(n); try { if (id) myPcsAdd(id, true); else localStorage.removeItem('adv_me_pl'); } catch (e) {}
@@ -3967,7 +4010,7 @@
             applyLoadedData(data, false); state.lastUpdated = data.lastUpdated; syncBaseSet();
             syncRender(); try { cacheState(); } catch (e) {}
             if (sid && pj() !== before) { if (typingSheet()) window.__sheetLater = 1; else sheetSend(); }
-            setSyncBadge('connected', '동기화됨'); showToast('다른 기기의 변경을 불러왔어요.');
+            setSyncBadge('connected', '동기화됨');
           }, () => {});
         }).catch(() => {});
       } catch (e) {}
@@ -4204,7 +4247,7 @@
     }
 
     function deleteGlobalNpc(npcId) {
-      if (!confirm('이 인물을 도감에서 삭제하시겠습니까?')) return;
+      delHint();
       state.globalNpcs = state.globalNpcs.filter(n => n.id !== npcId);
       state.quests.forEach(q => {
         if (q.npcIds) q.npcIds = q.npcIds.filter(id => id !== npcId);
@@ -4447,12 +4490,17 @@
       renderAll();
     }
 
-    function armDeleteQuest(btn, id) {
-      if (btn.dataset.armed) { deleteQuest(id); return; }
-      btn.dataset.armed = '1'; btn.classList.add('armed');
-      showToast('삭제하려면 한 번 더 눌러주세요.');
-      setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); } }, 3000);
+    // 삭제는 묻지 않고 바로 지우고, 실행 취소(Ctrl+Z 또는 아래에 뜨는 되돌리기 단추)로 복구해요
+    function delHint() {
+      try {
+        let b = document.getElementById('del-undo'); if (b) b.remove();
+        b = document.createElement('button'); b.id = 'del-undo'; b.type = 'button'; b.textContent = '지웠어요 · 되돌리기 (Ctrl+Z)';
+        b.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9800;padding:9px 16px;border-radius:999px;border:0;background:#1e293b;color:#fff;font:700 .85rem sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:pointer';
+        b.onclick = () => { b.remove(); if (state.viewMode === 'timeline') { try { tlUndoAction(); } catch (e) {} } else gUndoAction(false); };
+        document.body.appendChild(b); setTimeout(() => { if (b.isConnected) b.remove(); }, 7000);
+      } catch (e) {}
     }
+    function armDeleteQuest(btn, id) { deleteQuest(id); delHint(); }
     function deleteQuest(id) {
       if (state.detailQid === id) state.detailQid = null;
       state.quests = state.quests.filter(q => q.id !== id);
@@ -4957,12 +5005,14 @@
       function place() {
         if (!tgt || !tgt.isConnected) { hide(); return; }
         const cl = qbCur(), r = rectOf(tgt), vh = win.innerHeight, vw = win.innerWidth, k = 0.8;
+        let vx = Math.round(Math.min(r.right, vw) - 40);   // 팝업 창 안의 목록은 스크롤바를 창 바깥쪽 가장자리에 둬요 (삭제 단추 등을 가리지 않게)
+        if (!isDoc(tgt) && tgt.closest) { const mb = tgt.closest('.modal-box'); if (mb) { const mr = mb.getBoundingClientRect(); if (mr.right + 44 <= vw) vx = Math.round(mr.right + 4); } }
         const doV = needV(tgt) && (isDoc(tgt) || /(auto|scroll)/.test(win.getComputedStyle(tgt).overflowY)), doH = needH(tgt) && (isDoc(tgt) || /(auto|scroll)/.test(win.getComputedStyle(tgt).overflowX));
         if (doV) {
           const top = Math.max(r.top, 0) + 8, bot = Math.min(r.bottom, vh) - (doH ? 48 : 12), len = bot - top;
           if (len >= 70) {
             const L = Math.min(Math.round(cl.len * k), Math.round(len * 0.5)), H = Math.round(cl.h * L / cl.len), mx = tgt.scrollHeight - tgt.clientHeight, fr = mx ? tgt.scrollTop / mx : 0;
-            V.style.cssText = `display:block;left:${Math.round(Math.min(r.right, vw) - 40)}px;top:${top}px;height:${len}px;width:40px;z-index:99980;`;
+            V.style.cssText = `display:block;left:${vx}px;top:${top}px;height:${len}px;width:40px;z-index:99980;`;
             tv.style.cssText = `width:${L}px;height:${H}px;background-image:url(${cl.url});left:${Math.round((40 - H) / 2)}px;top:${Math.round((len - L) * fr + L)}px;`;
           } else V.style.display = 'none';
         } else V.style.display = 'none';
@@ -5088,6 +5138,7 @@
       persistState(); renderBoard();
     }
     function armDel(btn, fn) {
+      closeCtx(); fn(); delHint(); return;
       if (btn.dataset.armed) { closeCtx(); fn(); return; }
       btn.dataset.armed = '1'; btn.textContent = '한 번 더 누르면 떼져요';
       setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = btn.dataset.label || '삭제'; } }, 3000);
@@ -5871,8 +5922,9 @@
     const CLUE_BGS = [['g1', '아라베스크 남색'], ['g2', '아라베스크 크림'], ['g3', '아라베스크 청록'], ['p1', '문양 1'], ['p2', '문양 2'], ['p3', '문양 3'], ['m0', '문양 4'], ['m1', '문양 5'], ['m2', '문양 6'], ['m3', '문양 7'], ['m4', '문양 8']].concat(PAT_IMGS.map(x => ['i_' + x.k, x.n]));
     function hidList(t) { const h = (state.boardTex.hide = state.boardTex.hide || {}); return (h[t] = h[t] || []); }
     function isHid(t, k) { return hidList(t).indexOf(k) >= 0; }
-    function armIcon(el, fn) { if (el.dataset.armed) { fn(); return; } el.dataset.armed = '1'; el.classList.add('armed'); showToast('삭제하려면 한 번 더 눌러주세요.'); setTimeout(() => { if (el.isConnected) { delete el.dataset.armed; el.classList.remove('armed'); } }, 3000); }
+    function armIcon(el, fn) { fn(); delHint(); return; if (el.dataset.armed) { fn(); return; } el.dataset.armed = '1'; el.classList.add('armed'); showToast('삭제하려면 한 번 더 눌러주세요.'); setTimeout(() => { if (el.isConnected) { delete el.dataset.armed; el.classList.remove('armed'); } }, 3000); }
     function armX(el, fn) {
+      fn(); delHint(); return;
       if (el.dataset.armed) { fn(); return; }
       el.dataset.armed = '1'; el.classList.add('armed'); showToast('지우려면 한 번 더 눌러주세요. (나중에 복원할 수 있어요)');
       setTimeout(() => { if (el.isConnected) { delete el.dataset.armed; el.classList.remove('armed'); } }, 3000);
@@ -6170,7 +6222,7 @@
     }
     function mbLaneLabel(id, v) { const l = mbData('clue').lanes.find(x => x.id === id); if (l) { l.label = v; mbPersist(); } }
     function mbLaneDel(btn, id) {
-      if (!btn.dataset.armed) { btn.dataset.armed = '1'; btn.textContent = '한 번 더'; setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = '×'; } }, 3000); return; }
+      delHint();
       const d = mbData('clue'), i = d.lanes.findIndex(l => l.id === id); if (i < 0) return;
       const rs = mbLaneRects(d); d.lanes.forEach((x, k) => { x.x = rs[k].x; x.y = rs[k].y; });
       const r = rs[i], gone = d.cards.filter(c => { const cx = c.x + c.w / 2, cy = c.y + c.h / 2; return cx >= r.x && cx < r.x + r.w && cy >= r.y && cy < r.y + r.h; }).map(c => c.id);
@@ -6565,7 +6617,7 @@
       closeItemModal(); if (e.mode === 'store') renderMini('store'); else itemRefresh();
     }
     function itemDel(btn) {
-      if (!btn.dataset.armed) { btn.dataset.armed = '1'; btn.textContent = '한 번 더'; setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = '떼기'; } }, 3000); return; }
+      delHint();
       const e = itemEd; closeItemModal(); if (!e) return;
       if (e.mode === 'board') npcDel(e.id); else if (e.mode === 'clue') mbDel('clue', e.id); else mbDel('store', e.id);
     }
@@ -6737,7 +6789,7 @@
     }
     function delBsModal() {
       const b = document.getElementById('bs-del');
-      if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '한 번 더 누르면 삭제돼요'; setTimeout(() => { delete b.dataset.armed; b.textContent = '이 보드판 삭제'; }, 3000); return; }
+      delHint();
       const bt = bsEnsure(), id = bt.active; if (id === 'main') return;
       closeBsModal(); switchBoard('main');
       bt.sets = bt.sets.filter(x => x.id !== id); persistState(); renderBoard();
@@ -6872,7 +6924,7 @@
       el.innerHTML = pcs.length ? pcs.map((p, i) => `<div class="pc-row" id="pc-row-${i}" data-dl="pc" data-di="${i}"><span class="dl-grip" title="끌어서 순서 변경">⋮⋮</span>
           <img src="${escapeHtml(p.img || IC_NPC)}" alt="" title="${p.img ? '이미지 바꾸기' : '이미지 연결 (없으면 도감 기본 이미지)'}" onclick="pcPickImg(${i})" style="width:38px;height:38px;object-fit:cover;border-radius:8px;border:1px solid var(--border-subtle);cursor:pointer;background:#fff;">
           ${p.img ? `<button class="btn btn-secondary" style="padding:2px 7px;" title="이미지 해제" onclick="pcSet(${i},'img','');renderPcList()">해제</button>` : ''}
-          <input type="text" value="${escapeHtml(p.name || '')}" placeholder="PC 이름" style="width:120px;" oninput="pcSet(${i},'name',this.value)">
+          <input type="text" value="${escapeHtml(p.name || '')}" placeholder="PC 이름" style="width:120px;" oninput="pcSet(${i},'name',this.value)">${(() => { const o = p.pl ? plsList().find(x => x.id === p.pl) : null; return o ? `<span class="dv-tag" title="주인 PL">PL ${escapeHtml(o.name || '')}</span>` : ''; })()}
           <select onchange="pcSet(${i},'font',this.value)">${fonts(p.font)}</select>
           <input type="color" value="${p.fc || '#2d2410'}" oninput="pcSet(${i},'fc',this.value)" title="글자색">
           <input type="number" min="10" max="48" value="${Number(p.fs) || 16}" style="width:58px;" oninput="pcSet(${i},'fs',Number(this.value))" title="글자 크기">
@@ -7261,7 +7313,7 @@
     }
     function pcCardHtml(p, i, prev) { let h = pcCardHtml0(p, i, prev); const alt2 = p && p.img2 ? `<button type="button" class="pc-altb" title="두 번째 모습 보기" aria-label="두 번째 모습 보기" onclick="event.stopPropagation();pcAltToggle(this)">⇄</button>` : ''; if (p && Array.isArray(p.tbs) && p.tbs.length) { const tb = p.tbs.map(b => `<div class="pc-tb" data-tb="${escapeHtml(b.id)}" style="left:${Number(b.x) || 50}%;top:${Number(b.y) || 50}%;font-size:${(Number(b.s) || 100) / 100 * .9}rem;${b.c ? 'color:' + escapeHtml(b.c) + ';' : ''}${b.f ? 'font-family:' + escapeHtml(fontOf(b.f)) + ';' : ''}">${escapeHtml(b.t || '').replace(/\n/g, '<br>')}</div>`).join(''); h = h.replace(/<\/div>\s*$/, tb + '</div>'); } if (p && p.off) h = h.replace('class="', 'class="pc-off '); if (p && (p.st === 'dead' || p.st === 'missing')) { h = h.replace('class="', 'class="npc-' + (p.st === 'dead' ? 'dead' : 'miss') + ' '); h = h.replace('>', '><span class="st-bd">' + (p.st === 'dead' ? '†' : '?') + '</span>'); } if (p && (p.st === 'gray' || p.st === 'foe')) h = h.replace('class="', 'class="npc-' + p.st + ' '); if (alt2) { h = h.replace('>', ` data-alt="${escapeHtml(p.img2)}">`); h = h.replace(/<\/div>\s*$/, alt2 + '</div>'); } return h; }
     function npcStSet(id, st) { const n = state.globalNpcs.find(x => x.id === id); if (!n) return; if (st) n.st = st; else delete n.st; persistState(); try { renderNpcCodex(); } catch (e) {} if (pccNpc && pccId === id) { try { pcCfgRender(); } catch (e) {} } }
-    function npcDelFan(id) { const n = state.globalNpcs.find(x => x.id === id); if (!n || !confirm('‘' + (n.name || '이름 없음') + '’ NPC 카드를 삭제할까요?')) return; npcRemoveCore(id); state.boardTex.npcCards = (state.boardTex.npcCards || []).filter(x => x.id !== id); persistState(); if (pccNpc && pccId === id) closePcCfg(); try { renderNpcCodex(); } catch (e) {} }
+    function npcDelFan(id) { const n = state.globalNpcs.find(x => x.id === id); if (!n) return; delHint(); npcRemoveCore(id); state.boardTex.npcCards = (state.boardTex.npcCards || []).filter(x => x.id !== id); persistState(); if (pccNpc && pccId === id) closePcCfg(); try { renderNpcCodex(); } catch (e) {} }
     function npcToolsHtml(id) { const n = state.globalNpcs.find(x => x.id === id) || {}, st = n.st || '', b = (v, l) => `<button type="button" class="${st === v ? 'on' : ''}" onclick="event.stopPropagation();npcStSet('${id}','${v}')">${l}</button>`; return `<div class="fan-tools">${b('', '생존')}${b('dead', '† 사망')}${b('missing', '? 실종')}${b('gray', '회색')}${b('foe', '적대')}<button type="button" class="del" onclick="event.stopPropagation();npcDelFan('${id}')">삭제</button></div>`; }
     function pcCardHtml0(p, i, prev) {
       const sh = p.sheet || {}, ty = PC_TYPES.some(t => t[0] === p.cardType) ? p.cardType : 'custom', src = p.art || p.img || '';
@@ -7897,6 +7949,7 @@
           <button class="btn btn-primary" onclick="closeNpcModal()">닫기</button></div>`;
     }
     function npcArm(btn, fn) {
+      fn(); delHint(); return;
       if (btn.dataset.armed) { fn(); return; }
       btn.dataset.armed = '1'; btn.classList.add('armed'); showToast('한 번 더 누르면 실행돼요.');
       setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); } }, 3000);
@@ -8867,7 +8920,7 @@
       const msg = n.kind === 'note'
         ? '이 말풍선을 삭제할까요?' + (hasLinks ? ' 연결된 선도 함께 사라져요.' : '')
         : '타임라인에서 이 카드를 뺄까요? (퀘스트 자체는 삭제되지 않아요)' + (hasLinks ? ' 연결된 선은 함께 사라져요.' : '');
-      if (!confirm(msg)) return;
+      delHint();
       delete tl.nodes[id];
       tl.links = tl.links.filter(l => l.from !== id && l.to !== id);
       if (tlConnectFrom === id) tlConnectFrom = null;
