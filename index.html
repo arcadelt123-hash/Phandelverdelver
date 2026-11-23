@@ -1994,7 +1994,8 @@
     .fan-row { position: absolute; left: 0; right: 0; top: 0; height: calc(var(--cw) * 1.75); pointer-events: none; transition: filter .3s; filter: brightness(.82) saturate(.85); } .fan-row.act { filter: none; }
     .fan-row[data-r="npc"] { top: 0; } .fan-stage.two .fan-row[data-r="npc"] { top: calc(var(--cw) * 2.2); }
     .fan-row .fan-c { pointer-events: auto; }
-    .fan-stage { touch-action: pan-y; }
+    .fan-stage { touch-action: pan-y; isolation: isolate; }
+    .fan-mid .fmb { padding: 4px 12px !important; line-height: 1; }
     .fan-lab { position: absolute; left: 10px; top: 8px; font-weight: 800; letter-spacing: .08em; color: #5a4524; font-size: .8rem; z-index: 400; }
     .fan-row .fan-c { position: absolute; left: 50%; top: 24px; width: var(--cw); margin: 0; transform-origin: 50% 90%; transition: transform .18s cubic-bezier(.2,.8,.3,1), opacity .18s; cursor: pointer; filter: drop-shadow(0 8px 14px rgba(0,0,0,.4)); }
     .fan-row .fan-c.sel { filter: drop-shadow(0 12px 22px rgba(0,0,0,.5)); }
@@ -5150,7 +5151,8 @@
 
     function bz() { return Math.max(0.3, Math.min(2, Number(state.boardTex.zoom) || 1)); }
     function navBarHidden() { const t = document.querySelector('.top-bar'); return !t || getComputedStyle(t).display === 'none'; }
-    function navHandleSync() { const h = document.getElementById('nav-handle'); if (h) { const hid = navBarHidden(); h.style.display = hid ? 'block' : 'none'; h.textContent = '▼'; } }
+    function navHandleSync() { const h = document.getElementById('nav-handle'); if (h) { const hid = navBarHidden() && state.viewMode !== 'map'; h.style.display = hid ? 'block' : 'none'; h.textContent = '▼'; } }
+    { const _ms = mapSync; mapSync = function () { const r = _ms.apply(this, arguments); try { navHandleSync(); } catch (e) {} return r; }; }
     function navToggle() {
       if (state.viewMode === 'map') { mapNavOpen = !mapNavOpen; mapSync(true); }
       else { const off = !document.body.classList.contains('nav-off'); document.body.classList.toggle('nav-off', off); try { localStorage.setItem('adv_nav_off', off ? '1' : '0'); prefSet('navOff', off ? 1 : 0); } catch (e) {} }
@@ -6207,7 +6209,7 @@
     }
 
     // ---- 기록실 (일지 · 창고 · 단서) ----
-    state.jView = 'pc'; state.jPc = null; state.mbToolsOpen = false;
+    state.jView = 'pc'; state.jPc = null; state.mbToolsOpen = true; state.boardToolsOpen = true; state.tlToolsOpen = true;
     let mbLinkFrom = null, mbTopZ = 50, mbSaveT = null;
     function jBoardData() {
       const bt = state.boardTex, items = new Map();
@@ -6235,14 +6237,14 @@
     }, true);
     function pccNmSave() { const a = document.getElementById('pcc-ali'); if (a && !pccNpc) { const arr = []; a.value.split(/[,，\n]/).forEach(x => { x = x.trim().slice(0, 20); if (x && !arr.includes(x)) arr.push(x); }); pcCfgSet('aliases', arr.slice(0, 12)); } window.__nmEdit = false; pcCfgRender(); try { if (state.viewMode === 'journal') renderAll(); } catch (e) {} }
     function jOp(v) { v = Math.max(0, Math.min(100, Number(v) || 0)); try { localStorage.setItem('adv_jop', String(v)); } catch (e) {} document.documentElement.style.setProperty('--jop', v / 100); }
-    try { const _v = localStorage.getItem('adv_jop'); if (_v !== null) document.documentElement.style.setProperty('--jop', Number(_v) / 100); } catch (e) {}
+    
     function pccNmEdit() { window.__nmEdit = true; pcCfgRender(); setTimeout(() => { const i = document.getElementById('pcc-nmi'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 30); }
     function jHeaderHtml() {
       const V = state.jView;
       let memoIc = IC_FEATHER; try { memoIc = NOTE_MEMO[Object.keys(NOTE_MEMO)[0]].url; } catch (e) {}
       const TIC = { pc: IC_BK_OPEN, items: IC_K_ITEM, clues: memoIc }, jop = (() => { try { const v = localStorage.getItem('adv_jop'); return v === null ? 100 : Number(v); } catch (e) { return 100; } })();
       const tab = (k, t) => `<button type="button" class="btn j-tabic${V === k ? ' on' : ''}" title="${t}" aria-label="${t}" onclick="jSet('jView','${k}')"><img src="${TIC[k]}" alt=""></button>`;
-      let h = `<div class="j-tabs" style="align-items:center">${tab('pc', '일지')}${tab('items', '창고')}${tab('clues', '단서')}<label class="j-opl" title="아이콘 상자 투명도">상자 투명도 <input type="range" min="0" max="100" step="5" value="${jop}" oninput="jOp(this.value)"></label></div>`;
+      let h = `<div class="j-tabs" style="align-items:center">${tab('pc', '일지')}${tab('items', '창고')}${tab('clues', '단서')}</div>`;
       if (V === 'pc') {
         const pcs = (state.boardTex.pcs || []).filter(p => !p.off); if ((state.jPc == null || !pcs.some(p => p.id === state.jPc)) && pcs.length) state.jPc = pcs[0].id;
         h += `<div class="j-pcs">${pcs.map(p => `<button class="j-pc${p.id === state.jPc ? ' on' : ''}" ${jdr(p.id)} title="${escapeHtml(p.name || '')}" ${pcIconSty(p)} onclick="jSet('jPc','${p.id}')">${pcIconImg(p)}</button>`).join('')}
@@ -7892,7 +7894,7 @@
       const isFree = p.tx != null && p.ty != null && p.tx !== '';
       const frameGrid = ty === 'custom' ? `<div class="pcc-grid">${frameList().filter(f => !isHid('fr', f.k)).map(f => `<button class="${p.frame === frUrl(f) ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="${escapeHtml(frSrc(frUrl(f)))}" alt="${f.n}" loading="lazy"></button>`).join('')}</div>` : '';
       const bgGrid = ty === 'custom' && p.frame && (frDefOf(p.frame) || {}).nobg ? '<div class="pcc-none">이 틀은 배경 없이 캐릭터 이미지만 얹어요</div>' : ty === 'custom' && (p.fHole || !p.frame) ? `<div class="pcc-grid pcc-grid-bg"><label class="pcc-col" title="배경 색"><input type="color" value="${p.fBgc || '#f4ecd8'}" oninput="pcCfgSet('fBgc',this.value)"></label>${patList().filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<button class="${p.fBgi === bgUrl(x) ? 'on' : ''}" title="${x.n}" onclick="pcCfgToggleBg('${x.k}')"><img src="${escapeHtml(bgUrl(x))}" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"></button>`).join('')}</div>` : '<div class="pcc-none">틀을 고르면 배경을 고를 수 있어요</div>';
-      const sliders = (ty === 'custom' ? (p.frame ? '' : sl('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)) + sl('칸 왼쪽', 'wx', 0, 60, 1, 15) + sl('칸 위', 'wy', 0, 60, 1, 12) + sl('칸 너비', 'ww', 20, 100, 1, 70) + sl('칸 높이', 'wh', 20, 100, 1, 76) + sl('모서리', 'wr', 0, 50, 1, 0) : '') + (full ? sl('확대', 'imgZ', 100, 300, 5, 100) : sl('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? sl('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : ''));
+      const sliders = (ty === 'custom' ? (p.frame ? '' : sl('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)) + sl('모서리', 'wr', 0, 50, 1, 0) : '') + (full ? sl('확대', 'imgZ', 100, 300, 5, 100) : sl('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? sl('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : ''));
       const tkP = pccNpc ? [] : tokList().filter(t => t.owner === p.id && t.kind !== 'pl');
       const tokBox = pccNpc ? '' : `<div class="pcc-memo" style="display:block"><b>로그 토큰 (이 PC)</b>${tkP.length ? tkP.map(t => tokRowHtml(t, 'pcc')).join('') : '<div style="font-size:.76rem;opacity:.6;margin-top:4px">등록된 토큰이 없어요.</div>'}<button class="btn btn-secondary" style="margin-top:6px;padding:3px 10px;font-size:.78rem" onclick="tokAdd('${escapeHtml(p.id)}','pc')">＋ 토큰 추가</button><div style="font-size:.7rem;opacity:.65;margin-top:4px">두 번째 칸에 다른 모습(예: 변신 후)을 넣으면 로그에서 토큰을 눌렀을 때 바뀌어요. 이후 올리는 로그부터 적용돼요.</div></div>`;
       const memo = pccNpc ? '' : `<div class="pcc-memo"><b>메모 기본 설정</b><select onchange="pcCfgSet('font',this.value)">${fonts}</select><span><input type="color" title="글자색" value="${p.fc || '#2d2410'}" oninput="pcCfgSet('fc',this.value)"><input type="number" title="크기" min="10" max="48" value="${Number(p.fs) || 16}" oninput="pcCfgSet('fs',Number(this.value))"></span></div>`;
@@ -8406,7 +8408,7 @@
     }
     // ---- v6: 인물 도감 (필터 · 태그 · 선택 삭제 · 한 줄 보기) ----
     const FAN_ST = [['alive', '생존'], ['dead', '사망'], ['missing', '실종'], ['gray', '회색'], ['foe', '적대']];
-    function fanCfgGet() { let c = {}; try { c = JSON.parse(localStorage.getItem('adv_fancfg') || '{}'); } catch (e) {} return { vis: Math.max(3, Math.min(11, Number(c.vis) || 6)), st: Array.isArray(c.st) ? c.st : [], tg: Array.isArray(c.tg) ? c.tg : [] }; }
+    function fanCfgGet() { let c = {}; try { c = JSON.parse(localStorage.getItem('adv_fancfg') || '{}'); } catch (e) {} return { vis: 10, st: Array.isArray(c.st) ? c.st : [], tg: Array.isArray(c.tg) ? c.tg : [] }; }
     function fanCfgSave(c) { try { localStorage.setItem('adv_fancfg', JSON.stringify(c)); } catch (e) {} }
     function fanV() { return fanCfgGet().vis; }
     function fanStOn() { return fanCfgGet().st.length > 0; }
@@ -8414,8 +8416,9 @@
     function fanPass(n) { const c = fanCfgGet(); if (c.st.length && !c.st.includes(fanStKey(n.st))) return false; if (c.tg.length) { const t = n.tags || []; if (!c.tg.some(x => t.includes(x))) return false; } return true; }
     function fanPassPc(p) { const c = fanCfgGet(); return !c.st.length || c.st.includes(fanStKey(p.st)); }
     function fanAllTags() { const s = new Set(); (state.globalNpcs || []).forEach(n => (n.tags || []).forEach(t => s.add(t))); return Array.from(s).sort(); }
-    function fanBarHtml(withVis) { const c = fanCfgGet(), n = c.st.length + c.tg.length; return `<div class="fan-mid"><button type="button" class="fmb${n ? ' on' : ''}" onclick="fanFpOpen(event)">필터${n ? ' (' + n + ')' : ''}</button>${withVis ? `<span class="fvs">보이는 카드<button type="button" onclick="fanVis(-1)" aria-label="줄이기">−</button><b>${c.vis}</b><button type="button" onclick="fanVis(1)" aria-label="늘리기">+</button></span>` : ''}</div>`; }
+    function fanBarHtml(withVis) { const c = fanCfgGet(), n = c.st.length + c.tg.length; return `<div class="fan-mid"><button type="button" class="fmb${n ? ' on' : ''}" onclick="fanFpOpen(event)" title="필터" aria-label="필터"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align:-2px"><path d="M6 3h12v18l-6-4.2L6 21z"/></svg>${n ? ' (' + n + ')' : ''}</button></div>`; }
     function fanVis(d) { const c = fanCfgGet(); c.vis = Math.max(3, Math.min(11, c.vis + d)); fanCfgSave(c); const b = document.querySelector('.fan-mid .fvs b'); if (b) b.textContent = c.vis; fanLayout(); fanApply(true); }
+    setInterval(() => { try { if (document.getElementById('fan-fp') && document.querySelector('.modal-backdrop.open')) document.getElementById('fan-fp').remove(); } catch (e) {} }, 300);
     function fanFpOpen(e) {
       e.stopPropagation(); const old = document.getElementById('fan-fp'); if (old) { old.remove(); return; }
       const r = e.currentTarget.getBoundingClientRect(), m = document.createElement('div'); m.id = 'fan-fp'; m.style.left = Math.max(8, Math.min(r.left, innerWidth - 300)) + 'px'; m.style.top = Math.max(8, Math.min(r.bottom + 6, innerHeight - 320)) + 'px'; document.body.appendChild(m); fanFpDraw();
