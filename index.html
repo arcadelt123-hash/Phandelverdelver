@@ -1134,7 +1134,10 @@
     .lg-m.first { margin-top: 10px; }
     .lg-by { flex: none; width: 118px; text-align: right; font-weight: 700; font-size: 13px; padding-top: 1px; overflow-wrap: anywhere; }
     .lg-t { flex: 1; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .lg-m.gm .lg-t { background: #f3e9cf; border-radius: 6px; padding: 2px 8px; }
+    .lg-m.gm .lg-t { background: transparent; }
+    .lg-box .lg-m, .lg-box .lg-m .lg-by { font-family: var(--lg-ff, inherit); }
+    .lg-box .lg-m { font-size: var(--lg-fs, 14px); }
+    .lg-box.lg-hasfg .lg-m .lg-t { color: var(--lg-fg) !important; }
     .lg-m.roll .lg-t { color: #7a4a12; } .lg-m.desc { justify-content: center; opacity: .7; font-size: 12.5px; }
     .lg-av { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 5px; }
     .lg-card { background: rgba(255,255,255,.55); border: 1px solid rgba(120,90,40,.35); border-radius: 10px; padding: 6px 10px; max-width: 420px; }
@@ -1565,6 +1568,7 @@
     .pcl-custom.pcl-hole .pcf-img { z-index: 2; }
     .pcl-custom.pcl-hole .pcf-img.pcf-bg { z-index: 0; }
     .pcl-custom.pcl-bgonly .pt-win { z-index: 1; }
+    #pcc-prev .cd-rs { position: absolute; right: 3px; bottom: 3px; width: 14px; height: 14px; border: 2px solid #e6b24a; background: #fff8e0; border-radius: 3px; cursor: nwse-resize; touch-action: none; z-index: 9; }
     .pcl-custom.pcl-hole .pt-win.pt-bgl { z-index: 1; background-size: cover; background-position: center; }
     .pcl-custom.pcl-hole .pt-win.pt-ov { z-index: 3; pointer-events: none; }
     .pcl-custom .pt-win > svg { position: absolute; left: 25%; top: 35%; width: 50%; opacity: .25; }
@@ -3192,13 +3196,18 @@
     function lgTokAv(av) { (state.boardTex.tokens || []).forEach(t => { if (!t.img) return; String(t.n || '').split(/[,，]/).map(x => x.trim()).filter(Boolean).forEach(a => { av[a] = t.img; if (t.alt) av['@alt:' + a] = t.alt; }); }); return av; }
     async function lgUpload(inp) {
       const files = [...inp.files]; inp.value = ''; if (!files.length) return;
-      const seen = new Set(); let msgs = [], date = '', av = {};
-      for (const f of files.sort((a, b) => a.name.localeCompare(b.name))) { const r = /\.txt$/i.test(f.name) ? lgParseFvtt(await f.text()) : lgParse(await f.text(), seen, av); msgs = msgs.concat(r.msgs); date = date || r.date; }
+      const seen = new Set(); let msgs = [], date = '', av = {}, pre = null;
+      for (const f of files.sort((a, b) => a.name.localeCompare(b.name))) {
+        const tx = await f.text(); let r = null;
+        if (/id="adv-log"/.test(tx)) { try { const m = /<script type="application\/json" id="adv-log">([\s\S]*?)<\/script>/.exec(tx), j = JSON.parse(m[1]); pre = pre || j; Object.assign(av, j.av || {}); r = { msgs: j.msgs || [], date: j.date || '' }; } catch (e) { r = null; } }
+        if (!r) r = /\.txt$/i.test(f.name) ? lgParseFvtt(tx) : lgParse(tx, seen, av);
+        msgs = msgs.concat(r.msgs); date = date || r.date;
+      }
       try { tokSeed(); } catch (e) {} lgTokAv(av);
       if (!msgs.length) { alert('대사를 찾지 못했어요. 롤20 채팅 아카이브(.htm) 또는 FVTT 채팅 내보내기(.txt) 파일이 맞는지 확인해주세요.'); return; }
       const next = lgNextNo();
-      const label = prompt('회차 이름 (예: 19회차)', next + '회차'); if (label === null) return;
-      const title = prompt('한 줄 제목 (선택)', '') || '';
+      const label = prompt('회차 이름 (예: 19회차)', (pre && pre.label) || next + '회차'); if (label === null) return;
+      const title = prompt('한 줄 제목 (선택)', (pre && pre.title) || '') || '';
       const dt = prompt('날짜 (YYYY-MM-DD)', date || calYmd(new Date())) || date;
       return lgSaveLog(msgs, av, label, title, dt, date);
     }
@@ -3330,6 +3339,21 @@
     }
     // ---- 로그 다운로드 / 새로고침 / 회차 요약 ----
     function lgRefresh() { LG.data = {}; Promise.resolve(lgProbe()).then(() => { try { lgList(); if (LG.cur) lgShow(LG.cur); showToast('새로 불러왔어요'); } catch (e) {} }); }
+    function lgDownloadHtml() {
+      const id = LG.cur, x = (LG.idx || []).find(a => a.id === id); if (!x) { showToast('먼저 회차를 열어 주세요.'); return; }
+      lgLoad(id).then(ms => {
+        const av = LG.av[id] || {}, body = ms.map(m => {
+          if (m[0] === 'd') return `<p class="d">${m[3] ? `<img src="${escapeHtml(m[3])}" alt="">` : ''}${escapeHtml(m[2] || '')}</p>`;
+          if (m[0] === 'r') return `<p><b style="color:${lgColor(m[1])}">${escapeHtml(m[1] || '')}</b> 🎲 ${escapeHtml(m[2] || '')} → <b>${escapeHtml(m[3] || '')}</b></p>`;
+          if (m[0] === 'c') return `<p><b style="color:${lgColor(m[1])}">${escapeHtml(m[1] || '')}</b> ${escapeHtml(m[2] || '굴림')} ${escapeHtml(m[3] || '')}</p>`;
+          return `<p><b style="color:${lgColor(m[1])}">${escapeHtml(m[1] || '')}</b> ${escapeHtml(m[2] || '')}</p>`;
+        }).join('\n');
+        const data = JSON.stringify({ label: x.label || '', title: x.title || '', date: x.date || '', msgs: ms, av }).replace(/</g, '\\u003c');
+        const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml((x.label || '') + ' ' + (x.title || ''))}</title><style>body{max-width:820px;margin:24px auto;padding:0 16px;font:15px/1.7 'Noto Sans KR',sans-serif;color:#2b2218;background:#fbf6ea}p{margin:3px 0;white-space:pre-wrap}p.d{text-align:center;opacity:.7}p.d img{max-width:260px;display:block;margin:0 auto}h1{font-size:1.2rem}</style></head><body><h1>${escapeHtml((x.label || '') + ' - ' + (x.title || ''))}</h1><div style="opacity:.6">${escapeHtml(x.date || '')}</div>\n${body}\n<script type="application/json" id="adv-log">${data}<\/script></body></html>`;
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' })); a.download = String((x.label || 'log') + '_' + (x.title || '')).replace(/[\\\/:*?"<>|]+/g, ' ').trim() + '.html';
+        document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); showToast('HTML로 내려받았어요 (다시 업로드하면 그대로 불러와요)');
+      }).catch(e => showToast('불러오지 못했어요'));
+    }
     function lgDownload() {
       const id = LG.cur, x = (LG.idx || []).find(a => a.id === id); if (!x) { showToast('먼저 회차를 열어 주세요.'); return; }
       lgLoad(id).then(ms => {
@@ -3387,7 +3411,7 @@
       if (e) e.stopPropagation(); let m = document.getElementById('lg-upm');
       if (m) { m.remove(); return; }
       m = document.createElement('div'); m.id = 'lg-upm'; m.className = 'lg-deco'; m.style.cssText = 'width:auto;padding:8px;display:flex;flex-direction:column;gap:6px;top:50px;right:60px';
-      m.innerHTML = '<button class="btn btn-secondary" onclick="lgUpMenu();lgRefresh()">새로고침</button><button class="btn btn-secondary" onclick="lgUpMenu();document.getElementById(\'lg-file\').click()">업로드 (.htm / .txt)</button><button class="btn btn-secondary" onclick="lgUpMenu();lgDownload()">다운로드 (.txt)</button>';
+      m.innerHTML = '<button class="btn btn-secondary" onclick="lgUpMenu();lgRefresh()">새로고침</button><button class="btn btn-secondary" onclick="lgUpMenu();document.getElementById(\'lg-file\').click()">업로드 (.htm / .txt)</button><button class="btn btn-secondary" onclick="lgUpMenu();lgDownloadHtml()">다운로드 (.html)</button><button class="btn btn-secondary" onclick="lgUpMenu();lgDownload()">다운로드 (.txt)</button>';
       document.querySelector('#lg-modal .lg-box').appendChild(m);
     }
     document.addEventListener('pointerdown', e => { const m = document.getElementById('lg-upm'); if (m && !e.target.closest('#lg-upm') && !e.target.closest('[onclick^="lgUpMenu"]')) m.remove(); });
@@ -3552,7 +3576,7 @@
       const box = document.querySelector('#lg-modal .lg-box'); if (!box) return; const d = lgDecoGet(), S = (k, v) => { if (v === undefined || v === null || v === '') box.style.removeProperty(k); else box.style.setProperty(k, v); };
       let bg = ''; if (d.pmbg) { const m = /^#([0-9a-f]{6})$/i.exec(d.pmbg); if (m) { const n = parseInt(m[1], 16); bg = 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + ((d.pmo == null ? 55 : d.pmo) / 100) + ')'; } } else if (d.pmo != null) bg = 'rgba(255,248,230,' + d.pmo / 100 + ')';
       let pimg = ''; try { const pp = d.pmpaper && paperByKey(d.pmpaper); if (pp) pimg = 'url("' + String(pp.url).replace(/"/g, '%22') + '")'; } catch (e) {}
-      S('--pm-img', pimg); S('--pm-bg', bg); S('--pm-bs', d.pmbs); S('--pm-bc', d.pmbc); S('--pm-r', d.pmr == null || d.pmr === '' ? '' : d.pmr + 'px'); S('--pm-fg', d.pmfg);
+      S('--lg-ff', d.lff ? fontOf(d.lff) : ''); S('--lg-fs', d.lfs ? d.lfs + 'px' : ''); S('--lg-fg', d.lfg); box.classList.toggle('lg-hasfg', !!d.lfg); S('--pm-img', pimg); S('--pm-bg', bg); S('--pm-bs', d.pmbs); S('--pm-bc', d.pmbc); S('--pm-r', d.pmr == null || d.pmr === '' ? '' : d.pmr + 'px'); S('--pm-fg', d.pmfg);
     }
     function lgDecoToggle() { const el = document.getElementById('lg-deco'); if (!el) return; el.hidden = !el.hidden; if (!el.hidden) lgDecoRender(); else if (window.__lgTgt) { window.__lgTgt = ''; window.__lgd = null; try { lgDecoApply(); } catch (e) {} } }
     function lgDecoRender() {
@@ -3570,6 +3594,10 @@
         ${d.img ? `<label>방식 <select onchange="lgDecoSet('imode',this.value);lgDecoRender()">${opt(d.imode || 'tile', 'tile', '덧붙이기 (원본 크기로 반복)')}${opt(d.imode || 'tile', 'fit', '꽉 채우기 (늘이거나 줄임)')}</select></label>${d.imode === 'fit' ? '' : `<label>이미지 크기 <input type="range" min="20" max="300" value="${d.iz || 100}" oninput="lgDecoSet('iz',+this.value,1)"></label>`}` : ''}
         <h4>테두리</h4><label>종류 <select onchange="lgDecoSet('bd',this.value);lgDecoRender()">${opt(okSel ? d.bd : '', '', '기본')}${frs.filter(f => LG_BD_OK.includes(f.k)).map(f => opt(d.bd || '', 'f:' + f.k, f.n)).join('')}</select></label>
         ${d.bd && d.bd.startsWith('f:') && LG_BD_OK.includes(d.bd.slice(2)) ? `<label>두께 <input type="range" min="20" max="110" value="${d.bw || 48}" oninput="lgDecoSet('bw',+this.value,1)"></label>` : ''}
+        <h4>대사 글씨</h4><label>글씨체 <select onchange="lgDecoSet('lff',this.value)">${opt(d.lff || '', '', '기본')}${MEMO_FONTS.map(fo => opt(d.lff || '', fo.k, fo.n)).join('')}</select></label>
+        <label>글씨 크기 <input type="range" min="11" max="24" value="${d.lfs || 14}" oninput="lgDecoSet('lfs',+this.value,1)"></label>
+        <label>글씨색 <input type="color" value="${d.lfg || '#2b2218'}" oninput="lgDecoSet('lfg',this.value,1)"></label>
+        <div style="margin-top:4px"><button class="btn btn-secondary" style="padding:3px 10px;font-size:.78rem" onclick="['lff','lfs','lfg'].forEach(k=>lgDecoSet(k,''));lgDecoRender()">대사 글씨만 기본으로</button></div>
         <h4>메모 상자</h4><label>배경 종이 <select onchange="lgDecoSet('pmpaper',this.value)">${opt(d.pmpaper || '', '', '없음')}${(() => { try { return paperCat().map(x => opt(d.pmpaper || '', x.key, x.name)).join(''); } catch (e) { return ''; } })()}</select></label>
         <label>바탕색 <input type="color" value="${d.pmbg || '#fff8e6'}" oninput="lgDecoSet('pmbg',this.value,1)"></label>
         <label>진하기 <input type="range" min="0" max="100" value="${d.pmo == null ? 55 : d.pmo}" oninput="lgDecoSet('pmo',+this.value,1)"></label>
@@ -6235,6 +6263,15 @@
       const up = () => { document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up); if (res) { pcTbSave(pcTbList().map(b => b.id === id ? Object.assign({}, b, { w: +res[0].toFixed(1), h: +res[1].toFixed(1) }) : b)); pcCfgRender(); } };
       document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
     }, true);
+    // ---- v14: 틀 없는 카드 가로·세로 조절 ----
+    document.addEventListener('pointerdown', e => {
+      const h = e.target.closest && e.target.closest('#pcc-prev .cd-rs'); if (!h) return; e.preventDefault(); e.stopPropagation();
+      const card = h.closest('.pc-card'), par = card.parentElement, pw = par.getBoundingClientRect().width, r0 = card.getBoundingClientRect(); let res = null;
+      const mv = ev => { const nw = Math.max(pw * .4, Math.min(pw, r0.width + (ev.clientX - e.clientX))), nh = Math.max(40, r0.height + (ev.clientY - e.clientY)), S = nw / pw * 100, R = Math.max(.4, Math.min(1.6, nw / nh));
+        card.style.width = S.toFixed(1) + '%'; card.style.aspectRatio = R.toFixed(3); res = [S, R]; };
+      const up = () => { document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up); if (res) { pcCfgSet('cardS', Math.round(res[0])); pcCfgSet('frameR', +res[1].toFixed(2), true); } };
+      document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
+    }, true);
     function pccNmSave() { const a = document.getElementById('pcc-ali'); if (a && !pccNpc) { const arr = []; a.value.split(/[,，\n]/).forEach(x => { x = x.trim().slice(0, 20); if (x && !arr.includes(x)) arr.push(x); }); pcCfgSet('aliases', arr.slice(0, 12)); } window.__nmEdit = false; pcCfgRender(); try { if (state.viewMode === 'journal') renderAll(); } catch (e) {} }
     function jOp(v) { v = Math.max(0, Math.min(100, Number(v) || 0)); try { localStorage.setItem('adv_jop', String(v)); } catch (e) {} document.documentElement.style.setProperty('--jop', v / 100); }
     
@@ -7696,7 +7733,7 @@
       const sh = p.sheet || {};
       return [sh.charClass, sh.charTag].filter(x => x && !/^종족 · 클래스|^Lv\. 1 · 배경/.test(x));
     }
-    function pcCardHtml(p, i, prev) { let h = pcCardHtml0(p, i, prev); if (p && p.sharp) h = h.replace('class="codex-card pc-card', 'data-sharp="1" class="codex-card pc-card'); const alt2 = p && p.img2 ? `<button type="button" class="pc-altb" title="두 번째 모습 보기" aria-label="두 번째 모습 보기" onclick="event.stopPropagation();pcAltToggle(this)">⇄</button>` : ''; if (p && Array.isArray(p.tbs) && p.tbs.length) { const tb = p.tbs.map(b => `<div class="pc-tb" data-tb="${escapeHtml(b.id)}" style="left:${Number(b.x) || 50}%;top:${Number(b.y) || 50}%;font-size:${(Number(b.s) || 100) / 100 * .9}rem;${Number(b.w) > 0 ? 'width:' + Number(b.w) + '%;white-space:normal;' : ''}${Number(b.h) > 0 ? 'height:' + Number(b.h) + '%;overflow:hidden;' : ''}${b.c ? 'color:' + escapeHtml(b.c) + ';' : ''}${b.f ? 'font-family:' + escapeHtml(fontOf(b.f)) + ';' : ''}">${escapeHtml(b.t || '').replace(/\n/g, '<br>')}${prev ? '<i class="tb-rs" title="끌어서 크기 조절"></i>' : ''}</div>`).join(''); h = h.replace(/<\/div>\s*$/, tb + '</div>'); } if (p && p.off) h = h.replace('class="', 'class="pc-off '); if (p && (p.st === 'dead' || p.st === 'missing')) { h = h.replace('class="', 'class="npc-' + (p.st === 'dead' ? 'dead' : 'miss') + ' '); h = h.replace('>', '><span class="st-bd">' + (p.st === 'dead' ? '†' : '?') + '</span>'); } if (p && (p.st === 'gray' || p.st === 'foe')) h = h.replace('class="', 'class="npc-' + p.st + ' '); if (alt2) { h = h.replace('>', ` data-alt="${escapeHtml(p.img2)}">`); h = h.replace(/<\/div>\s*$/, alt2 + '</div>'); } return h; }
+    function pcCardHtml(p, i, prev) { let h = pcCardHtml0(p, i, prev); if (h.includes('pcl-bgonly')) { const S = Number(p.cardS) || 100; if (S < 100) h = h.replace('style="aspect-ratio:', 'style="width:' + S + '%;margin-left:auto;margin-right:auto;aspect-ratio:'); if (prev) { const k = h.indexOf('pcl-bgonly'), g = h.indexOf('>', k); if (g > 0) h = h.slice(0, g + 1) + '<span class="cd-rs" title="끌어서 가로·세로 조절" data-html2canvas-ignore="true"></span>' + h.slice(g + 1); } } if (p && p.sharp) h = h.replace('class="codex-card pc-card', 'data-sharp="1" class="codex-card pc-card'); const alt2 = p && p.img2 ? `<button type="button" class="pc-altb" title="두 번째 모습 보기" aria-label="두 번째 모습 보기" onclick="event.stopPropagation();pcAltToggle(this)">⇄</button>` : ''; if (p && Array.isArray(p.tbs) && p.tbs.length) { const tb = p.tbs.map(b => `<div class="pc-tb" data-tb="${escapeHtml(b.id)}" style="left:${Number(b.x) || 50}%;top:${Number(b.y) || 50}%;font-size:${(Number(b.s) || 100) / 100 * .9}rem;${Number(b.w) > 0 ? 'width:' + Number(b.w) + '%;white-space:normal;' : ''}${Number(b.h) > 0 ? 'height:' + Number(b.h) + '%;overflow:hidden;' : ''}${b.c ? 'color:' + escapeHtml(b.c) + ';' : ''}${b.f ? 'font-family:' + escapeHtml(fontOf(b.f)) + ';' : ''}">${escapeHtml(b.t || '').replace(/\n/g, '<br>')}${prev ? '<i class="tb-rs" title="끌어서 크기 조절"></i>' : ''}</div>`).join(''); h = h.replace(/<\/div>\s*$/, tb + '</div>'); } if (p && p.off) h = h.replace('class="', 'class="pc-off '); if (p && (p.st === 'dead' || p.st === 'missing')) { h = h.replace('class="', 'class="npc-' + (p.st === 'dead' ? 'dead' : 'miss') + ' '); h = h.replace('>', '><span class="st-bd">' + (p.st === 'dead' ? '†' : '?') + '</span>'); } if (p && (p.st === 'gray' || p.st === 'foe')) h = h.replace('class="', 'class="npc-' + p.st + ' '); if (alt2) { h = h.replace('>', ` data-alt="${escapeHtml(p.img2)}">`); h = h.replace(/<\/div>\s*$/, alt2 + '</div>'); } return h; }
     function npcStSet(id, st) { const n = state.globalNpcs.find(x => x.id === id); if (!n) return; if (st) n.st = st; else delete n.st; persistState(); try { renderNpcCodex(); } catch (e) {} if (pccNpc && pccId === id) { try { pcCfgRender(); } catch (e) {} } }
     function npcDelFan(id) { const n = state.globalNpcs.find(x => x.id === id); if (!n) return; delHint(); npcRemoveCore(id); state.boardTex.npcCards = (state.boardTex.npcCards || []).filter(x => x.id !== id); persistState(); if (pccNpc && pccId === id) closePcCfg(); try { renderNpcCodex(); } catch (e) {} }
     function npcToolsHtml(id) { const n = state.globalNpcs.find(x => x.id === id) || {}, st = n.st || '', b = (v, l) => `<button type="button" class="${st === v ? 'on' : ''}" onclick="event.stopPropagation();npcStSet('${id}','${v}')">${l}</button>`; const tg = (n.tags || []).map(t => `<span class="fan-tg">${escapeHtml(t)}<i title="태그 지우기" data-k="${escapeHtml(t)}" onclick="event.stopPropagation();npcTagDel('${id}',this.dataset.k)">×</i></span>`).join(''); return `<div class="fan-tgs">${tg}<input type="text" class="fan-tgi" placeholder="+ 태그 (Enter)" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault();npcTagAdd('${id}',this.value);}"></div><div class="fan-tools">${b('', '생존')}${b('dead', '† 사망')}${b('missing', '? 실종')}${b('gray', '회색')}${b('foe', '적대')}<button type="button" class="del" onclick="event.stopPropagation();npcDelFan('${id}')">삭제</button></div>`; }
@@ -7894,7 +7931,7 @@
       const isFree = p.tx != null && p.ty != null && p.tx !== '';
       const frameGrid = ty === 'custom' ? `<div class="pcc-grid">${frameList().filter(f => !isHid('fr', f.k)).map(f => `<button class="${p.frame === frUrl(f) ? 'on' : ''}" title="${f.n}" onclick="pcCfgUseFrame('${f.k}')"><img src="${escapeHtml(frSrc(frUrl(f)))}" alt="${f.n}" loading="lazy"></button>`).join('')}</div>` : '';
       const bgGrid = ty === 'custom' && p.frame && (frDefOf(p.frame) || {}).nobg ? '<div class="pcc-none">이 틀은 배경 없이 캐릭터 이미지만 얹어요</div>' : ty === 'custom' && (p.fHole || !p.frame) ? `<div class="pcc-grid pcc-grid-bg"><label class="pcc-col" title="배경 색"><input type="color" value="${p.fBgc || '#f4ecd8'}" oninput="pcCfgSet('fBgc',this.value)"></label>${patList().filter(x => !isHid('bg', 'i_' + x.k)).map(x => `<button class="${p.fBgi === bgUrl(x) ? 'on' : ''}" title="${x.n}" onclick="pcCfgToggleBg('${x.k}')"><img src="${escapeHtml(bgUrl(x))}" alt="${x.n}" loading="lazy" style="aspect-ratio:1;object-fit:cover;"></button>`).join('')}</div>` : '<div class="pcc-none">틀을 고르면 배경을 고를 수 있어요</div>';
-      const sliders = (ty === 'custom' ? (p.frame ? '' : sl('카드 비율', 'frameR', 0.5, 1.2, 0.01, 0.7)) + sl('모서리', 'wr', 0, 50, 1, 0) : '') + (full ? sl('확대', 'imgZ', 100, 300, 5, 100) : sl('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? sl('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : ''));
+      const sliders = (ty === 'custom' ? (p.frame ? '' : sl('카드 너비', 'cardS', 40, 100, 1, 100) + sl('카드 비율', 'frameR', 0.4, 1.6, 0.01, 0.7)) + sl('모서리', 'wr', 0, 50, 1, 0) : '') + (full ? sl('확대', 'imgZ', 100, 300, 5, 100) : sl('사진 너비', 'imgS', 40, 100, 5, 100) + (ty === 'classic' ? sl('사진 높이', 'imgR', 0.6, 2, 0.1, 1.2) : ''));
       const tkP = pccNpc ? [] : tokList().filter(t => t.owner === p.id && t.kind !== 'pl');
       const tokBox = pccNpc ? '' : `<div class="pcc-memo" style="display:block"><b>로그 토큰 (이 PC)</b>${tkP.length ? tkP.map(t => tokRowHtml(t, 'pcc')).join('') : '<div style="font-size:.76rem;opacity:.6;margin-top:4px">등록된 토큰이 없어요.</div>'}<button class="btn btn-secondary" style="margin-top:6px;padding:3px 10px;font-size:.78rem" onclick="tokAdd('${escapeHtml(p.id)}','pc')">＋ 토큰 추가</button><div style="font-size:.7rem;opacity:.65;margin-top:4px">두 번째 칸에 다른 모습(예: 변신 후)을 넣으면 로그에서 토큰을 눌렀을 때 바뀌어요. 이후 올리는 로그부터 적용돼요.</div></div>`;
       const memo = pccNpc ? '' : `<div class="pcc-memo"><b>메모 기본 설정</b><select onchange="pcCfgSet('font',this.value)">${fonts}</select><span><input type="color" title="글자색" value="${p.fc || '#2d2410'}" oninput="pcCfgSet('fc',this.value)"><input type="number" title="크기" min="10" max="48" value="${Number(p.fs) || 16}" oninput="pcCfgSet('fs',Number(this.value))"></span></div>`;
