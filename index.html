@@ -1070,20 +1070,38 @@
     #rt-post .rt-pb { background: #fbf3df; border: 2px solid #b8893a; border-radius: 12px; padding: 16px; width: min(420px, 92vw); color: #3b2a14; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
     #rt-post .rt-pr { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
     #rt-post select { flex: 1; min-width: 0; padding: 4px; }
-    .shop-wrap { padding: 4px 2px 40px; color: #3b2a14; }
-    .shop-bar, .shop-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0; }
-    .shop-tab.on { background: #e4d3a8 !important; border-color: #b8893a !important; font-weight: 800; }
-    .shop-buyer { background: rgba(255,248,230,.92); border: 1px solid #c9bb98; border-radius: 10px; padding: 4px 10px; display: inline-flex; gap: 6px; align-items: center; }
-    .shop-buyer, .shop-buyer * { white-space: nowrap; } .shop-buyer select { width: auto; }
-    .shop-desc { opacity: .75; font-size: .85rem; }
-    .shop-empty { padding: 36px 12px; text-align: center; background: rgba(255,255,255,.85); border: 1px dashed #c9bb98; border-radius: 12px; }
-    .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
-    .shop-card { background: rgba(255,250,236,.95); border: 1px solid #c9bb98; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
-    .shop-card.out { opacity: .55; }
-    .shop-img { height: 92px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.05); border-radius: 8px; overflow: hidden; }
-    .shop-img img { max-width: 100%; max-height: 100%; object-fit: contain; } .shop-img i { width: 40px; height: 40px; border-radius: 50%; background: #d9a93a; opacity: .5; }
-    .shop-nm { font-weight: 800; } .shop-ds { font-size: .8rem; opacity: .8; } .shop-pr { font-weight: 700; color: #7a4a14; } .shop-st { font-size: .78rem; opacity: .75; }
-    .shop-buy, .shop-gm { display: flex; gap: 6px; align-items: center; } .shop-buy input { width: 54px; padding: 4px; }
+    .bg-trade { border: 2px solid #6b5a3a; border-radius: 14px; background: linear-gradient(#17141a, #0d0c0f); box-shadow: 0 0 0 3px #0008, 0 14px 40px #0008; padding: 12px 14px 12px; color: #d9cfb8; margin: 8px 0 30px; }
+    .bg-wait { padding: 40px; text-align: center; color: #8d826c; }
+    .bg-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #6b5a3a; padding-bottom: 9px; margin-bottom: 9px; }
+    .bg-who select { background: #0a090c; color: #e8d9a8; border: 1px solid #6b5a3a; border-radius: 8px; padding: 4px 8px; font-weight: 700; }
+    .bg-shops { flex: 1; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .bg-tab { border: 1px solid #6b5a3a; background: #16131a; color: #b99a5b; border-radius: 8px; padding: 4px 12px; cursor: pointer; font-weight: 700; letter-spacing: .06em; }
+    .bg-tab.on { background: #b99a5b; color: #1a1308; } .bg-tab.ghost { opacity: .75; }
+    .bg-coins { display: flex; gap: 12px; font: 700 13px sans-serif; color: #e8d9a8; } .bg-coins i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .bg-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .bg-bar input { width: 200px; background: #0a090c; border: 1px solid #6b5a3a; border-radius: 20px; color: #d9cfb8; padding: 5px 12px; }
+    .bg-chips { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+    .bg-chip { border: 1px solid #6b5a3a; background: #16131a; color: #8d826c; border-radius: 7px; padding: 3px 9px; cursor: pointer; font: 12px sans-serif; } .bg-chip.on { color: #1a1308; background: #b99a5b; border-color: #b99a5b; }
+    .bg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .bg-h { font-size: 12px; letter-spacing: .12em; color: #8d826c; margin-bottom: 5px; font-weight: 600; }
+    .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, 52px); gap: 4px; background: #09080b; border: 1px solid #2c2535; padding: 8px; min-height: 240px; max-height: 400px; overflow: auto; align-content: start; border-radius: 6px; }
+    .bg-slot { width: 52px; height: 52px; position: relative; background: linear-gradient(#1b1721, #100e14); border: 2px solid #3a3342; border-radius: 4px; cursor: pointer; padding: 0; }
+    .bg-slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 3px; z-index: 1; } .bg-slot:hover { filter: brightness(1.3); } .bg-slot.sel { outline: 2px solid #fff6; } .bg-slot.out { opacity: .35; }
+    .bg-slot .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 18px sans-serif; color: #7d7387; }
+    .bg-slot .q { position: absolute; right: 2px; bottom: 0; font: 700 12px sans-serif; color: #fff; text-shadow: 0 0 3px #000, 0 0 3px #000; z-index: 2; }
+    .bg-detail { margin-top: 12px; border: 1px solid #6b5a3a; border-radius: 8px; background: #0e0c11; padding: 10px 12px; min-height: 84px; display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+    .bg-big { width: 64px; height: 64px; border: 2px solid #3a3342; border-radius: 6px; background: #15121a; flex: none; display: flex; align-items: center; justify-content: center; overflow: hidden; color: #7d7387; font: 700 26px sans-serif; } .bg-big img { max-width: 100%; max-height: 100%; }
+    .bg-info { flex: 1; min-width: 160px; } .bg-info b { color: #b99a5b; font-size: 15px; } .bg-info p { margin: 3px 0; color: #8d826c; font-size: 12.5px; }
+    .bg-act { margin-left: auto; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; } .bg-act input { width: 54px; background: #0a090c; border: 1px solid #6b5a3a; color: #d9cfb8; border-radius: 6px; padding: 3px; text-align: center; }
+    .bg-price { font: 700 14px sans-serif; color: #e8d9a8; }
+    .bg-btn { border: 1px solid #b99a5b; background: #2a2216; color: #f0e3bd; border-radius: 7px; padding: 5px 14px; cursor: pointer; font: 700 13px sans-serif; } .bg-btn:hover { background: #3a2e1c; } .bg-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .bg-grid .bg-dim { grid-column: 1 / -1; }
+    .bg-dim { color: #8d826c; font-size: 12.5px; } .bg-warn { background: #3a1f1f; color: #f0c8c8; border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; font-size: 12.5px; }
+    .bg-empty { padding: 36px 12px; text-align: center; color: #8d826c; }
+    @media (max-width: 760px) { .bg-cols { grid-template-columns: 1fr; } }
+    #shop-ed .sc-row { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px !important; padding: 4px 8px; border-bottom: 1px dashed #e0d4b4; cursor: pointer; font-size: .85rem !important; }
+    #shop-ed .sc-row b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } #shop-ed .sc-row i { opacity: .6; font-style: normal; flex: none; } #shop-ed .sc-row em { font-style: normal; color: #7a4a14; flex: none; }
+    #shop-ed .sc-ic { width: 30px; height: 30px; flex: none; background: #2a2432; border-radius: 4px; overflow: hidden; } #shop-ed .sc-ic img { width: 100%; height: 100%; object-fit: contain; }
     #shop-ed { position: fixed; inset: 0; z-index: 100000; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; }
     #shop-ed .shop-ed-b { background: #fbf3df; border: 2px solid #b8893a; border-radius: 12px; padding: 16px; width: min(440px, 94vw); max-height: 90vh; overflow: auto; color: #3b2a14; display: flex; flex-direction: column; gap: 8px; }
     #shop-ed label { display: flex; flex-direction: column; gap: 2px; font-size: .8rem; flex: 1; } #shop-ed input, #shop-ed select { padding: 5px; border: 1px solid #c9bb98; border-radius: 6px; background: #fffaf0; }
@@ -6366,12 +6384,27 @@
       add(bt.npcs); (bt.sets || []).forEach(st => { if (st.snap) add(st.snap.npcs); });
       return { items: [...items.values()] };
     }
-    // ===== 상점 (기록실 · 상점 탭) =====
+    // ===== 상점 (기록실 · 상점 탭) — 격자 UI + 외부 카탈로그(shop_data/items.json) =====
     const SHOP_COIN = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" fill="#d9a93a" stroke="#6b4a12" stroke-width="3"/><circle cx="24" cy="24" r="13" fill="none" stroke="#fff3c4" stroke-width="2.200" stroke-dasharray="3 3"/><path d="M24 15v18M19 20c0-3 10-3 10 0s-10 3-10 7 10 4 10 0" fill="none" stroke="#6b4a12" stroke-width="2.600" stroke-linecap="round"/></svg>');
+    const SHOP_CATS = [['all', '전체'], ['gear', '모험 장비'], ['weapon', '무기'], ['armor', '방어구'], ['tool', '도구'], ['gem', '보석'], ['cons', '소모품'], ['magic', '마법']];
+    const SHOP_FMAP = { 'Adventuring Gear': 'gear', 'Equipment Packs': 'gear', 'Ammunition': 'gear', 'Vehicles': 'gear', 'Mounts': 'gear', 'Clothing': 'gear', 'Gemstone': 'gem', 'Martial Ranged': 'weapon', 'Martial Melee': 'weapon', 'Simple Melee': 'weapon', 'Simple Ranged': 'weapon', 'Advanced Ranged': 'weapon', 'Medium Armor': 'armor', 'Heavy Armor': 'armor', 'Light Armor': 'armor', "Artisan's Tools": 'tool', 'Tools': 'tool', 'Musical Instrument': 'tool', 'Gaming Set': 'tool', 'Arcane Foci': 'tool', 'Holy Symbols': 'tool', 'Druidic Foci': 'tool', 'Poisons': 'cons', 'Scrolls': 'cons', 'Consumable': 'cons', 'Potions': 'cons' };
+    const SHOP_RC = { common: '#8a8576', uncommon: '#3d9b45', rare: '#3a7bd0', veryRare: '#8f4fc9', legendary: '#d9822b', artifact: '#c0392b' };
+    let SHOP_CAT = null, SHOP_CMAP = {}, SHOP_CERR = false, SHOP_CLOAD = null;
+    function shopCatLoad(cb) {
+      if (SHOP_CAT) return cb && cb();
+      if (!SHOP_CLOAD) SHOP_CLOAD = fetch('shop_data/items.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(a => { SHOP_CAT = Array.isArray(a) ? a : []; SHOP_CAT.forEach(o => { o.c = o.r && o.r !== 'common' ? 'magic' : (SHOP_FMAP[o.f] || ({ weapon: 'weapon', consumable: 'cons', tool: 'tool', loot: 'gem' }[o.t]) || 'gear'); SHOP_CMAP[o.id] = o; }); }).catch(() => { SHOP_CAT = []; SHOP_CERR = true; });
+      SHOP_CLOAD.then(() => cb && cb());
+    }
     function shopsList() { const b = state.boardTex; b.shops = Array.isArray(b.shops) ? b.shops : []; return b.shops; }
-    function shopCp(it) { return (Number(it.gp) || 0) * 100 + (Number(it.sp) || 0) * 10 + (Number(it.cp) || 0); }
+    function shopRes(it) {
+      const b = it.ref ? (SHOP_CMAP[it.ref] || null) : null;
+      const cp = it.cpo != null ? it.cpo : (b ? b.cp : ((Number(it.gp) || 0) * 100 + (Number(it.sp) || 0) * 10 + (Number(it.cp) || 0)));
+      return { id: it.id, name: it.n || (b && b.n) || it.name || '(이름 없음)', img: it.img || (b && (b.img || b.alt)) || '', desc: it.desc || (b && b.d) || '', w: b ? b.w : (it.w || 0), r: b ? b.r : '', f: b ? b.f : '', c: b ? b.c : (SHOP_FMAP[''] || it.cat2 || 'gear'), cp, missing: !!(it.ref && !b) };
+    }
+    function shopCp(it) { return shopRes(it).cp; }
     function shopPriceTxt(cp) { const g = Math.floor(cp / 100), s = Math.floor((cp % 100) / 10), c = cp % 10, o = []; if (g) o.push(g + ' gp'); if (s) o.push(s + ' sp'); if (c) o.push(c + ' cp'); return o.join(' ') || '무료'; }
     function shopMoneyCp(m) { m = m || {}; return (Number(m.gp) || 0) * 100 + (Number(m.sp) || 0) * 10 + (Number(m.cp) || 0); }
+    function shopFromCp(t) { return { gp: Math.floor(t / 100), sp: Math.floor((t % 100) / 10), cp: t % 10 }; }
     function shopPay(m, price) {
       let t = shopMoneyCp(m) - price; if (t < 0) return null;
       let gp = Math.min(Number(m.gp) || 0, Math.floor(t / 100)); t -= gp * 100;
@@ -6391,77 +6424,143 @@
       d.money = d.money || { gp: 0, sp: 0, cp: 0 }; d.ledger = d.ledger || []; d.items = d.items || [];
       return d;
     }
-    function renderShop() {
-      const area = document.getElementById('main-content-area'), gm = !!AUTH_S.gm, L = shopsList();
-      if (!L.some(s => s.id === state.shopId)) state.shopId = L.length ? L[0].id : '';
-      const sh = L.find(s => s.id === state.shopId), by = shopBuyer();
-      let h = jHeaderHtml() + '<div class="shop-wrap">';
-      h += `<div class="shop-bar">${L.map(s => `<button class="btn shop-tab${s.id === state.shopId ? ' on' : ''}" onclick="state.shopId='${s.id}';renderShop()">${escapeHtml(s.name || '상점')}</button>`).join('')}${gm ? '<button class="btn btn-secondary" onclick="shopAdd()">+ 상점</button>' : ''}<span style="flex:1"></span>`;
-      if (by) {
-        const m = shopDetail(by.pc).money;
-        h += `<span class="shop-buyer">구매자 <select onchange="state.shopPc=this.value;renderShop()">${by.pcs.map(p => `<option value="${p.id}"${p.id === by.pc.id ? ' selected' : ''}>${escapeHtml(p.name || 'PC')}</option>`).join('')}</select> <b>${shopPriceTxt(shopMoneyCp(m))}</b></span>`;
-      }
-      h += '</div>';
-      if (!sh) h += `<div class="shop-empty">${gm ? '상점이 아직 없어요. "+ 상점"으로 만들어 보세요.' : '열려 있는 상점이 없어요.'}</div>`;
-      else {
-        h += `<div class="shop-head"><b>${escapeHtml(sh.name || '')}</b>${sh.desc ? `<span class="shop-desc">${escapeHtml(sh.desc)}</span>` : ''}${gm ? `<span style="flex:1"></span><button class="btn btn-secondary" onclick="shopRename('${sh.id}')">이름·설명</button><button class="btn btn-secondary" onclick="shopItemEdit('${sh.id}','')">+ 상품</button><button class="btn btn-secondary" onclick="shopDel('${sh.id}')">상점 삭제</button>` : ''}</div>`;
-        h += '<div class="shop-grid">' + ((sh.items || []).length ? sh.items.map(it => {
-          const cp = shopCp(it), inf = it.stock == null || it.stock === '', st = inf ? 1e9 : Number(it.stock) || 0, out = st <= 0;
-          return `<div class="shop-card${out ? ' out' : ''}"><div class="shop-img">${it.img ? `<img src="${escapeHtml(it.img)}" alt="" draggable="false">` : '<i></i>'}</div>
-            <div class="shop-nm">${escapeHtml(it.name || '(이름 없음)')}</div>${it.desc ? `<div class="shop-ds">${escapeHtml(it.desc)}</div>` : ''}
-            <div class="shop-pr">${shopPriceTxt(cp)}</div><div class="shop-st">${inf ? '재고 무제한' : (out ? '품절' : '재고 ' + st)}</div>
-            <div class="shop-buy"><input type="number" min="1" ${inf ? '' : `max="${st}"`} value="1" id="sq-${it.id}"><button class="btn btn-primary"${out || !by ? ' disabled' : ''} onclick="shopBuy('${sh.id}','${it.id}')">구매</button></div>
-            ${gm ? `<div class="shop-gm"><button class="btn btn-secondary" onclick="shopItemEdit('${sh.id}','${it.id}')">수정</button><button class="btn btn-secondary" onclick="shopItemDel('${sh.id}','${it.id}')">삭제</button></div>` : ''}</div>`;
-        }).join('') : `<div class="shop-empty">${gm ? '"+ 상품"으로 판매할 물건을 추가하세요.' : '진열된 물건이 없어요.'}</div>`) + '</div>';
-      }
-      area.innerHTML = h + '</div>';
+    function shopSlot(o, qty, w, out, key) {
+      const sel = state.shopSel && state.shopSel.w === w && state.shopSel.k === key, rc = SHOP_RC[o.r] || '#3a3342';
+      return `<button class="bg-slot${out ? ' out' : ''}${sel ? ' sel' : ''}" style="border-color:${rc}" onclick="shopPick('${w}','${key}')" title="${escapeHtml(o.name)} · ${shopPriceTxt(o.cp)}">${o.img ? `<img src="${escapeHtml(o.img)}" alt="" loading="lazy" draggable="false" onerror="this.remove()">` : ''}<span class="ph">${escapeHtml([...(o.name || '?')][0])}</span>${qty > 1 ? `<span class="q">${qty}</span>` : ''}</button>`;
     }
+    function shopPick(w, k) { state.shopSel = { w, k }; renderShop(); }
+    function shopSellRes(x) {
+      const sh = shopsList(); let it = null;
+      if (x.shopItem) for (const s of sh) { it = (s.items || []).find(i => i.id === x.shopItem); if (it) break; }
+      if (it) return shopRes(it);
+      const nm = String(x.name || '').trim().toLowerCase(), b = SHOP_CAT && SHOP_CAT.find(o => o.n.toLowerCase() === nm);
+      return b ? shopRes({ id: 'x', ref: b.id }) : null;
+    }
+    function renderShop() {
+      const area = document.getElementById('main-content-area'); if (!area) return;
+      if (!SHOP_CAT) { area.innerHTML = jHeaderHtml() + '<div class="bg-wait">상점을 불러오는 중…</div>'; shopCatLoad(() => { if (state.jView === 'shop') renderShop(); }); return; }
+      const gm = !!AUTH_S.gm, L = shopsList();
+      if (!L.some(s => s.id === state.shopId)) state.shopId = L.length ? L[0].id : '';
+      const sh = L.find(s => s.id === state.shopId), by = shopBuyer(), q = (state.shopQ || '').toLowerCase(), cat = state.shopCat || 'all';
+      const d = by ? shopDetail(by.pc) : null;
+      let h = jHeaderHtml() + '<div class="bg-trade">';
+      h += `<div class="bg-top"><div class="bg-who">${by ? `<select onchange="state.shopPc=this.value;state.shopSel=null;renderShop()">${by.pcs.map(p => `<option value="${p.id}"${p.id === by.pc.id ? ' selected' : ''}>${escapeHtml(p.name || 'PC')}</option>`).join('')}</select>` : '<span class="bg-dim">구매할 수 있는 캐릭터가 없어요</span>'}</div>
+        <div class="bg-shops">${L.map(s => `<button class="bg-tab${s.id === state.shopId ? ' on' : ''}" onclick="state.shopId='${s.id}';state.shopSel=null;renderShop()">${escapeHtml(s.name || '상점')}</button>`).join('')}${gm ? '<button class="bg-tab ghost" onclick="shopAdd()">+ 상점</button>' : ''}</div>
+        <div class="bg-coins">${d ? `<span><i style="background:#d6a73b"></i>${d.money.gp || 0} gp</span><span><i style="background:#c0c4cc"></i>${d.money.sp || 0} sp</span><span><i style="background:#c9803c"></i>${d.money.cp || 0} cp</span>` : ''}</div></div>`;
+      if (SHOP_CERR) h += '<div class="bg-warn">카탈로그 파일(shop_data/items.json)을 읽지 못했어요. 직접 만든 상품만 보여요.</div>';
+      if (!sh) { h += `<div class="bg-empty">${gm ? '상점이 아직 없어요. "+ 상점"으로 만들어 보세요.' : '열려 있는 상점이 없어요.'}</div></div>`; area.innerHTML = h; return; }
+      h += `<div class="bg-bar"><input type="search" id="shop-q" placeholder="검색" value="${escapeHtml(state.shopQ || '')}" oninput="state.shopQ=this.value;shopFilterKeep()"><span class="bg-chips">${SHOP_CATS.map(c => `<button class="bg-chip${cat === c[0] ? ' on' : ''}" onclick="state.shopCat='${c[0]}';renderShop()">${c[1]}</button>`).join('')}</span>
+        ${gm ? `<span style="flex:1"></span><button class="bg-chip" onclick="shopRename('${sh.id}')">상점 이름·설명</button><button class="bg-chip" onclick="shopCatPick('${sh.id}')">+ 카탈로그에서 추가</button><button class="bg-chip" onclick="shopItemEdit('${sh.id}','')">+ 직접 만들기</button><button class="bg-chip" onclick="shopDel('${sh.id}')">상점 삭제</button>` : ''}</div>`;
+      const ok = o => (cat === 'all' || o.c === cat) && (!q || o.name.toLowerCase().includes(q));
+      const shopRows = (sh.items || []).map(it => ({ it, o: shopRes(it) })).filter(r => ok(r.o));
+      const bagRows = d ? d.items.map((x, i) => ({ x, i, o: { name: x.name || '?', img: x.img || '', r: x.rar || '', cp: 0, c: (shopSellRes(x) || {}).c || 'gear' } })).filter(r => ok(r.o)) : [];
+      h += '<div class="bg-cols"><div><div class="bg-h">내 가방</div><div class="bg-grid">' + (bagRows.length ? bagRows.map(r => shopSlot({ ...r.o, cp: (shopSellRes(r.x) || { cp: 0 }).cp }, Number(r.x.qty) || 1, 'm', false, r.i)).join('') : '<span class="bg-dim">비어 있어요</span>') + '</div></div>';
+      h += `<div><div class="bg-h">${escapeHtml(sh.name || '')}${sh.desc ? ` <span class="bg-dim">${escapeHtml(sh.desc)}</span>` : ''}</div><div class="bg-grid">` + (shopRows.length ? shopRows.map(r => { const inf = r.it.stock == null || r.it.stock === ''; return shopSlot(r.o, inf ? 1 : Number(r.it.stock) || 0, 's', !inf && !(Number(r.it.stock) > 0), r.it.id); }).join('') : `<span class="bg-dim">${gm ? '"+ 카탈로그에서 추가"로 물건을 진열하세요.' : '진열된 물건이 없어요.'}</span>`) + '</div></div></div>';
+      // detail
+      const S = state.shopSel; let dt = '<div class="bg-dim">칸을 누르면 설명과 가격이 나와요.</div>';
+      if (S) {
+        if (S.w === 's') {
+          const it = (sh.items || []).find(i => i.id === S.k);
+          if (it) { const o = shopRes(it), inf = it.stock == null || it.stock === '', st = inf ? 1e9 : Number(it.stock) || 0;
+            dt = `<div class="bg-big">${o.img ? `<img src="${escapeHtml(o.img)}" onerror="this.remove()">` : `<span>${escapeHtml([...o.name][0])}</span>`}</div><div class="bg-info"><b>${escapeHtml(o.name)}</b><p>${escapeHtml([o.f, o.w ? '무게 ' + o.w + ' lb' : '', inf ? '재고 무제한' : (st > 0 ? '재고 ' + st : '품절')].filter(Boolean).join(' · '))}</p><p>${escapeHtml(o.desc)}</p></div>
+              <div class="bg-act"><div class="bg-price">${shopPriceTxt(o.cp)}</div><div><input type="number" min="1" ${inf ? '' : `max="${st}"`} value="1" id="sq-${it.id}"> <button class="bg-btn"${st <= 0 || !by ? ' disabled' : ''} onclick="shopBuy('${sh.id}','${it.id}')">구매</button></div>${gm ? `<div><button class="bg-chip" onclick="shopItemEdit('${sh.id}','${it.id}')">가격·재고 수정</button> <button class="bg-chip" onclick="shopItemDel('${sh.id}','${it.id}')">빼기</button></div>` : ''}</div>`; }
+        } else if (d && d.items[S.k]) {
+          const x = d.items[S.k], r = shopSellRes(x), half = r ? Math.floor(r.cp / 2) : 0;
+          dt = `<div class="bg-big">${x.img ? `<img src="${escapeHtml(x.img)}" onerror="this.remove()">` : `<span>${escapeHtml([...(x.name || '?')][0])}</span>`}</div><div class="bg-info"><b>${escapeHtml(x.name || '')}</b><p>보유 ${Number(x.qty) || 1}${x.equipped ? ' · 장착 중' : ''}</p><p>${escapeHtml(x.note || '')}</p></div>
+            <div class="bg-act">${r && half > 0 && !x.equipped ? `<div class="bg-price">판매가 ${shopPriceTxt(half)}</div><div><input type="number" min="1" max="${Number(x.qty) || 1}" value="1" id="sell-q"> <button class="bg-btn" onclick="shopSell(${S.k})">판매</button></div>` : '<div class="bg-dim">판매할 수 없는 물건이에요</div>'}</div>`;
+        }
+      }
+      h += `<div class="bg-detail">${dt}</div></div>`;
+      area.innerHTML = h;
+    }
+    function shopFilterKeep() { const v = (document.getElementById('shop-q') || {}).value, p = (document.getElementById('shop-q') || {}).selectionStart; renderShop(); const e = document.getElementById('shop-q'); if (e) { e.focus(); try { e.setSelectionRange(p, p); } catch (x) {} } }
     function shopBuy(sid, iid) {
       const sh = shopsList().find(s => s.id === sid), it = sh && (sh.items || []).find(x => x.id === iid), by = shopBuyer(); if (!it || !by) return;
-      const n = Math.max(1, Math.floor(Number((document.getElementById('sq-' + iid) || {}).value) || 1)), inf = it.stock == null || it.stock === '';
+      const o = shopRes(it), n = Math.max(1, Math.floor(Number((document.getElementById('sq-' + iid) || {}).value) || 1)), inf = it.stock == null || it.stock === '';
       if (!inf && n > (Number(it.stock) || 0)) { showToast('재고가 부족해요.'); return; }
-      const total = shopCp(it) * n, d = shopDetail(by.pc), nm = shopPay(d.money, total);
+      const total = o.cp * n, d = shopDetail(by.pc), nm = shopPay(d.money, total);
       if (!nm) { showToast('돈이 부족해요. (필요: ' + shopPriceTxt(total) + ')'); return; }
       d.money = nm;
-      d.ledger.unshift({ d: new Date().toLocaleDateString('sv-SE'), s: -1, text: '−' + shopPriceTxt(total) + ' · 구매: ' + (it.name || '물건') + (n > 1 ? ' ×' + n : '') + ' (' + (sh.name || '상점') + ')' });
+      d.ledger.unshift({ d: new Date().toLocaleDateString('sv-SE'), s: -1, text: '−' + shopPriceTxt(total) + ' · 구매: ' + o.name + (n > 1 ? ' ×' + n : '') + ' (' + (sh.name || '상점') + ')' });
       d.ledger = d.ledger.slice(0, 100);
       const have = d.items.find(x => x.shopItem === it.id && !x.equipped);
-      if (have) have.qty = (Number(have.qty) || 0) + n; else d.items.push({ name: it.name || '', qty: n, note: it.desc || '', equipped: false, img: it.img || '', bag: '', cat: it.cat || '', rar: '', shopItem: it.id });
+      if (have) have.qty = (Number(have.qty) || 0) + n; else d.items.push({ name: o.name, qty: n, note: (o.desc || '').slice(0, 200), equipped: false, img: o.img || '', bag: '', cat: '', rar: o.r || '', w: o.w || 0, shopItem: it.id });
       if (!inf) it.stock = (Number(it.stock) || 0) - n;
       persistState(); try { sheetSend(); } catch (e) {}
-      showToast((it.name || '물건') + (n > 1 ? ' ×' + n : '') + ' 구매 완료 (−' + shopPriceTxt(total) + ')'); renderShop();
+      showToast(o.name + (n > 1 ? ' ×' + n : '') + ' 구매 완료 (−' + shopPriceTxt(total) + ')'); renderShop();
+    }
+    function shopSell(k) {
+      const by = shopBuyer(); if (!by) return; const d = shopDetail(by.pc), x = d.items[k]; if (!x) return;
+      const r = shopSellRes(x); if (!r) return; const half = Math.floor(r.cp / 2), have = Number(x.qty) || 1;
+      const n = Math.min(have, Math.max(1, Math.floor(Number((document.getElementById('sell-q') || {}).value) || 1))), gain = half * n;
+      d.money = shopFromCp(shopMoneyCp(d.money) + gain);
+      d.ledger.unshift({ d: new Date().toLocaleDateString('sv-SE'), s: 1, text: '+' + shopPriceTxt(gain) + ' · 판매: ' + (x.name || '물건') + (n > 1 ? ' ×' + n : '') });
+      d.ledger = d.ledger.slice(0, 100);
+      if (n >= have) d.items.splice(k, 1); else x.qty = have - n;
+      state.shopSel = null; persistState(); try { sheetSend(); } catch (e) {}
+      showToast((x.name || '물건') + ' 판매 (+' + shopPriceTxt(gain) + ')'); renderShop();
     }
     function shopAdd() { const n = prompt('상점 이름', ''); if (n === null || !n.trim()) return; const s = { id: 'sh_' + Date.now().toString(36), name: n.trim(), desc: '', items: [] }; shopsList().push(s); state.shopId = s.id; persistState(); renderShop(); }
     function shopRename(id) { const s = shopsList().find(x => x.id === id); if (!s) return; const n = prompt('상점 이름', s.name || ''); if (n === null) return; s.name = n.trim() || s.name; const d = prompt('설명 (선택)', s.desc || ''); if (d !== null) s.desc = d.trim(); persistState(); renderShop(); }
     function shopDel(id) { if (!confirm('이 상점과 진열된 상품을 모두 지울까요?')) return; state.boardTex.shops = shopsList().filter(x => x.id !== id); persistState(); renderShop(); }
-    function shopItemDel(sid, iid) { const s = shopsList().find(x => x.id === sid); if (!s || !confirm('이 상품을 지울까요?')) return; s.items = (s.items || []).filter(x => x.id !== iid); persistState(); renderShop(); }
+    function shopItemDel(sid, iid) { const s = shopsList().find(x => x.id === sid); if (!s) return; s.items = (s.items || []).filter(x => x.id !== iid); state.shopSel = null; persistState(); renderShop(); }
+    function shopCatPick(sid) {
+      const s = shopsList().find(x => x.id === sid); if (!s) return;
+      let ov = document.getElementById('shop-ed'); if (ov) ov.remove();
+      ov = document.createElement('div'); ov.id = 'shop-ed'; const picked = new Set();
+      const folders = [...new Set(SHOP_CAT.map(o => o.f).filter(Boolean))].sort();
+      ov.innerHTML = `<div class="shop-ed-b" style="width:min(640px,96vw)"><b>카탈로그에서 상품 추가</b>
+        <div class="se-r"><input type="search" id="sc-q" placeholder="이름 검색" style="flex:1"><select id="sc-f"><option value="">모든 분류</option>${folders.map(f => `<option>${escapeHtml(f)}</option>`).join('')}</select><label style="flex:none;flex-direction:row;align-items:center;gap:4px"><input type="checkbox" id="sc-m"> 마법 포함</label></div>
+        <div id="sc-l" style="max-height:46vh;overflow:auto;border:1px solid #c9bb98;border-radius:8px;background:#fffaf0"></div>
+        <div class="se-r"><label style="flex:none">기본 재고<input type="number" min="0" id="sc-st" value="5" style="width:70px"></label><span id="sc-n" style="flex:1">0개 선택</span><button class="btn btn-secondary" id="sc-x">닫기</button><button class="btn btn-primary" id="sc-ok">추가</button></div></div>`;
+      document.body.appendChild(ov);
+      const draw = () => {
+        const q = ov.querySelector('#sc-q').value.trim().toLowerCase(), f = ov.querySelector('#sc-f').value, mg = ov.querySelector('#sc-m').checked, have = new Set((s.items || []).map(i => i.ref).filter(Boolean));
+        const r = SHOP_CAT.filter(o => o.cp > 0 && (mg || o.c !== 'magic') && (!f || o.f === f) && (!q || o.n.toLowerCase().includes(q))).slice(0, 80);
+        ov.querySelector('#sc-l').innerHTML = r.length ? r.map(o => `<label class="sc-row"><input type="checkbox" data-id="${o.id}" ${picked.has(o.id) ? 'checked' : ''}${have.has(o.id) ? ' disabled' : ''}><span class="sc-ic">${o.img ? `<img src="${escapeHtml(o.img)}" loading="lazy" onerror="this.remove()">` : ''}</span><b>${escapeHtml(o.n)}</b><i>${escapeHtml(o.f || '')}</i><em>${shopPriceTxt(o.cp)}${have.has(o.id) ? ' · 진열됨' : ''}</em></label>`).join('') : '<div style="padding:16px;text-align:center">결과가 없어요.</div>';
+        ov.querySelector('#sc-n').textContent = picked.size + '개 선택' + (r.length >= 80 ? ' · 결과가 많아 80개까지만 보여요' : '');
+      };
+      ov.addEventListener('input', e => { if (e.target.id === 'sc-q') draw(); });
+      ov.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.id) { t.checked ? picked.add(t.dataset.id) : picked.delete(t.dataset.id); ov.querySelector('#sc-n').textContent = picked.size + '개 선택'; } else draw(); });
+      ov.querySelector('#sc-x').onclick = () => ov.remove();
+      ov.addEventListener('pointerdown', e => { if (e.target === ov) ov.remove(); });
+      ov.querySelector('#sc-ok').onclick = () => {
+        const st = ov.querySelector('#sc-st').value.trim(); s.items = s.items || [];
+        picked.forEach(id => s.items.push({ id: 'si_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ref: id, stock: st === '' ? null : Math.max(0, Math.floor(Number(st) || 0)) }));
+        ov.remove(); persistState(); renderShop(); if (picked.size) showToast(picked.size + '개를 진열했어요.');
+      };
+      draw();
+    }
     function shopItemEdit(sid, iid) {
       const s = shopsList().find(x => x.id === sid); if (!s) return;
       const it = iid ? (s.items || []).find(x => x.id === iid) : { id: '', name: '', desc: '', img: '', cat: '', gp: 0, sp: 0, cp: 0, stock: 10 };
       if (!it) return;
+      const isRef = !!it.ref, o = isRef ? shopRes(it) : null, pr = isRef ? shopFromCp(o.cp) : { gp: it.gp || 0, sp: it.sp || 0, cp: it.cp || 0 };
       let ov = document.getElementById('shop-ed'); if (ov) ov.remove();
       ov = document.createElement('div'); ov.id = 'shop-ed'; ov._img = it.img || '';
-      const cats = ITEM_CATS.map(c => `<option value="${c[0]}"${it.cat === c[0] ? ' selected' : ''}>${escapeHtml(c[1])}</option>`).join('');
-      ov.innerHTML = `<div class="shop-ed-b"><b>${iid ? '상품 수정' : '상품 추가'}</b>
-        <label>이름<input type="text" id="se-n" value="${escapeHtml(it.name || '')}"></label>
-        <label>설명<input type="text" id="se-d" value="${escapeHtml(it.desc || '')}"></label>
-        <div class="se-r"><label>gp<input type="number" min="0" id="se-gp" value="${it.gp || 0}"></label><label>sp<input type="number" min="0" id="se-sp" value="${it.sp || 0}"></label><label>cp<input type="number" min="0" id="se-cp" value="${it.cp || 0}"></label></div>
-        <div class="se-r"><label>재고 (비우면 무제한)<input type="number" min="0" id="se-st" value="${it.stock == null || it.stock === '' ? '' : it.stock}"></label><label>분류<select id="se-c"><option value="">없음</option>${cats}</select></label></div>
-        <div class="se-r"><button class="btn btn-secondary" id="se-ib">이미지 선택</button><span id="se-ip" style="flex:1">${it.img ? '<img src="' + escapeHtml(it.img) + '" style="height:40px;border-radius:6px">' : '이미지 없음'}</span><button class="btn btn-secondary" id="se-ix">지우기</button></div>
+      ov.innerHTML = `<div class="shop-ed-b"><b>${iid ? (isRef ? escapeHtml(o.name) : '상품 수정') : '상품 직접 만들기'}</b>
+        ${isRef ? '' : `<label>이름<input type="text" id="se-n" value="${escapeHtml(it.name || '')}"></label><label>설명<input type="text" id="se-d" value="${escapeHtml(it.desc || '')}"></label>`}
+        <div class="se-r"><label>gp<input type="number" min="0" id="se-gp" value="${pr.gp}"></label><label>sp<input type="number" min="0" id="se-sp" value="${pr.sp}"></label><label>cp<input type="number" min="0" id="se-cp" value="${pr.cp}"></label></div>
+        <div class="se-r"><label>재고 (비우면 무제한)<input type="number" min="0" id="se-st" value="${it.stock == null || it.stock === '' ? '' : it.stock}"></label></div>
+        ${isRef ? '' : '<div class="se-r"><button class="btn btn-secondary" id="se-ib">이미지 선택</button><span id="se-ip" style="flex:1">' + (it.img ? '<img src="' + escapeHtml(it.img) + '" style="height:40px;border-radius:6px">' : '이미지 없음') + '</span><button class="btn btn-secondary" id="se-ix">지우기</button></div>'}
         <div class="se-r" style="justify-content:flex-end"><button class="btn btn-secondary" id="se-x">취소</button><button class="btn btn-primary" id="se-ok">저장</button></div></div>`;
       document.body.appendChild(ov);
       ov.addEventListener('pointerdown', e => { if (e.target === ov) ov.remove(); });
       ov.querySelector('#se-x').onclick = () => ov.remove();
-      ov.querySelector('#se-ix').onclick = () => { ov._img = ''; ov.querySelector('#se-ip').textContent = '이미지 없음'; };
-      ov.querySelector('#se-ib').onclick = () => {
-        const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*';
-        i.onchange = () => { const f = i.files[0]; if (!f) return; const u = URL.createObjectURL(f), im = new Image(); im.onload = () => { const k = Math.min(1, 160 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); let d = c.toDataURL('image/webp', .85); if (d.indexOf('image/webp') < 0) d = c.toDataURL('image/png'); ov._img = d; URL.revokeObjectURL(u); ov.querySelector('#se-ip').innerHTML = '<img src="' + d + '" style="height:40px;border-radius:6px">'; }; im.src = u; };
-        i.click();
-      };
+      if (!isRef) {
+        ov.querySelector('#se-ix').onclick = () => { ov._img = ''; ov.querySelector('#se-ip').textContent = '이미지 없음'; };
+        ov.querySelector('#se-ib').onclick = () => {
+          const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*';
+          i.onchange = () => { const f = i.files[0]; if (!f) return; const u = URL.createObjectURL(f), im = new Image(); im.onload = () => { const k = Math.min(1, 160 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); let d = c.toDataURL('image/webp', .85); if (d.indexOf('image/webp') < 0) d = c.toDataURL('image/png'); ov._img = d; URL.revokeObjectURL(u); ov.querySelector('#se-ip').innerHTML = '<img src="' + d + '" style="height:40px;border-radius:6px">'; }; im.src = u; };
+          i.click();
+        };
+      }
       ov.querySelector('#se-ok').onclick = () => {
-        const v = id => ov.querySelector('#' + id).value, nm = v('se-n').trim(); if (!nm) { showToast('상품 이름을 적어 주세요.'); return; }
-        const st = v('se-st').trim(), o = { id: it.id || ('si_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4)), name: nm, desc: v('se-d').trim(), img: ov._img, cat: v('se-c'), gp: Math.max(0, Math.floor(Number(v('se-gp')) || 0)), sp: Math.max(0, Math.floor(Number(v('se-sp')) || 0)), cp: Math.max(0, Math.floor(Number(v('se-cp')) || 0)), stock: st === '' ? null : Math.max(0, Math.floor(Number(st) || 0)) };
-        s.items = s.items || []; const k = s.items.findIndex(x => x.id === o.id); if (k >= 0) s.items[k] = o; else s.items.push(o);
+        const v = id => ov.querySelector('#' + id).value, st = v('se-st').trim(), g = Math.max(0, Math.floor(Number(v('se-gp')) || 0)), sp = Math.max(0, Math.floor(Number(v('se-sp')) || 0)), c = Math.max(0, Math.floor(Number(v('se-cp')) || 0));
+        const stock = st === '' ? null : Math.max(0, Math.floor(Number(st) || 0)); let o2;
+        if (isRef) o2 = { ...it, stock, cpo: g * 100 + sp * 10 + c };
+        else { const nm = v('se-n').trim(); if (!nm) { showToast('상품 이름을 적어 주세요.'); return; } o2 = { id: it.id || ('si_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4)), name: nm, desc: v('se-d').trim(), img: ov._img, cat: '', gp: g, sp, cp: c, stock }; }
+        s.items = s.items || []; const k = s.items.findIndex(x => x.id === o2.id); if (k >= 0) s.items[k] = o2; else s.items.push(o2);
         ov.remove(); persistState(); renderShop();
       };
     }
