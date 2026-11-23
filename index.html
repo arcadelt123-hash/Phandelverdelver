@@ -597,6 +597,18 @@
     #nv-menu .nvm-modes { display: flex; gap: 6px; flex-wrap: wrap; } #nv-menu .nvm-modes button.on { background: #b8893a; color: #fff; }
     #nv-menu .nvm-colors { display: flex; gap: 8px; margin-top: 8px; } #nv-menu .nvm-colors i { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #8a6a2a; cursor: pointer; } #nv-menu .nvm-colors i.on { box-shadow: 0 0 0 3px rgba(184,137,58,.55); }
     /* 확대(펼친) 보기: 같은 종이를 크게 */
+    /* 퀘스트 수정 창: 닫기(빗자루)는 스크롤바 바깥, 버튼 · 아이콘은 테두리 없이 투명 */
+    .modal-box.qd-paper { position: relative; }
+    .qd-paper .qd-x { position: absolute; top: 2.4%; right: 2.4%; width: 38px; height: 38px; padding: 0; border: 0; background: transparent; cursor: pointer; z-index: 6; }
+    .qd-paper .qd-x img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(60,40,10,.4)); transition: transform .15s; }
+    .qd-paper .qd-x:hover img { transform: scale(1.12) rotate(-8deg); }
+    .qd-paper .btn, .qd-paper .btn-mini, .qd-paper .btn-icon-only, .qd-paper .sec-icon { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+    .qd-paper .collapsible-box.collapsed { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+    .qd-paper .qd-done { width: 52px; height: 52px; padding: 0; }
+    .qd-paper .qd-done img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(60,40,10,.35)); transition: transform .15s; }
+    .qd-paper .qd-done:hover img { transform: scale(1.1); }
+    .fl-h .fl-op { accent-color: #8a6a3a; width: 64px; height: 14px; margin: 0; cursor: pointer; flex: none; }
+    .fl-h .fl-c { font-size: 22px !important; line-height: 1; padding: 0 8px !important; }
     .qv-paper .qv-in::-webkit-scrollbar { display: none; width: 0; }
     .modal-box.qv-paper { position: relative; }
     .qv-more { position: absolute; left: 50%; bottom: 3.5%; transform: translateX(-50%); width: 46px; height: 36px; padding: 0; border: 0; background: transparent; cursor: pointer; z-index: 6; display: none; align-items: center; justify-content: center; animation: qvBob 1.4s ease-in-out infinite; filter: drop-shadow(0 2px 3px rgba(60,40,10,.45)); }
@@ -633,7 +645,7 @@
     .qv-paper .qv-title { font-size: 1.45em; text-align: center; color: #2f2210; }
     .qv-paper .qv-x { position: static; flex: none; }
     .qv-paper .qv-meta { text-align: center; font-size: .9em; }
-    .qv-paper .qv-txt { font-size: 1em; background: rgba(255,250,235,.32); border: 1px dashed rgba(90,60,20,.45); }
+    .qv-paper .qv-txt { font-size: 1em; background: none; border: 0; }
     .qv-paper .qv-banner { max-height: 28%; border: 1.5px solid rgba(90,60,20,.5); border-radius: 8px; margin-bottom: .6em; }
     .qv-paper .qv-npc, .qv-paper .qv-tags { justify-content: center; }
     .quest-card.q-tile { cursor: pointer; display: flex; flex-direction: column; aspect-ratio: 2 / 3; overflow: hidden; }
@@ -1194,7 +1206,7 @@
     .fl-wrap > .qboard, .fl-wrap > .mb, .fl-wrap > .tl-scroll { height: 100% !important; margin: 0 !important; min-height: 0 !important; isolation: isolate; box-sizing: border-box; }
     .fl-wrap > .qboard, .fl-wrap > .mb, .fl-wrap > .tl-scroll { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; outline: 0 !important; }
     body.map-open .fl-panel { display: none !important; }
-    .fl-panel { position: absolute; z-index: 50; max-width: min(640px, calc(100% - 16px)); background: rgba(255,255,255,.9); border: 1px solid rgba(0,0,0,.15); border-radius: 12px; box-shadow: 0 6px 22px rgba(0,0,0,.28); backdrop-filter: blur(6px); }
+    .fl-panel { position: absolute; z-index: 50; max-width: min(640px, calc(100% - 16px)); background: rgba(255,255,255,var(--flop, .9)); border: 1px solid rgba(0,0,0,.15); border-radius: 12px; box-shadow: 0 6px 22px rgba(0,0,0,.28); backdrop-filter: blur(6px); }
     .fl-h { display: flex; align-items: center; gap: 6px; padding: 3px 6px; cursor: grab; touch-action: none; user-select: none; color: #64748b; }
     .fl-h:active { cursor: grabbing; }
     .fl-h .fl-grip { flex: 1; letter-spacing: 2px; font-size: 12px; }
@@ -5023,10 +5035,10 @@
     // ---- 겹침 순서 ----
     function zItems() {
       const a = [];
-      state.quests.forEach(q => { if (q.board && typeof q.board.x === 'number') a.push({ o: q.board, id: q.id }); });
-      (state.boardTex.memos || []).forEach(m => a.push({ o: m, id: m.id }));
-      (state.boardTex.npcs || []).forEach(n => a.push({ o: n, id: n.id }));
-      (state.boardTex.conns || []).forEach(c => a.push({ o: c, id: c.id }));
+      state.quests.forEach(q => { if (q.board && typeof q.board.x === 'number') a.push({ o: q.board, id: q.id, t: 'q' }); });
+      (state.boardTex.memos || []).forEach(m => a.push({ o: m, id: m.id, t: 'm' }));
+      (state.boardTex.npcs || []).forEach(n => a.push({ o: n, id: n.id, t: 'n' }));
+      (state.boardTex.conns || []).forEach(c => a.push({ o: c, id: c.id, t: 'c' }));
       return a;
     }
 
@@ -5062,13 +5074,11 @@
       const ta = document.querySelector('.qmemo[data-mid="' + m.id + '"] .qm-text'); if (ta) ta.focus();
     }
     function placeAbove(id, targetId) {
-      const items = zItems().sort((a, b) => (a.o.z || 0) - (b.o.z || 0));
-      const i = items.findIndex(x => x.id === id); if (i < 0) return;
-      const me = items.splice(i, 1)[0];
-      const t = items.findIndex(x => x.id === targetId);
-      items.splice(t < 0 ? items.length : t + 1, 0, me);
-      items.forEach((it, n) => { it.o.z = n + 1; });
-      boardTopZ = Math.max(boardTopZ, items.length + 1);
+      const items = zItems(), me = items.find(x => x.id === id); if (!me) return;
+      const t = items.find(x => x.id === targetId);
+      if (t) { me.o.z = t.o.z || 1; me.o.zt = Math.max(Date.now(), (t.o.zt || 0) + 1); }
+      else { me.o.z = Math.max(1, ...items.map(x => x.o.z || 0)); me.o.zt = Date.now(); }
+      boardTopZ = Math.max(boardTopZ, me.o.z);
     }
     function memoById(id) { return (state.boardTex.memos || []).find(m => m.id === id); }
     function memoText(id, v) { const m = memoById(id); if (m) m.text = v; }
@@ -5145,13 +5155,10 @@
     // ---- NPC 카드 ----
     function npcCardById(id) { return (state.boardTex.npcs || []).find(n => n.id === id); }
     function placeBelow(id, targetId) {
-      const items = zItems().sort((a, b) => (a.o.z || 0) - (b.o.z || 0));
-      const i = items.findIndex(x => x.id === id); if (i < 0) return;
-      const me = items.splice(i, 1)[0];
-      const t = items.findIndex(x => x.id === targetId);
-      items.splice(t < 0 ? 0 : t, 0, me);
-      items.forEach((it, n) => { it.o.z = n + 1; });
-      boardTopZ = Math.max(boardTopZ, items.length + 1);
+      const items = zItems(), me = items.find(x => x.id === id); if (!me) return;
+      const t = items.find(x => x.id === targetId);
+      if (t) { me.o.z = t.o.z || 1; me.o.zt = (t.o.zt || 0) - 1; }
+      else { me.o.z = 1; me.o.zt = -1; }
     }
     function addNpcCard(npcId, qid) {
       const npc = npcLike(npcId); const q = state.quests.find(x => x.id === qid);
@@ -5265,6 +5272,7 @@
         if (!has(c.a) || !has(c.b)) return;
         inner.appendChild(buildConn(c, a, b));
       });
+      try { zApply(); } catch (e) {}
     }
     function connSet(id, k, v) {
       const c = connById(id); if (!c) return; c[k] = v; refreshConns();
@@ -5343,25 +5351,42 @@
       });
     }
     function closeCtx() { const c = document.getElementById('ctx-menu'); if (c) c.remove(); ctxId = null; ctxKind = null; ctxAt = null; }
+    // 같은 층(레이어)에 여러 장을 둘 수 있어요. 같은 층 안에서는 마지막으로 만지거나 옮긴 것이 위, 그다음은 만든 순서(id)로 정해요.
+    function zCmp(a, b) { return ((a.o.z || 0) - (b.o.z || 0)) || ((a.o.zt || 0) - (b.o.zt || 0)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0); }
+    function zSel(id) { return '.qnote[data-qid="' + id + '"], .qmemo[data-mid="' + id + '"], .qnpc[data-nid="' + id + '"], .qconn[data-cid="' + id + '"]'; }
+    const LAYER_NAMES = ['배경', '퀘스트 종이', '메모', '아이템'];
+    function zLay(it) { return it.t === 'q' ? 2 : (it.t === 'm' || it.t === 'c') ? 3 : (it.o.kind === 'img' ? 1 : 4); }
+    // 레이어는 4개(배경 · 퀘스트 종이 · 메모 · 아이템). 예전의 1~39 번호는 종류별로 4개로 옮기되 겹침 순서는 그대로 이어가요.
+    function zNorm() {
+      const bt = state.boardTex; let ch = false;
+      if (!bt.layerV) {
+        zItems().forEach(it => { it.o.zt = it.o.z || 0; it.o.z = zLay(it); });
+        (bt.sets || []).forEach(st => { const sn = st && st.snap; if (!sn) return; const f = (o, l) => { if (o && typeof o === 'object') { o.zt = o.z || 0; o.z = l; } };
+          Object.keys(sn.q || {}).forEach(k => f(sn.q[k], 2)); (sn.memos || []).forEach(o => f(o, 3)); (sn.conns || []).forEach(o => f(o, 3)); (sn.npcs || []).forEach(o => f(o, o.kind === 'img' ? 1 : 4)); });
+        bt.layerV = 2; ch = true;
+      }
+      zItems().forEach(it => { const z = it.o.z; if (!(z >= 1 && z <= 4)) { it.o.z = zLay(it); if (it.o.zt === undefined) it.o.zt = Date.now(); ch = true; } });
+      if (ch) { clearTimeout(zoomSaveT); zoomSaveT = setTimeout(persistState, 800); }
+    }
+    function zApply() {
+      zNorm();
+      let last = null, k = 0;
+      zItems().sort(zCmp).forEach(it => { const z = it.o.z || 1; k = (z === last) ? k + 1 : 0; last = z; const n = document.querySelector(zSel(it.id)); if (n) n.style.zIndex = z * 1000 + Math.min(k, 999); });
+    }
+    function layerMax() { return 4; }
     function layerInfo(id) {
-      const items = zItems().sort((a, b) => (a.o.z || 0) - (b.o.z || 0));
-      return { n: items.length, r: items.findIndex(x => x.id === id) + 1 };
+      const it = zItems().find(x => x.id === id);
+      return { n: layerMax(), r: Math.min(layerMax(), (it && it.o.z) || 1) };
     }
     function setLayer(id, rank) {
-      const items = zItems().sort((a, b) => (a.o.z || 0) - (b.o.z || 0));
-      const i = items.findIndex(x => x.id === id); if (i < 0) return;
-      rank = Math.max(1, Math.min(items.length, Math.round(Number(rank))));
-      const me = items.splice(i, 1)[0]; items.splice(rank - 1, 0, me);
-      items.forEach((it, n) => { it.o.z = n + 1; });
-      boardTopZ = Math.max(boardTopZ, items.length + 1);
-      items.forEach(it => {
-        const n = document.querySelector('.qnote[data-qid="' + it.id + '"], .qmemo[data-mid="' + it.id + '"], .qnpc[data-nid="' + it.id + '"], .qconn[data-cid="' + it.id + '"]');
-        if (n) n.style.zIndex = it.o.z;
-      });
+      const it = zItems().find(x => x.id === id); if (!it) return;
+      const mx = layerMax(); rank = Math.max(1, Math.min(mx, Math.round(Number(rank))));
+      it.o.z = rank; it.o.zt = Date.now(); boardTopZ = Math.max(boardTopZ, rank);
+      zApply();
       clearTimeout(zoomSaveT); zoomSaveT = setTimeout(persistState, 500);
-      const t = document.getElementById('cx-lv'), r = document.getElementById('cx-rng');
-      if (t) t.textContent = rank + ' / ' + items.length; if (r) r.value = rank;
+      if (ctxId === id) buildCtx();
     }
+    function ctxLayerTop() { if (ctxId) setLayer(ctxId, layerMax()); }
     function ctxLayerStep(d) { const r = document.getElementById('cx-rng'); if (!r || !ctxId) return; setLayer(ctxId, Number(r.value) + d); }
     function memoPickHtml(qid, noBlank) {
       const me0 = landMe(), pcs = (state.boardTex.pcs || []).filter(p => !p.off).slice().sort((x, y) => (y.id === me0) - (x.id === me0));
@@ -5377,9 +5402,10 @@
       const relIds = rel.map(n => n.id);
       const oN = all.filter(n => !on.includes(n.id) && !relIds.includes(n.id)), oP = pcs.filter(pc => !on.includes('pc:' + pc.id) && !relIds.includes('pc:' + pc.id));
       const opt = n => `<option value="${escapeHtml(n.id)}">${escapeHtml(n.name || 'NPC')}</option>`;
-      if (!rel.length && !oN.length && !oP.length) return '';
+      const imgs = (() => { const seen = new Set(), here = new Set((state.boardTex.npcs || []).filter(c => c.qid === qid && !c.npcId).map(c => (c.label || '') + '|' + String(c.img || '').slice(0, 80))), out = []; (state.boardTex.npcs || []).forEach(c => { if (c.npcId || !c.img || c.qid === qid) return; const k = (c.label || '') + '|' + String(c.img).slice(0, 80); if (seen.has(k) || here.has(k)) return; seen.add(k); out.push(c); }); return out; })();
+      if (!rel.length && !oN.length && !oP.length && !imgs.length) return '';
       const nb = (n, g) => `<button class="cx-b cx-nb" data-id="${escapeHtml(n.id)}" data-n="${escapeHtml((n.name || 'NPC').toLowerCase())}" onclick="ctxNpc(this.dataset.id)"><span>${escapeHtml(n.name || 'NPC')}</span><small>${g}</small></button>`;
-      const list = rel.map(n => nb(n, '관련')).join('') + oP.map(pc => nb({ id: 'pc:' + pc.id, name: pc.name || 'PC' }, 'PC')).join('') + oN.map(n => nb(n, 'NPC')).join('');
+      const list = rel.map(n => nb(n, '관련')).join('') + oP.map(pc => nb({ id: 'pc:' + pc.id, name: pc.name || 'PC' }, 'PC')).join('') + oN.map(n => nb(n, 'NPC')).join('') + imgs.map(c => nb({ id: 'img:' + c.id, name: c.label || '이름 없는 이미지' }, (c.kind || 'item') === 'item' ? '아이템' : '이미지')).join('');
       return `<div class="cx-sec"><input type="search" class="cx-search" placeholder="..." aria-label="검색" oninput="ctxNpcFilter(this)" onkeydown="event.stopPropagation(); if(event.key==='Enter'){const f=this.parentNode.querySelector('.cx-nb:not([hidden])'); if(f) f.click();}"><div class="cx-nl" style="display:none">${list}<div class="cx-none" hidden>...</div></div></div>`;
     }
     function ctxNpcFilter(inp) {
@@ -5388,7 +5414,11 @@
       const none = box.querySelector('.cx-none'); if (none) none.hidden = n > 0;
       const nl = box.querySelector('.cx-nl'); if (nl) nl.style.display = v ? '' : 'none';
     }
-    function ctxNpc(npcId) { const qid = ctxId; closeCtx(); addNpcCard(npcId, qid); }
+    function ctxNpc(npcId) {
+      const qid = ctxId; closeCtx();
+      if (String(npcId).indexOf('img:') === 0) { const c = (state.boardTex.npcs || []).find(x => x.id === String(npcId).slice(4)); if (c) addImageCard(qid, c.img, 1, { label: c.label, kind: c.kind || 'item', detail: c.detail, pc: c.pc, cat: c.cat, rar: c.rar }); return; }
+      addNpcCard(npcId, qid);
+    }
     function addQuestAt(at) {
       addQuest(); const q = state.quests[0];
       if (state.boardStatus === 'completed') state.boardStatus = 'active';
@@ -5408,8 +5438,8 @@
     }
     function layerHtml(id) {
       const li = layerInfo(id);
-      return `<details class="cx-sec cx-fold"><summary class="cx-t">레이어 <b id="cx-lv">${li.r} / ${li.n}</b> <span style="font-weight:400;color:#94a3b8;">(1 = 맨 뒤)</span></summary>
-        <div class="cx-row" style="margin-top:6px;"><button class="cx-b" onclick="ctxLayerStep(-1)">−</button><input type="range" id="cx-rng" min="1" max="${li.n}" step="1" value="${li.r}" oninput="setLayer('${id}', this.value)"><button class="cx-b" onclick="ctxLayerStep(1)">+</button></div></details>`;
+      return `<div class="cx-sec"><div class="cx-t">레이어 <b>${LAYER_NAMES[li.r - 1] || li.r}</b></div>
+        <div class="cx-row" style="margin-top:4px;flex-wrap:wrap;gap:4px;">${LAYER_NAMES.map((nm, i) => `<button class="cx-b${li.r === i + 1 ? ' on' : ''}" style="${li.r === i + 1 ? 'background:#334155;color:#fff;' : ''}" onclick="setLayer('${id}', ${i + 1})">${nm}</button>`).join('')}<button class="cx-b" onclick="ctxLayerTop()" title="같은 레이어 안에서 맨 위로">맨 위로</button></div></div>`;
     }
     function buildCtx() {
       const menu = document.getElementById('ctx-menu'); if (!menu) return;
@@ -5559,6 +5589,7 @@
       try { inner.querySelectorAll('.qnote').forEach(noteFitText); } catch (e) {}
       memos.forEach(m => inner.appendChild(buildMemo(m)));
       npcCards.forEach(c => inner.appendChild(buildNpcCard(c)));
+      try { zApply(); } catch (e) {}
       refreshConns();
       if (!state.boardPopup) flApply('#qboard', jm ? 'journal' : 'board');
       sizeBoardCanvas();
@@ -6735,14 +6766,15 @@
       const panel = document.createElement('div'); panel.className = 'fl-panel'; panel.dataset.fl = key;
       let st = {}; try { st = JSON.parse(localStorage.getItem('fl_' + key) || '{}'); } catch (e) {}
       if (st.c) panel.classList.add('collapsed');
-      panel.innerHTML = '<div class="fl-h"><span class="fl-grip">⋮⋮</span><button type="button" class="fl-c" aria-label="접기 / 펼치기">▾</button></div><div class="fl-b"></div>';
+      panel.innerHTML = '<div class="fl-h"><span class="fl-grip">⋮⋮</span><input type="range" class="fl-op" min="20" max="100" step="5" title="투명도" aria-label="투명도"><button type="button" class="fl-c" aria-label="접기 / 펼치기">▾</button></div><div class="fl-b"></div>';
       const body = panel.querySelector('.fl-b'); kids.forEach(k => { if (k.parentNode === area) body.appendChild(k); });
       wrap.appendChild(panel);
       const save = o => { let c = {}; try { c = JSON.parse(localStorage.getItem('fl_' + key) || '{}'); } catch (e) {} Object.assign(c, o); try { localStorage.setItem('fl_' + key, JSON.stringify(c)); } catch (e) {} };
       panel.querySelector('.fl-c').onclick = () => { const c = panel.classList.toggle('collapsed'); save({ c }); panel.querySelector('.fl-c').textContent = c ? '▸' : '▾'; };
       if (st.c) panel.querySelector('.fl-c').textContent = '▸';
+      { const op = panel.querySelector('.fl-op'), v = st.op != null ? st.op : 90; op.value = v; panel.style.setProperty('--flop', v / 100); op.oninput = () => { panel.style.setProperty('--flop', op.value / 100); save({ op: Number(op.value) }); }; }
       const h = panel.querySelector('.fl-h'); let d = null;
-      h.addEventListener('pointerdown', e => { if (e.target.closest('.fl-c')) return; const r = panel.getBoundingClientRect(), wr = wrap.getBoundingClientRect(); d = { sx: e.clientX, sy: e.clientY, l: r.left - wr.left, t: r.top - wr.top }; try { h.setPointerCapture(e.pointerId); } catch (_) {} });
+      h.addEventListener('pointerdown', e => { if (e.target.closest('.fl-c, .fl-op')) return; const r = panel.getBoundingClientRect(), wr = wrap.getBoundingClientRect(); d = { sx: e.clientX, sy: e.clientY, l: r.left - wr.left, t: r.top - wr.top }; try { h.setPointerCapture(e.pointerId); } catch (_) {} });
       h.addEventListener('pointermove', e => { if (!d) return; const x = Math.max(0, Math.min(wrap.clientWidth - 60, d.l + e.clientX - d.sx)), y = Math.max(0, Math.min(wrap.clientHeight - 30, d.t + e.clientY - d.sy)); panel.style.left = x + 'px'; panel.style.top = y + 'px'; });
       const end = () => { if (!d) return; d = null; save({ x: Math.round(panel.offsetLeft), y: Math.round(panel.offsetTop) }); };
       h.addEventListener('pointerup', end); h.addEventListener('pointercancel', end);
@@ -6772,9 +6804,15 @@
       noteFitText(el);
     }
     function noteFitText(el) {
-      const d = el.querySelector('.qn-desc'); if (!d) return; d.style.fontSize = '';
+      const d = el.querySelector('.qn-desc'); if (!d) return; d.style.fontSize = ''; { const t0 = el.querySelector('.qn-title'), m0 = el.querySelector('.qn-meta'); if (t0) t0.style.fontSize = ''; if (m0) m0.style.fontSize = ''; }
       let fs = parseFloat(getComputedStyle(d).fontSize) || 15; const min = 9;
       for (let i = 0; i < 40 && d.scrollHeight > d.clientHeight + 1 && fs > min; i++) { fs -= .5; d.style.fontSize = fs + 'px'; }
+      // 본문을 최소 크기까지 줄여도 넘치면 제목과 메타 글자도 같이 줄여서, 제목이 밀려 사라지지 않게 해요
+      const t = el.querySelector('.qn-title'), m = el.querySelector('.qn-meta');
+      if (t && m && d.scrollHeight > d.clientHeight + 1) {
+        let ft = parseFloat(getComputedStyle(t).fontSize) || 19, fm = parseFloat(getComputedStyle(m).fontSize) || 13;
+        for (let i = 0; i < 40 && d.scrollHeight > d.clientHeight + 1 && (ft > 11 || fm > 8); i++) { if (ft > 11) { ft -= .5; t.style.fontSize = ft + 'px'; } if (fm > 8) { fm -= .4; m.style.fontSize = fm + 'px'; } }
+      }
     }
     function buildNote(q) {
       const b = q.board;
@@ -7049,7 +7087,7 @@
         const taEl = e.target.closest('textarea');
         if (taEl && document.activeElement === taEl) return;
         const resize = !!e.target.closest('[data-act="resize"]');
-        drag = { q, obj, isMemo, note, resize, sx: e.clientX, sy: e.clientY, ox: obj.x, oy: obj.y, ow: obj.w, oh: obj.h, moved: false, id: e.pointerId, z: bz(), ta: taEl || null };
+        drag = { q, obj, isMemo, note, resize, sx: e.clientX, sy: e.clientY, ox: obj.x, oy: obj.y, ow: obj.w, oh: obj.h, moved: false, id: e.pointerId, z: bz(), ta: taEl || null, act: !!e.target.closest('[data-act], .qn-z, button, a, input, select') };
         try { note.setPointerCapture(e.pointerId); } catch (_) {}
         if (resize || e.pointerType !== 'touch') e.preventDefault();
       });
@@ -7090,10 +7128,11 @@
         if (!drag || e.pointerId !== drag.id) return;
         const d = drag; drag = null;
         d.note.classList.remove('dragging');
-        if (d.moved) { persistState(); if (d.resize && !d.isMemo) renderBoard(); return; }
+        if (d.moved) { if (!d.resize) { d.obj.zt = Date.now(); try { zApply(); } catch (x) {} } persistState(); if (d.resize && !d.isMemo) renderBoard(); return; }
         if (d.ta) { if (!cancel) d.ta.focus(); return; }
         if (!cancel && !d.resize && !d.isMemo && d.q) {
           if (typeof d.q.board.rot !== 'number') d.q.board.rot = noteRot(d.q);
+          if (!d.act && !linkFrom && !(typeof sel !== 'undefined' && sel && sel.size)) { try { openQuestView(d.q.id); } catch (x) {} }
         }
       }
       document.addEventListener('pointerup', e => end(e, false));
@@ -8251,7 +8290,7 @@
                 ${q.gameDate ? `<span class="badge-day">${escapeHtml(q.gameDate)}</span>` : ''}
                 <span class="quest-title-display">${escapeHtml(q.title || '제목 없음')}</span>
               </div>
-              <div class="quest-header-right"><button class="btn btn-secondary" style="padding:4px 11px;" onclick="closeQuestDetail()" title="닫기" aria-label="닫기">✕</button></div>
+              <div class="quest-header-right"></div>
             </div>
 
             <div class="quest-body">
@@ -8287,10 +8326,7 @@
 
               <div class="quest-footer-actions">
                 <button class="btn btn-danger btn-icon-only" onclick="armDeleteQuest(this, '${q.id}')" title="퀘스트 삭제 (두 번 눌러 삭제)" aria-label="퀘스트 삭제">${ICONS.del}</button>
-                <button class="btn btn-secondary btn-icon-only btn-complete" onclick="toggleQuestStatus('${q.id}')"
-                  title="${q.status === 'active' ? '진행 중 (눌러서 완료 처리)' : '완료됨 (눌러서 진행 중으로 복귀)'}" aria-label="${q.status === 'active' ? '퀘스트 완료 처리' : '진행 중으로 복귀'}">
-                  ${q.status === 'active' ? ICONS.scrollOpen : ICONS.scrollClosed}
-                </button>
+                <button class="btn btn-icon-only qd-done" onclick="questDetailDone('${q.id}')" title="수정 완료" aria-label="수정 완료"><img src="${IC_SEAL}" alt=""></button>
               </div>
             </div>
           </div>
@@ -8308,6 +8344,7 @@
       box.className = 'modal-box qd-box qd-paper';
       box.style.cssText = `width:${w}px;height:${h}px;background-image:url(${pp.url});padding:${Math.round(h * pd[0])}px ${Math.round(w * pd[1])}px ${Math.round(h * pd[2])}px ${Math.round(w * pd[3])}px;`;
       bd.innerHTML = questDetailHtml(q);
+      if (!box.querySelector('.qd-x')) { const x = document.createElement('button'); x.type = 'button'; x.className = 'qd-x'; x.title = '닫기'; x.setAttribute('aria-label', '닫기'); x.innerHTML = '<img src="' + IC_BROOM + '" alt="">'; x.onclick = () => closeQuestDetail(); box.appendChild(x); }
       m.classList.add('open'); bd.scrollTop = sc;
     }
     let qvId = null;
@@ -8354,6 +8391,8 @@
     }
     document.addEventListener('keydown', e => { if (!qvId || !document.getElementById('quest-view').classList.contains('open')) return; if (/INPUT|TEXTAREA|SELECT/.test((e.target.tagName || ''))) return; if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); qvScroll(1); } else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); qvScroll(-1); } });
     document.addEventListener('wheel', e => { if (!qvId || !document.getElementById('quest-view').classList.contains('open')) return; const sc = document.querySelector('#qv-box .qv-in'); if (!sc || sc.contains(e.target)) return; sc.scrollTop += e.deltaY; }, { passive: true });
+    const IC_SEAL = 'data:image/webp;base64,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';
+    function questDetailDone(id) { closeQuestDetail(); openQuestView(id); }
     function openQuestDetail(id) { state.detailQid = id; renderQuestDetail(); }
     function closeQuestDetail() { state.detailQid = null; renderQuestDetail(); }
 
@@ -8434,10 +8473,22 @@
       pins: { get icon() { return ICONS.pin; }, flag: 'pinsCollapsed' },
       refs: { get icon() { return ICONS.ref; }, flag: 'refsCollapsed' },
       tags: { get icon() { return ICONS.tag; }, flag: 'tagsCollapsed' },
-      npcs: { get icon() { return ICONS.npc; }, flag: 'npcsCollapsed' }
+      npcs: { get icon() { return ICONS.npc; }, flag: 'npcsCollapsed' },
+      items: { get icon() { return '<img class="ico-img" src="' + IC_K_ITEM + '" alt="">'; }, flag: 'itemsCollapsed' }
     };
+    function qItemsOf(q) { return (state.boardTex.npcs || []).filter(c => c.qid === q.id && !c.npcId && (c.kind || 'item') === 'item'); }
+    function qItemPool(qid) { const seen = new Set(), out = []; (state.boardTex.npcs || []).forEach(c => { if (c.npcId || (c.kind || 'item') !== 'item' || !c.img || c.qid === qid) return; const k = (c.label || '') + '|' + String(c.img).slice(0, 80); if (seen.has(k)) return; seen.add(k); out.push(c); }); return out; }
+    function qItemImg(c) { return String(c.img || '').indexOf('ico:') === 0 ? IC_K_ITEM : c.img; }
+    function qItemAdd(qid, cid) {
+      if (!cid) return; const q = state.quests.find(x => x.id === qid); if (!q) return;
+      if (!q.board) return showToast('보드에 올라온 퀘스트에만 붙일 수 있어요.');
+      const c = (state.boardTex.npcs || []).find(x => x.id === cid); if (!c) return;
+      addImageCard(qid, c.img, 1, { label: c.label, kind: c.kind || 'item', detail: c.detail, pc: c.pc, cat: c.cat, rar: c.rar }); renderQuestDetail();
+    }
+    function qItemDel(qid, cid) { state.boardTex.npcs = (state.boardTex.npcs || []).filter(c => c.id !== cid); persistState(); try { renderBoard(); } catch (e) {} renderQuestDetail(); }
+    function qItemNew(qid) { const q = state.quests.find(x => x.id === qid); if (!q) return; if (!q.board) return showToast('보드에 올라온 퀘스트에만 붙일 수 있어요.'); imgAskThen((data, r) => openItemModal(null, { mode: 'new', qid, data, ratio: r || 1, kind: 'item' }), 'item'); }
     function secOrder(q) {
-      const base = ['pins', 'refs', 'tags', 'npcs'];
+      const base = ['pins', 'refs', 'tags', 'npcs', 'items'];
       const o = Array.isArray(q.sectionOrder) ? q.sectionOrder.filter((k, i, a) => base.includes(k) && a.indexOf(k) === i) : [];
       base.forEach(k => { if (!o.includes(k)) o.push(k); });
       return o;
@@ -8485,8 +8536,22 @@
           </div>
           <div style="margin-top: 4px;">
             ${renderNpcSelector(q.id)}
+          </div>` },
+        items: { label: String(qItemsOf(q).length), tip: '관련 아이템', n: qItemsOf(q).length, body: () => `
+          <div class="npcs-list">
+            ${qItemsOf(q).map(c => `
+              <div class="npc-card-item">
+                <button class="npc-del-btn" onclick="qItemDel('${q.id}', '${c.id}')" title="이 퀘스트에서 빼기">×</button>
+                <div class="npc-avatar-wrap"><img src="${escapeHtml(qItemImg(c))}" alt="" /></div>
+                <span class="npc-name-label" title="${escapeHtml(c.label || '')}">${escapeHtml(c.label || '아이템')}</span>
+              </div>`).join('')}
+          </div>
+          <div style="margin-top: 4px; display:flex; gap:6px; align-items:center;">
+            <select onchange="qItemAdd('${q.id}', this.value); this.value=''" aria-label="등록된 아이템 붙이기"><option value="">등록된 아이템 붙이기…</option>${qItemPool(q.id).map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label || '이름 없는 아이템')}</option>`).join('')}</select>
+            <button type="button" class="btn btn-secondary" onclick="qItemNew('${q.id}')" title="새 아이템 만들기" aria-label="새 아이템 만들기">＋</button>
           </div>` }
       };
+      if (q.itemsCollapsed === undefined) q.itemsCollapsed = true;
       const order = secOrder(q);
       return `<div class="sections-wrap">` + order.map((key, idx) => {
         const d = SEC_DEFS[key], f = info[key], collapsed = !!q[d.flag];
