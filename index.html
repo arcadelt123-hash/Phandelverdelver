@@ -2640,7 +2640,7 @@
     </div>
   </div>
 
-  <script>/* 같은 GitHub 계정의 다른 사이트와 브라우저 저장소가 섞이지 않게 키에 접두어를 붙임 */(function(){var P='pandelver:',g=Storage.prototype.getItem,st=Storage.prototype.setItem,r=Storage.prototype.removeItem;Storage.prototype.getItem=function(k){return g.call(this,P+k)};Storage.prototype.setItem=function(k,v){return st.call(this,P+k,v)};Storage.prototype.removeItem=function(k){return r.call(this,P+k)};})();</script>
+  <script>/* 같은 GitHub 계정의 다른 사이트와 브라우저 저장소가 섞이지 않게 키에 접두어를 붙임 */(function(){var P='weekday:',g=Storage.prototype.getItem,st=Storage.prototype.setItem,r=Storage.prototype.removeItem;Storage.prototype.getItem=function(k){return g.call(this,P+k)};Storage.prototype.setItem=function(k,v){return st.call(this,P+k,v)};Storage.prototype.removeItem=function(k){return r.call(this,P+k)};})();</script>
   <script>
     (function () {
       function show(msg) {
@@ -2774,7 +2774,7 @@
 
 
     // ===== 서버 연결: google.script.run 이 응답 없으면 같은 주소로 직접 요청(fetch)으로 자동 전환 =====
-    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbz4vhtl4xWzXsfflzLB223gnd8xNIiuh51qbrUHpLziIAPS_T0A1Z3jHEOyMXSsg21Y/exec';
+    const EXEC_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbxCEJMUwjlRuK43uPnQ2ukiUTkhGvIQX9PC9_an6tYKCXL9NuOLk6E9zK5jQHZQk5x3/exec';
     function execUrl() { try { return localStorage.getItem('adventure_exec_url') || EXEC_URL_DEFAULT; } catch (e) { return EXEC_URL_DEFAULT; } }
     function diagShow(msg) { try { console.info('[sync]', msg); } catch (e) {} }
     const AUTH_S = { tk: (() => { try { return localStorage.getItem('adv_dev_tk') || ''; } catch (e) { return ''; } })(), gm: false, off: false, st: null, gate: false, bg: '' };
@@ -5135,17 +5135,17 @@
     // ---- 확장 연동: 거래가 바뀌면 !상점반영 명령을 확장에게 넘겨요 (확장의 '자동 반영'이 켜져 있을 때만 Roll20에 입력돼요) ----
     let __r20Last = null;
     function r20Pub() {
-      try { if (!(AUTH_S.gm && !plView()) || !(state.boardTex || {}).pcs) return; const cmd = r20ShopCmd(15); let h = 5381; for (let i = 0; i < cmd.length; i++) h = ((h << 5) + h + cmd.charCodeAt(i)) | 0;
-        if (__r20Last === null) { __r20Last = h; return; } if (h === __r20Last) return; __r20Last = h; window.postMessage({ src: 'r20jh-journal', cmd }, '*'); } catch (e) {}
+      try { if (!(AUTH_S.gm && !plView()) || !(state.boardTex || {}).pcs) return; const hc = r20ShopCmd(15, true); let h = 5381; for (let i = 0; i < hc.length; i++) h = ((h << 5) + h + hc.charCodeAt(i)) | 0;
+        if (__r20Last === null) { __r20Last = h; return; } if (h === __r20Last) return; __r20Last = h; window.postMessage({ src: 'r20jh-journal', cmd: r20ShopCmd(15) }, '*'); } catch (e) {}
     }
     setInterval(r20Pub, 10000);
-    function r20ShopCmd(lim) {
+    function r20ShopCmd(lim, forHash) {
       const pcs = (state.boardTex.pcs || []).filter(p => p && !p.off && p.sheet).map(p => {
         const d = (p.sheet && p.sheet.detail) || {}, m = d.money || {};
         return { n: p.name || '', gp: Number(m.gp) || 0, sp: Number(m.sp) || 0, cp: Number(m.cp) || 0, L: (d.ledger || []).filter(e => /·\s*(구매|판매)\s*:/.test(e.text || '')).slice(0, lim || 40).map(e => String(e.d || '').replace(/\|/g, '/') + '|' + e.text) };
       });
-      const o = { pcs }, r = r20Rt(); if (r) o.date = r;
-      try { const E = {}; shopsList().forEach(sh => (sh.items || []).forEach(it => { const b = it.ref && SHOP_CMAP[it.ref]; if (b && b.n) { const k = shopRes(it).name; if (k && k !== b.n) E[k] = b.n; } })); if (Object.keys(E).length) o.E = E; } catch (e) {}
+      const o = { pcs }, r = forHash ? null : r20Rt(); if (r) o.date = r;
+      if (!forHash) try { const E = {}; shopsList().forEach(sh => (sh.items || []).forEach(it => { const b = it.ref && SHOP_CMAP[it.ref]; if (b && b.n) { const k = shopRes(it).name; if (k && k !== b.n) E[k] = b.n; } })); if (Object.keys(E).length) o.E = E; } catch (e) {}
       return '!상점반영 ' + encodeURIComponent(JSON.stringify(o));
     }
     function r20Copy(kind) {
@@ -6897,18 +6897,19 @@ const gmv = gm && !plView(), tgt = shopCicTgt(), cnt = {}; (sh.items || []).forE
       area.innerHTML = h;
     }
         function shopFilterKeep() { const v = (document.getElementById('shop-q') || {}).value, p = (document.getElementById('shop-q') || {}).selectionStart; renderShop(); const e = document.getElementById('shop-q'); if (e) { e.focus(); try { e.setSelectionRange(p, p); } catch (x) {} } }
-    function shopBuy(sid, iid, nOver) {
-      const sh = shopsList().find(s => s.id === sid), it = sh && (sh.items || []).find(x => x.id === iid), by = shopBuyer(); if (!it || !by) return;
-      if (sh.off && !(AUTH_S.gm && !plView())) { showToast('지금은 이 상인이 장사를 하지 않아요.'); return; }
+    function shopBuy(sid, iid, nOver, done) {
+      const fin = ok => { try { done && done(ok); } catch (e) {} };
+      const sh = shopsList().find(s => s.id === sid), it = sh && (sh.items || []).find(x => x.id === iid), by = shopBuyer(); if (!it || !by) { fin(false); return; }
+      if (sh.off && !(AUTH_S.gm && !plView())) { showToast('지금은 이 상인이 장사를 하지 않아요.'); fin(false); return; }
       const o = shopRes(it), n = nOver || Math.max(1, Math.floor(Number((document.getElementById('sq-' + iid) || {}).value) || 1)), inf = it.stock == null || it.stock === '';
-      if (!inf && n > (Number(it.stock) || 0)) { showToast('재고가 부족해요.'); return; }
+      if (!inf && n > (Number(it.stock) || 0)) { showToast('재고가 부족해요.'); fin(false); return; }
       const total = o.cp * n, d = shopData(by), nm0 = shopPay(d.money, total);
-      if (!nm0) { showToast('돈이 부족해요. (필요: ' + shopPriceTxt(total) + ')'); return; }
-      if (sh.appr && !(AUTH_S.gm && !plView())) { shopBuyReq(sh, it, by, o, n, total); return; }
-      if (window.__shopBusy) return;
+      if (!nm0) { showToast('돈이 부족해요. (필요: ' + shopPriceTxt(total) + ')'); fin(false); return; }
+      if (sh.appr && !(AUTH_S.gm && !plView())) { shopBuyReq(sh, it, by, o, n, total); fin(false); return; }
+      if (window.__shopBusy) { fin(false); return; }
       const apply = (newStock) => {
       const nm = shopPay(d.money, total);
-      if (!nm) { if (newStock != null) { try { __fbx.tx('shop/stock/' + sid + '/' + iid, c => (typeof c === 'number' ? c + n : undefined)); } catch (e) {} } showToast('돈이 부족해요. (필요: ' + shopPriceTxt(total) + ')'); return; }
+      if (!nm) { if (newStock != null) { try { __fbx.tx('shop/stock/' + sid + '/' + iid, c => (typeof c === 'number' ? c + n : undefined)); } catch (e) {} } showToast('돈이 부족해요. (필요: ' + shopPriceTxt(total) + ')'); fin(false); return; }
       if (by.shared) {
         const sm = d.money, before = { gp: sm.gp, sp: sm.sp, cp: sm.cp }; sm.gp = nm.gp; sm.sp = nm.sp; sm.cp = nm.cp; shopFundLog(sm, before, '구매: ' + o.name + (n > 1 ? ' ×' + n : '') + ' (' + (sh.name || '상점') + ')');
         const st = state.boardTex.store.items, cnt = Math.min(n, 20);
@@ -6923,16 +6924,16 @@ const gmv = gm && !plView(), tgt = shopCicTgt(), cnt = {}; (sh.items || []).forE
       if (!inf) it.stock = newStock != null ? newStock : (Number(it.stock) || 0) - n;
       persistState(); try { sheetSend(); } catch (e) {}
       try { if (!(AUTH_S.gm && !plView())) window.__fbcSend && window.__fbcSend({ ev: 'trade', t: '' }); } catch (e) {}
-      showToast(o.name + (n > 1 ? ' ×' + n : '') + ' 구매 완료 (−' + shopPriceTxt(total) + ')'); renderShop();
+      showToast(o.name + (n > 1 ? ' ×' + n : '') + ' 구매 완료 (−' + shopPriceTxt(total) + ')'); renderShop(); fin(true);
       };
       if (!inf && window.__fbx && __fbx.ok()) {
         window.__shopBusy = true; let late = false; const path = 'shop/stock/' + sid + '/' + iid;
-        const timer = setTimeout(() => { late = true; window.__shopBusy = false; showToast('연결이 불안정해요. 잠시 후 다시 시도해 주세요.'); }, 7000);
+        const timer = setTimeout(() => { late = true; window.__shopBusy = false; showToast('연결이 불안정해요. 잠시 후 다시 시도해 주세요.'); fin(false); }, 7000);
         __fbx.tx(path, cur => { if (late) return; const base = typeof cur === 'number' ? cur : (Number(it.stock) || 0); if (base < n) return; return base - n; }).then(r => {
           clearTimeout(timer); if (late) return; window.__shopBusy = false;
-          if (!r.committed) { const sv = r.snapshot && r.snapshot.val(); if (typeof sv === 'number') it.stock = sv; showToast('재고가 부족해요.'); renderShop(); return; }
+          if (!r.committed) { const sv = r.snapshot && r.snapshot.val(); if (typeof sv === 'number') it.stock = sv; showToast('재고가 부족해요.'); renderShop(); fin(false); return; }
           apply(r.snapshot.val());
-        }).catch(() => { clearTimeout(timer); if (late) return; window.__shopBusy = false; showToast('재고를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); });
+        }).catch(() => { clearTimeout(timer); if (late) return; window.__shopBusy = false; showToast('재고를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); fin(false); });
         return;
       }
       apply(null);
@@ -7051,7 +7052,7 @@ const gmv = gm && !plView(), tgt = shopCicTgt(), cnt = {}; (sh.items || []).forE
       if (!inf && q.qty > (Number(it.stock) || 0)) { showToast('재고가 부족해요. 거절하거나 재고를 늘려 주세요.'); return; }
       if (!shopPay(shopData(by).money, total)) { showToast(q.pcName + '의 돈이 부족해요. (필요: ' + shopPriceTxt(total) + ')'); return; }
       if (!confirm(q.pcName + ' 의 ' + q.name + (q.qty > 1 ? ' ×' + q.qty : '') + ' 구매를 ' + shopPriceTxt(total) + ' 에 처리할까요?')) return;
-      shopBuy(sh.id, it.id, q.qty); done('[구매 승인] ' + q.name + (q.qty > 1 ? ' ×' + q.qty : '') + ' (−' + shopPriceTxt(total) + ')');
+      shopBuy(sh.id, it.id, q.qty, okb => { if (okb) done('[구매 승인] ' + q.name + (q.qty > 1 ? ' ×' + q.qty : '') + ' (−' + shopPriceTxt(total) + ')'); });
     }
     function shopNpcImport(id) {
       if (!AUTH_S.gm) return; const old = document.getElementById('shop-npc'); if (old) old.remove();
