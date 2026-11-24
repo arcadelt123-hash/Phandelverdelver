@@ -3129,6 +3129,7 @@
       if (v.ev === 'hi' && v.pid) { try { delete (window.__presGone || {})[v.pid]; } catch (e) {} }
       const gm = !!(AUTH_S && AUTH_S.gm) && !plView();
       if (v.ev === 'gmcast') { if (!gm) window.gmCastShow(v); return; }
+      if (v.ev === 'trade') { if (gm) [3500, 9000].forEach(ms => setTimeout(() => { try { syncMergeFromServer(); } catch (e) {} setTimeout(r20Pub, 1500); }, ms)); return; }
       if (v.ev === 'sell' && gm) { window.__sellLive[v.rid] = Date.now(); [4000, 10000].forEach(ms => setTimeout(() => { try { syncMergeFromServer(); } catch (e) {} }, ms)); }
       if (v.ev === 'sellcancel' && gm) {
         delete window.__sellLive[v.rid];
@@ -5131,12 +5132,20 @@
     // ---- Roll20 (ParchmentCards Mod) 연동: 날짜·상점 거래 복사 / Roll20 날짜 받기 ----
     function r20Rt() { try { const rt = ((typeof mapData !== 'undefined' && mapData && mapData.realmTime) ? mapData : (mapLocal() || {})).realmTime; if (rt && rt.month) return { year: Number(rt.year) || 1492, month: String(rt.month), day: Number(rt.day) || 1, timeSlot: String(rt.timeSlot || ''), festival: String(rt.festival || '') }; } catch (e) {} return null; }
     function r20DateCmd() { const r = r20Rt(); if (!r) return ''; return '!시간 동기 ' + [r.year, r.month, r.day, r.timeSlot || 'Morning', r.festival].join('|'); }
-    function r20ShopCmd() {
+    // ---- 확장 연동: 거래가 바뀌면 !상점반영 명령을 확장에게 넘겨요 (확장의 '자동 반영'이 켜져 있을 때만 Roll20에 입력돼요) ----
+    let __r20Last = null;
+    function r20Pub() {
+      try { if (!(AUTH_S.gm && !plView()) || !(state.boardTex || {}).pcs) return; const cmd = r20ShopCmd(15); let h = 5381; for (let i = 0; i < cmd.length; i++) h = ((h << 5) + h + cmd.charCodeAt(i)) | 0;
+        if (__r20Last === null) { __r20Last = h; return; } if (h === __r20Last) return; __r20Last = h; window.postMessage({ src: 'r20jh-journal', cmd }, '*'); } catch (e) {}
+    }
+    setInterval(r20Pub, 10000);
+    function r20ShopCmd(lim) {
       const pcs = (state.boardTex.pcs || []).filter(p => p && !p.off && p.sheet).map(p => {
         const d = (p.sheet && p.sheet.detail) || {}, m = d.money || {};
-        return { n: p.name || '', gp: Number(m.gp) || 0, sp: Number(m.sp) || 0, cp: Number(m.cp) || 0, L: (d.ledger || []).filter(e => /·\s*(구매|판매)\s*:/.test(e.text || '')).slice(0, 40).map(e => String(e.d || '').replace(/\|/g, '/') + '|' + e.text) };
+        return { n: p.name || '', gp: Number(m.gp) || 0, sp: Number(m.sp) || 0, cp: Number(m.cp) || 0, L: (d.ledger || []).filter(e => /·\s*(구매|판매)\s*:/.test(e.text || '')).slice(0, lim || 40).map(e => String(e.d || '').replace(/\|/g, '/') + '|' + e.text) };
       });
       const o = { pcs }, r = r20Rt(); if (r) o.date = r;
+      try { const E = {}; shopsList().forEach(sh => (sh.items || []).forEach(it => { const b = it.ref && SHOP_CMAP[it.ref]; if (b && b.n) { const k = shopRes(it).name; if (k && k !== b.n) E[k] = b.n; } })); if (Object.keys(E).length) o.E = E; } catch (e) {}
       return '!상점반영 ' + encodeURIComponent(JSON.stringify(o));
     }
     function r20Copy(kind) {
@@ -6913,6 +6922,7 @@ const gmv = gm && !plView(), tgt = shopCicTgt(), cnt = {}; (sh.items || []).forE
       }
       if (!inf) it.stock = newStock != null ? newStock : (Number(it.stock) || 0) - n;
       persistState(); try { sheetSend(); } catch (e) {}
+      try { if (!(AUTH_S.gm && !plView())) window.__fbcSend && window.__fbcSend({ ev: 'trade', t: '' }); } catch (e) {}
       showToast(o.name + (n > 1 ? ' ×' + n : '') + ' 구매 완료 (−' + shopPriceTxt(total) + ')'); renderShop();
       };
       if (!inf && window.__fbx && __fbx.ok()) {
@@ -9497,6 +9507,14 @@ const gmv = gm && !plView(), tgt = shopCicTgt(), cnt = {}; (sh.items || []).forE
       persistState(); try { sheetSend(); } catch (e) {} try { renderAll(); } catch (e) {} showToast(plan.length + '명의 소지금을 Roll20과 맞췄어요.');
     }
     (function () { try { const m = String(location.hash || '').match(/^#r20sheet=(.+)$/); if (!m) return; const raw = decodeURIComponent(m[1]); let n = 0; const t = setInterval(() => { if (++n > 360) { clearInterval(t); return; } if (!(AUTH_S.gm && !plView())) return; clearInterval(t); try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} r20SheetImport(raw); }, 500); } catch (e) {} })();
+    // Roll20 !상점열기 링크: ...#shop=잡화점&pc=Tulian  → 로그인 뒤 그 PC로 그 상점을 바로 열어요
+    (function () { try { const m = String(location.hash || '').match(/^#shop=([^&]*)&pc=(.*)$/); if (!m) return; const sn = decodeURIComponent(m[1]), pn = decodeURIComponent(m[2]); let n = 0;
+      const t = setInterval(() => { if (++n > 360) { clearInterval(t); return; } if (document.getElementById('auth-ov') || !((state.boardTex || {}).pcs || []).length) return; clearInterval(t);
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+        const sq = x => String(x || '').replace(/\s+/g, '').toLowerCase(), shops = shopsList(), sh = (sn && shops.find(s => sq(s.name) === sq(sn))) || (sn && shops.find(s => sq(s.name).includes(sq(sn)))) || shops.find(s => !s.off) || shops[0];
+        const pc = pn && (state.boardTex.pcs || []).find(p => sq(p.name) === sq(pn));
+        if (pc && canEditPc(pc.id)) state.shopPc = pc.id; if (sh) state.shopId = sh.id; state.shopSel = null;
+        try { setViewMode('journal', ''); jSet('jView', 'shop'); } catch (e) {} try { renderShop(); } catch (e) {} }, 500); } catch (e) {} })();
     function renderNpcModal() {
       const n = state.globalNpcs.find(x => x.id === npcEditId), box = document.getElementById('npc-md-box'); if (!n) { closeNpcModal(); return; }
       box.innerHTML = `<div class="npc-md-top"><div class="npc-md-av">${n.image ? `<img src="${escapeHtml(n.image)}" alt="">` : ICONS.npc}</div>
@@ -11481,7 +11499,7 @@ function addTimelineNote(at) { tlNoteOpen(null, at); }
       var S = F.api.db, r = S.query(S.ref(F.db, 'rooms/' + F.room + '/chat'), S.limitToLast(200));
       F.msgs = []; F.on = true; setSt('연결됨'); XS.forEach(xAttach1);
       try { if (typeof PRES !== 'undefined' && PRES.id) { var br = S.push(S.ref(F.db, 'rooms/' + F.room + '/chat')); S.onDisconnect(br).set({ ev: 'bye', pid: PRES.id, n: '', t: '', ts: S.serverTimestamp(), gm: 0 }).catch(function () {}); window.__fbcSend && window.__fbcSend({ ev: 'hi', pid: PRES.id, t: '' }); } } catch (e) {}
-      F.unsub.push(S.onChildAdded(r, function (s) { var v = s.val() || {}; v.k = s.key; if (v.ev) { try { window.__sellEv && window.__sellEv(v); } catch (e) {} if (v.ev === 'bye' || v.ev === 'hi' || v.ev === 'sellcancel' || v.ev === 'gmcast') return; if (v.ev === 'sell' && !isGM()) return; if (v.ev === 'sellres') { var mn = false; try { mn = myPcs().indexOf(v.pc) >= 0; } catch (e) {} if (!mn) return; } } F.msgs.push(v); F.msgs.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); }); if (!panOpen() && (v.ts || 0) > seenTs()) { F.unread++; if (v.n !== myName() && Date.now() - (v.ts || 0) < 20000) bub(v); } render(); }));
+      F.unsub.push(S.onChildAdded(r, function (s) { var v = s.val() || {}; v.k = s.key; if (v.ev) { try { window.__sellEv && window.__sellEv(v); } catch (e) {} if (v.ev === 'bye' || v.ev === 'hi' || v.ev === 'sellcancel' || v.ev === 'gmcast' || v.ev === 'trade') return; if (v.ev === 'sell' && !isGM()) return; if (v.ev === 'sellres') { var mn = false; try { mn = myPcs().indexOf(v.pc) >= 0; } catch (e) {} if (!mn) return; } } F.msgs.push(v); F.msgs.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); }); if (!panOpen() && (v.ts || 0) > seenTs()) { F.unread++; if (v.n !== myName() && Date.now() - (v.ts || 0) < 20000) bub(v); } render(); }));
       F.unsub.push(S.onChildRemoved(r, function (s) { F.msgs = F.msgs.filter(function (m) { return m.k !== s.key; }); if (!F.msgs.length) F.sys = []; render(); }));
     }).catch(function (e) { F.on = false; setSt('연결 실패: ' + (e && (e.code || e.message) || e)); });
   }
