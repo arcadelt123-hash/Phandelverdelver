@@ -6491,7 +6491,7 @@
     // ===== 이동 경로 올리기 (지도 탭 → 타임라인 · 로그 · 퀘스트 보드) =====
     function routeFind(id) { const md = mapData || mapLocal() || {}, r = (md.routes || []).find(x => x.id === id); return r ? { r, m: (md.maps || []).find(x => x.id === r.mapId) || {} } : null; }
     function routeTitle(r) { return [r.day, r.name].filter(Boolean).join(' · ') || '이동 경로'; }
-    function routeText(r, m) { const n = (r.pts || []).map((p, i) => (i + 1) + '. ' + (p.label || ('지점 ' + (i + 1)))).join(' → '); return '[이동 경로] ' + routeTitle(r) + (m && m.name ? ' (' + m.name + ')' : '') + '\n' + n + (r.desc ? '\n' + r.desc : ''); }
+    function routeText(r, m) { const P = r.pts || [], det = P.some(p => p.date || p.note); const n = det ? P.map((p, i) => (i + 1) + '. ' + (p.label || ('지점 ' + (i + 1))) + (p.date ? ' (도착 ' + p.date + ')' : '') + (p.note ? ' — ' + p.note : '')).join('\n') : P.map((p, i) => (i + 1) + '. ' + (p.label || ('지점 ' + (i + 1)))).join(' → '); return '[이동 경로] ' + routeTitle(r) + (m && m.name ? ' (' + m.name + ')' : '') + (r.day ? '\n출발 ' + r.day : '') + '\n' + n + (r.desc ? '\n' + r.desc : ''); }
     function routeSnap(r, m) {
       return new Promise(res => {
         const load = cors => {
