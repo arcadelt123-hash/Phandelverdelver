@@ -55,6 +55,16 @@
     };
   }
 
+  function sxPick(chars, names) {   // 저널에 PC로 등록한 이름 → Roll20 캐릭터 하나씩 (이름이 조금 달라도: '바를로니카야 루벡' → '바를로')
+    const nm = s => String(s || '').replace(/[?*？]+/g, '').replace(/\s+/g, ' ').trim();
+    const out = [];
+    names.forEach(J => { const j = nm(J); if (!j) return; let best = null, bs = -1;
+      chars.forEach(c => { const n = nm(c.name); if (!n) return; const exact = n === j; if (!exact && !(n.length >= 2 && (j.startsWith(n) || n.startsWith(j)))) return;
+        const sc = (exact ? 100 : 0) + (c.sheet === 'dnd2024byroll20' ? 10 : 0) + (/[?*？]/.test(c.name) ? 0 : 5) + (n.length / 100); if (sc > bs) { bs = sc; best = c; } });
+      if (best && !out.some(o => o.c.id === best.id)) out.push({ c: best, j: J }); });
+    return out;
+  }
+
   // ---- 그리기 ----
   const box = (h, b, cls) => `<section class="vs-box ${cls || ''}"><h3>${h}</h3>${b}</section>`;
   function head(p, c) {
@@ -192,6 +202,10 @@
     if (DATA) { list(); sheet(); return; }
     fetch('data/sheets.json', { cache: 'no-cache' }).then(r => r.json()).then(d => {
       d.pcs = d.pcs.filter(p => p.store || (p.attrs && p.attrs.strength));
+      // 저널에 PC로 등록한 캐릭터만 (이름은 저널에 등록한 이름으로)
+      let reg = []; try { reg = ((state.boardTex && state.boardTex.pcs) || []).map(p => p && p.name).filter(Boolean); } catch (e) {}
+      if (reg.length) d.pcs = sxPick(d.pcs, reg).map(x => Object.assign({}, x.c, { name: x.j }));
+      else d.pcs.forEach(p => { if (p.jname) p.name = p.jname; });
       DATA = d; list(); sheet();
       fetch('data/sheets_history.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(h => { if (h) { HIST = h; sheet(); } }).catch(() => {});
     }).catch(e => { document.getElementById('vs-body').innerHTML = `<p class="vs-mut">시트 데이터를 못 불러왔어요 (${esc(e.message)})</p>`; });
