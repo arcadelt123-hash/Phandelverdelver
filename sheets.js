@@ -308,6 +308,6 @@
     b.addEventListener('click', open);
     const map = document.getElementById('tab-map'); g.insertBefore(b, map ? map.nextSibling : null);
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addBtn); else addBtn();
-  setTimeout(addBtn, 1500);
+  // 위쪽 바 버튼은 뺐어요 (저널 캐릭터 시트의 '상세' 모드로 봐요). 예전 버튼이 남아 있으면 지워요
+  const rmBtn = () => { const b = document.getElementById('tab-sheets'); if (b) b.remove(); }; rmBtn(); setTimeout(rmBtn, 1500);
 })();
