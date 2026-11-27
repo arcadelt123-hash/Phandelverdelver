@@ -252,9 +252,12 @@
       d.pcs = all.filter(p => !p.comp);
       // 저널에 PC로 등록한 캐릭터만 (이름은 저널에 등록한 이름으로)
       // 저널 PC에 'r20'(Roll20 캐릭터 이름)을 따로 정해 두면 그 이름으로 찾아요 (예: 저널 '림데어 페이-브랑슈' ↔ Roll20 '올시람 페어워터')
-      let reg = []; try { reg = ((state.boardTex && state.boardTex.pcs) || []).filter(p => p && p.name).map(p => ({ j: p.name, r: p.r20 || p.name })); } catch (e) {}
+      // 별명 목록(aliases)에 있는 이름으로도 찾아요 (예: 저널 '림데어 페이-브랑슈' 별명 '올시람 페어워터' = Roll20 이름)
+      let reg = []; try { reg = ((state.boardTex && state.boardTex.pcs) || []).filter(p => p && p.name).map(p => ({ j: p.name, rs: [p.r20, p.name].concat(Array.isArray(p.aliases) ? p.aliases : []).filter(Boolean) })); } catch (e) {}
       d.all = all.filter(p => !p.comp);
-      if (reg.length) d.pcs = reg.map(x => { const m = sxPick(d.all, [x.r])[0]; return m ? Object.assign({}, m.c, { name: x.j, r20name: m.c.name }) : null; }).filter(Boolean).filter((p, i, L) => L.findIndex(q => q.id === p.id) === i);
+      if (reg.length) { const used = new Set(); d.pcs = reg.map(x => { const free = d.all.filter(p => !used.has(p.id)); let c = free.find(p => p.jname === x.j) || null;
+        if (!c) for (const r of x.rs) { const m = sxPick(free, [r])[0]; if (m) { c = m.c; break; } }
+        if (!c) return null; used.add(c.id); return Object.assign({}, c, { name: x.j, r20name: c.name }); }).filter(Boolean); }
       else d.pcs.forEach(p => { if (p.jname) p.name = p.jname; });
       DATA = d; icons();
       fetch('data/sheets_history.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(h => { if (h) { HIST = h; if (document.getElementById('vs-body')) try { sheet(); } catch (e) {} } }).catch(() => {});
