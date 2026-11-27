@@ -119,15 +119,56 @@
     const opt = (v, l) => `<option value="${v}"${ver === v ? ' selected' : ''}>${l}</option>`;
     return `<div class="vs-hist"><label>레벨 기록 <select data-vh>${opt(-1, '지금')}${H.map((h, i) => [h, i]).reverse().map(([h, i]) => opt(i, 'Lv ' + h.level + ' (' + esc((h.saved || '').slice(0, 10)) + ')')).join('')}</select></label>${ver >= 0 ? '<span>예전 기록을 보고 있어요</span>' : ''}</div>`;
   }
+
+  // ---- 예전 시트 (OGL 5e) ----
+  function ogl(p) {
+    const a = p.attrs || {}, v = k => (a[k] ? a[k][0] : ''), mx = k => (a[k] ? a[k][1] : '');
+    const R = {};
+    Object.keys(a).forEach(k => { const m = k.match(/^repeating_([^_]+)_(-[A-Za-z0-9_-]{19})_(.+)$/); if (!m) return; const g = R[m[1]] = R[m[1]] || {}; (g[m[2]] = g[m[2]] || {})[m[3]] = a[k][0]; });
+    const rows = sec => Object.values(R[sec] || {});
+    const num = x => +String(x).replace(/[^\d-]/g, '') || 0;
+    const AK = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+    const SK = { acrobatics: 'Acrobatics', animal_handling: 'Animal Handling', arcana: 'Arcana', athletics: 'Athletics', deception: 'Deception', history: 'History', insight: 'Insight', intimidation: 'Intimidation', investigation: 'Investigation', medicine: 'Medicine', nature: 'Nature', perception: 'Perception', performance: 'Performance', persuasion: 'Persuasion', religion: 'Religion', sleight_of_hand: 'Sleight of Hand', stealth: 'Stealth', survival: 'Survival' };
+    const pb = num(v('pb')) || 2;
+    const headH = `<header class="vs-head"><img class="vs-por" src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><div class="vs-id"><h2>${esc(p.name)}</h2><div class="vs-sub">${esc([v('class_display'), v('race_display') || v('race'), v('background')].filter(Boolean).join(' · '))} · 예전 시트</div>
+      <div class="vs-stats">${stat('레벨', v('level') || '-')}${stat('숙련', sg(pb))}${stat('AC', v('ac') || '-')}${stat('HP', `${v('hp') || 0}<small>/${mx('hp') || '-'}</small>${num(v('hp_temp')) ? `<small> +${v('hp_temp')}</small>` : ''}`)}${stat('이동', (v('speed') || 30) + 'ft')}${stat('선제', sg(num(v('initiative_bonus'))))}</div></div></header>`;
+    let page = '';
+    if (tab === 'main') {
+      page = `<div class="vs-abs">${AK.map((k, i) => { const sp = !!v(k + '_save_prof'); return `<div class="vs-ab"><span class="vs-abn">${AB[i][2]}</span><b class="vs-abm">${sg(num(v(k + '_mod')))}</b><span class="vs-abs2">${v(k) || 10}</span><span class="vs-sv${sp ? ' on' : ''}">내성 ${sg(num(v(k + '_save_bonus')))}</span></div>`; }).join('')}</div>`
+        + `<div class="vs-cols"><div>${box('기술', `<ul class="vs-skills">${Object.keys(SK).map(k => { const on = !!v(k + '_prof'); const ab = SKILL_AB[SK[k]]; return `<li class="${on ? 'on' : ''}"><i class="vs-dot l${on ? 1 : 0}"></i><span>${SKILL_KO[SK[k]]}</span><em>${AB.find(x => x[0] === ab)[2]}</em><b>${sg(num(v(k + '_bonus')))}</b></li>`; }).join('')}</ul>`)}</div><div>`
+        + box('감각 · 언어', `<p>수동 감지 <b>${v('passive_wisdom') || '-'}</b></p>${rows('proficiencies').filter(r => r.type === 'LANGUAGE' || !r.type).map(r => esc(r.name)).filter(Boolean).length ? `<p>${esc(rows('proficiencies').filter(r => (r.type || 'LANGUAGE') === 'LANGUAGE').map(r => r.name).join(', '))}</p>` : ''}`)
+        + box('숙련', `<p>${esc(rows('proficiencies').filter(r => r.type && r.type !== 'LANGUAGE').map(r => r.name).join(', ') || '-')}</p>${rows('tool').length ? `<p><b>도구</b> ${esc(rows('tool').map(r => r.toolname).join(', '))}</p>` : ''}`)
+        + box('공격', rows('attack').length ? `<ul class="vs-atk">${rows('attack').map(r => `<li><details><summary><b>${esc(r.atkname)}</b><span>${esc(r.atkrange || '')}</span><em>${esc([r.atkbonus, r.dmgbase && r.dmgbase + ' ' + (r.dmgtype || '')].filter(Boolean).join(' · '))}</em></summary>${r.atk_desc || r.desc ? `<div class="vs-desc">${txt(r.atk_desc || r.desc)}</div>` : ''}</details></li>`).join('')}</ul>` : '<p class="vs-mut">없음</p>') + `</div></div>`;
+    } else if (tab === 'inv') {
+      const coins = ['pp', 'gp', 'ep', 'sp', 'cp'].map(k => `<span class="vs-coin"><b>${num(v(k))}</b>${k}</span>`).join('');
+      page = `<div class="vs-coins">${coins}</div><ul class="vs-items">${rows('inventory').map(r => `<li><details><summary><b>${esc(r.itemname)}</b>${r.equipped === '1' ? '<i class="vs-eq">장착</i>' : ''}<span>×${esc(r.itemcount || 1)}</span><em>${r.itemweight ? esc(r.itemweight) + ' lb' : ''}</em></summary>${r.itemcontent ? `<div class="vs-desc">${txt(r.itemcontent)}</div>` : '<div class="vs-desc vs-mut">설명 없음</div>'}</details></li>`).join('') || '<li class="vs-mut">없음</li>'}</ul>`;
+    } else if (tab === 'feat') {
+      const by = {}; rows('traits').forEach(r => { (by[r.source || '기타'] = by[r.source || '기타'] || []).push(r); });
+      const SRC = { Class: '클래스', Racial: '종족', Background: '배경', Feat: '재주', Item: '아이템', Other: '기타' };
+      page = Object.keys(by).map(s => box(SRC[s] || s, `<ul class="vs-items">${by[s].map(r => `<li><details><summary><b>${esc(r.name)}</b>${r.source_type ? `<span>${esc(r.source_type)}</span>` : ''}</summary><div class="vs-desc">${txt(r.description || '')}</div></details></li>`).join('')}</ul>`)).join('') || '<p class="vs-mut">없음</p>';
+    } else if (tab === 'spell') {
+      const secs = ['cantrip', 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(l => rows('spell-' + l).length);
+      page = !secs.length ? '<p class="vs-mut">주문 없음</p>' : (num(v('spell_save_dc')) ? `<div class="vs-coins"><span>내성 DC <b>${v('spell_save_dc')}</b></span><span>주문 공격 <b>${sg(num(v('spell_attack_bonus')))}</b></span></div>` : '')
+        + secs.map(l => { const tot = l === 'cantrip' ? 0 : num(v('lvl' + l + '_slots_total')), used = l === 'cantrip' ? 0 : num(v('lvl' + l + '_slots_expended')); const pips = tot ? `<span class="vs-pips">${Array.from({ length: tot }, (_, i) => `<i class="${i < used ? 'on' : ''}"></i>`).join('')}</span>` : '';
+          return box((l === 'cantrip' ? '소마법' : l + '레벨') + pips, `<ul class="vs-items">${rows('spell-' + l).map(r => `<li><details><summary><b>${esc(r.spellname)}</b><span>${esc(SCHOOL_KO[String(r.spellschool || '').replace(/^./, x => x.toUpperCase())] || r.spellschool || '')}</span><em>${esc([r.spellcastingtime, r.spellrange, r.spellduration].filter(Boolean).join(' · '))}</em></summary><div class="vs-desc">${txt(r.spelldescription || '')}${r.spellathigherlevels ? `<p><b>더 높은 레벨로</b> ${txt(r.spellathigherlevels)}</p>` : ''}</div></details></li>`).join('')}</ul>`); }).join('');
+    } else {
+      const K = [['age', '나이'], ['height', '키'], ['weight', '몸무게'], ['eyes', '눈'], ['hair', '머리'], ['skin', '피부'], ['alignment', '성향']];
+      const T = [['personality_traits', '성격'], ['ideals', '이상'], ['bonds', '유대'], ['flaws', '단점']];
+      page = box('외모', `<ul class="vs-list">${K.filter(([k]) => v(k)).map(([k, l]) => `<li><span>${l}</span><b>${esc(v(k))}</b></li>`).join('') || '<li class="vs-mut">없음</li>'}</ul>`)
+        + T.filter(([k]) => v(k)).map(([k, l]) => box(l, `<div class="vs-desc">${txt(v(k))}</div>`)).join('');
+    }
+    return headH + page;
+  }
   function sheet() {
     const p0 = DATA.pcs[cur], el = document.getElementById('vs-body');
     const H = p0 && HIST && HIST.pcs && HIST.pcs[p0.id];
     const p = p0 && ver >= 0 && H && H[ver] ? Object.assign({}, p0, H[ver]) : p0;
     if (!p) { el.innerHTML = ''; return; }
-    if (!p.store) { el.innerHTML = `<header class="vs-head"><img class="vs-por" src="${esc(p.avatar || '')}" alt=""><div class="vs-id"><h2>${esc(p.name)}</h2><div class="vs-sub">예전 시트 (OGL) · 데이터가 거의 비어 있어요</div></div></header>`; return; }
-    const c = calc(p);
     const T = [['main', '능력치'], ['inv', '소지품'], ['feat', '특성'], ['spell', '주문'], ['about', '소개']];
-    el.innerHTML = histBar(p0) + head(p, c) + `<nav class="vs-tabs">${T.map(([k, l]) => `<button data-vt="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`).join('')}</nav><div class="vs-page">${tab === 'main' ? main(c) : tab === 'inv' ? inventory(c) : tab === 'feat' ? features(c) : tab === 'spell' ? spells(c) : about(p, c)}</div>`;
+    const nav = `<nav class="vs-tabs">${T.map(([k, l]) => `<button data-vt="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`).join('')}</nav>`;
+    if (!p.store) { const h = ogl(p), i = h.indexOf('</header>') + 9; el.innerHTML = histBar(p0) + h.slice(0, i) + nav + '<div class="vs-page">' + h.slice(i) + '</div>'; return; }
+    const c = calc(p);
+    el.innerHTML = histBar(p0) + head(p, c) + nav + `<div class="vs-page">${tab === 'main' ? main(c) : tab === 'inv' ? inventory(c) : tab === 'feat' ? features(c) : tab === 'spell' ? spells(c) : about(p, c)}</div>`;
   }
   function list() {
     document.getElementById('vs-list').innerHTML = DATA.pcs.map((p, i) => `<button data-vi="${i}" class="${i === cur ? 'on' : ''}"><img src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(p.name)}</span></button>`).join('')
