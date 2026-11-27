@@ -169,16 +169,38 @@
     }
     return headH + page;
   }
+  // 동행 크리처: 내보낼 때 주인(PC)의 저널 이름이 comp에 들어 있어요
+  const compsOf = p => ((DATA && DATA.comps) || []).filter(x => x.comp && (x.comp === p.name || x.comp === p.jname || x.comp === p.id));
+  function compHtml(p) {
+    const L = compsOf(p);
+    if (!L.length) return '<p class="vs-mut">동행 크리처가 없어요. (다음 시트 내보내기 때 같은 플레이어가 조종하는 크리처가 들어와요)</p>';
+    return L.map(k => { const c = k.store ? calc(k) : null;
+      const stats = c ? `<div class="vs-stats">${stat('AC', c.ac)}${stat('HP', `${c.hp.currentHP != null ? c.hp.currentHP : c.hpMax}<small>/${c.hpMax}</small>`)}${stat('이동', c.speed + 'ft')}</div>` : '';
+      const abl = c ? `<div class="vs-abs">${AB.map(([q, s2, ko]) => `<div class="vs-ab"><span class="vs-abn">${ko}</span><b class="vs-abm">${sg(md(c.ab[q]))}</b><span class="vs-abs2">${c.ab[q]}</span></div>`).join('')}</div>` : '';
+      return `<details class="vs-comp"><summary><img src="${esc(k.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><b>${esc(k.name)}</b>${stats}</summary><div class="vs-compb">${abl}${c ? box('공격', attacks(c)) + features(c) : ''}</div></details>`; }).join('');
+  }
+  // 시트 본문 (머리 + 탭 + 내용). opt: { tabs, art, extra: { 탭키: html } }
+  function bodyHtml(p, t, opt) {
+    opt = opt || {};
+    const T = opt.tabs || [['main', '능력치'], ['inv', '소지품'], ['feat', '특성'], ['spell', '주문'], ['about', '소개'], ['comp', '동행']];
+    if (!T.some(x => x[0] === t)) t = T[0][0];
+    const prevTab = tab; tab = t;
+    try {
+      const q = Object.assign({}, p, opt.art ? { avatar: opt.art } : {});
+      const nav = `<nav class="vs-tabs">${T.map(([k, l]) => `<button data-vt="${k}" class="${t === k ? 'on' : ''}">${l}</button>`).join('')}</nav>`;
+      const ex = opt.extra && opt.extra[t] != null ? opt.extra[t] : null;
+      if (!q.store) { const h = ogl(q), i = h.indexOf('</header>') + 9; const pg = ex != null ? ex : t === 'comp' ? compHtml(p) : h.slice(i); return h.slice(0, i) + nav + '<div class="vs-page">' + (opt.pre && opt.pre[t] || '') + pg + '</div>'; }
+      const c = calc(q);
+      const pg = ex != null ? ex : t === 'main' ? main(c) : t === 'inv' ? inventory(c) : t === 'feat' ? features(c) : t === 'spell' ? spells(c) : t === 'comp' ? compHtml(p) : about(q, c);
+      return head(q, c) + nav + `<div class="vs-page">${opt.pre && opt.pre[t] || ''}${pg}</div>`;
+    } finally { tab = prevTab; }
+  }
   function sheet() {
     const p0 = DATA.pcs[cur], el = document.getElementById('vs-body');
     const H = p0 && HIST && HIST.pcs && HIST.pcs[p0.id];
     const p = p0 && ver >= 0 && H && H[ver] ? Object.assign({}, p0, H[ver]) : p0;
     if (!p) { el.innerHTML = ''; return; }
-    const T = [['main', '능력치'], ['inv', '소지품'], ['feat', '특성'], ['spell', '주문'], ['about', '소개']];
-    const nav = `<nav class="vs-tabs">${T.map(([k, l]) => `<button data-vt="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`).join('')}</nav>`;
-    if (!p.store) { const h = ogl(p), i = h.indexOf('</header>') + 9; el.innerHTML = histBar(p0) + h.slice(0, i) + nav + '<div class="vs-page">' + h.slice(i) + '</div>'; return; }
-    const c = calc(p);
-    el.innerHTML = histBar(p0) + head(p, c) + nav + `<div class="vs-page">${tab === 'main' ? main(c) : tab === 'inv' ? inventory(c) : tab === 'feat' ? features(c) : tab === 'spell' ? spells(c) : about(p, c)}</div>`;
+    el.innerHTML = histBar(p0) + bodyHtml(p, tab);
   }
   function list() {
     document.getElementById('vs-list').innerHTML = DATA.pcs.map((p, i) => `<button data-vi="${i}" class="${i === cur ? 'on' : ''}"><img src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(p.name)}</span></button>`).join('')
@@ -200,16 +222,33 @@
     }
     m.style.display = 'flex';
     if (DATA) { list(); sheet(); return; }
-    fetch('data/sheets.json', { cache: 'no-cache' }).then(r => r.json()).then(d => {
-      d.pcs = d.pcs.filter(p => p.store || (p.attrs && p.attrs.strength));
+    load().then(() => { list(); sheet(); }).catch(e => { document.getElementById('vs-body').innerHTML = `<p class="vs-mut">시트 데이터를 못 불러왔어요 (${esc(e.message)})</p>`; });
+  }
+  let loading = null;
+  function load() {
+    if (loading) return loading;
+    loading = fetch('data/sheets.json', { cache: 'no-cache' }).then(r => r.json()).then(d => {
+      const all = d.pcs.filter(p => p.store || (p.attrs && p.attrs.strength));
+      d.comps = all.filter(p => p.comp);
+      d.pcs = all.filter(p => !p.comp);
       // 저널에 PC로 등록한 캐릭터만 (이름은 저널에 등록한 이름으로)
       let reg = []; try { reg = ((state.boardTex && state.boardTex.pcs) || []).map(p => p && p.name).filter(Boolean); } catch (e) {}
       if (reg.length) d.pcs = sxPick(d.pcs, reg).map(x => Object.assign({}, x.c, { name: x.j }));
       else d.pcs.forEach(p => { if (p.jname) p.name = p.jname; });
-      DATA = d; list(); sheet();
-      fetch('data/sheets_history.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(h => { if (h) { HIST = h; sheet(); } }).catch(() => {});
-    }).catch(e => { document.getElementById('vs-body').innerHTML = `<p class="vs-mut">시트 데이터를 못 불러왔어요 (${esc(e.message)})</p>`; });
+      DATA = d;
+      fetch('data/sheets_history.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(h => { if (h) { HIST = h; if (document.getElementById('vs-body')) try { sheet(); } catch (e) {} } }).catch(() => {});
+      return d;
+    });
+    loading.catch(() => { loading = null; });
+    return loading;
   }
+  // 저널 캐릭터 시트(안쪽 창)에서 쓰는 통로: 이름으로 시트를 찾아 그려 줘요
+  window.vsApi = {
+    load, ready: () => !!DATA,
+    find: name => { if (!DATA || !name) return null; return DATA.pcs.find(p => p.name === name || p.jname === name) || (sxPick(DATA.pcs, [name])[0] || {}).c || null; },
+    html: (p, t, opt) => bodyHtml(p, t, opt),
+    css: () => css
+  };
   window.vsOpen = open;
 
   const css = `
@@ -256,6 +295,7 @@
   .vs-hist{display:flex;gap:10px;align-items:center;margin:0 44px 8px 0;font-size:13px;color:#4f4b43}.vs-hist select{font:inherit;padding:3px 6px;border:1px solid #c9c7b8;border-radius:3px;background:#fff;min-height:30px}.vs-hist span{color:#7a1f1f}
   .vs-coins{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 10px;font-size:14px}
   .vs-coin{padding:2px 10px;border:1px solid #c9c7b8;border-radius:12px;background:#fff}.vs-coin b{margin-right:3px}
+  .vs-comp{border:1px solid #c9c7b8;border-radius:6px;background:rgba(255,255,255,.4);margin:0 0 8px}.vs-comp summary{display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;list-style:none;flex-wrap:wrap}.vs-comp summary::-webkit-details-marker{display:none}.vs-comp summary img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #7a6a53;background:#ddd}.vs-comp summary b{font-size:16px;color:#4b0000;margin-right:auto}.vs-compb{padding:0 10px 8px}
   .vs-pips{display:inline-flex;gap:3px;margin-left:auto}.vs-pips i{width:12px;height:12px;border:1px solid #7a1f1f;transform:rotate(45deg);display:inline-block}.vs-pips i.on{background:#7a1f1f}
   @media(max-width:760px){.vs-win{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}#vs-list{display:flex;overflow-x:auto}#vs-list button{width:auto;flex:none}.vs-abs{grid-template-columns:repeat(3,minmax(0,1fr))}.vs-cols{grid-template-columns:1fr}.vs-head{flex-wrap:wrap}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
