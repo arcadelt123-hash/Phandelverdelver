@@ -65,6 +65,25 @@
     return out;
   }
 
+  // ---- 아이콘 (Tidy5e처럼): 주문 = 주문 아이콘 짝 맞추기 페이지, 무기·아이템 = 상점 데이터, 특성 = 출처별 그림 ----
+  let ICO = null, icoLoading = null;
+  const inorm = s => String(s || '').toLowerCase().replace(/\([^)]*\)/g, '').replace(/[^a-z0-9가-힣]+/g, ' ').trim();
+  function icons() {
+    if (ICO) return Promise.resolve(ICO); if (icoLoading) return icoLoading;
+    const sp = fetch('/Phandelverdelver/spell_icons.html').then(r => r.ok ? r.text() : '').then(t => { const m = {}; if (!t) return m; const d = new DOMParser().parseFromString(t, 'text/html');
+      d.querySelectorAll('.pr').forEach(p => { const im = p.querySelector('img'), sn = p.querySelector('span'); if (!im || !sn) return; sn.textContent.split('·').forEach(n => { const k = inorm(n.replace(/\./g, ' ')); if (k && !m[k]) m[k] = im.getAttribute('src'); }); }); return m; }).catch(() => ({}));
+    const it = fetch('shop_data/items.json').then(r => r.ok ? r.json() : []).then(L => { const m = {}; L.forEach(x => { const k = inorm(x.n); if (x.img && !m[k]) m[k] = x.img; }); return m; }).catch(() => ({}));
+    icoLoading = Promise.all([sp, it]).then(([s2, i2]) => { ICO = { sp: s2, it: i2 }; try { window.dispatchEvent(new Event('vs-icons')); } catch (e) {} return ICO; });
+    return icoLoading;
+  }
+  const SVG = (p, c) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="${c}"/>${p}</svg>`);
+  const FICO = { Class: SVG('<path d="M9 7h11l3 3v15H9z" fill="none" stroke="#f3e6c4" stroke-width="2"/><path d="M12 14h8M12 18h8M12 22h5" stroke="#f3e6c4" stroke-width="2"/>', '#6a3b2a'), Subclass: SVG('<path d="M16 6l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#f3e6c4"/>', '#4a3b6a'),
+    Species: SVG('<path d="M16 26c-6-4-8-9-6-15 3 2 5 2 6 0 1 2 3 2 6 0 2 6 0 11-6 15z" fill="#f3e6c4"/>', '#3b5a3a'), Background: SVG('<path d="M8 24V9l8-3 8 3v15l-8-3z" fill="none" stroke="#f3e6c4" stroke-width="2"/>', '#5a4a2a'),
+    Feat: SVG('<circle cx="16" cy="16" r="7" fill="none" stroke="#f3e6c4" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#f3e6c4"/>', '#2a4a6a'), def: SVG('<circle cx="16" cy="16" r="5" fill="#f3e6c4"/>', '#5a5a5a') };
+  const ic = u => u ? `<img class="vs-ic" src="${esc(u)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '';
+  const spIc = n => ICO && ICO.sp[inorm(n)] || '';
+  const itIc = n => ICO && ICO.it[inorm(n)] || '';
+
   // ---- 그리기 ----
   const box = (h, b, cls) => `<section class="vs-box ${cls || ''}"><h3>${h}</h3>${b}</section>`;
   function head(p, c) {
@@ -90,20 +109,20 @@
     const A = c.T('Attack');
     if (!A.length) return '<p class="vs-mut">없음</p>';
     return `<ul class="vs-atk">${A.map(a => { const d = c.kids(a).filter(k => k.type === 'Damage').map(k => `${k._diceCount || ''}${k.diceSize || ''} ${k.damageType || ''}`.trim()).join(' + ');
-      return `<li><details><summary><b>${esc(a.name)}</b><span>${esc([a.attack && a.attack.type, a.range].filter(Boolean).join(' · '))}</span><em>${esc(d)}</em></summary>${a.description ? `<div class="vs-desc">${txt(a.description)}</div>` : ''}</details></li>`; }).join('')}</ul>`;
+      return `<li><details><summary><b>${ic(itIc(a.name) || spIc(a.name))}${esc(a.name)}</b><span>${esc([a.attack && a.attack.type, a.range].filter(Boolean).join(' · '))}</span><em>${esc(d)}</em></summary>${a.description ? `<div class="vs-desc">${txt(a.description)}</div>` : ''}</details></li>`; }).join('')}</ul>`;
   }
   function inventory(c) {
     const it = c.T('Item');
     const cur = ['Platinum', 'Gold', 'Electrum', 'Silver', 'Copper'].map(k => `<span class="vs-coin"><b>${c.cur[k] || 0}</b>${{ Platinum: 'pp', Gold: 'gp', Electrum: 'ep', Silver: 'sp', Copper: 'cp' }[k]}</span>`).join('');
     const w = it.reduce((a, v) => a + (+v.weight || 0) * (+v.quantity || 1), 0);
-    return `<div class="vs-coins">${cur}<span class="vs-mut">무게 합계 ${Math.round(w * 10) / 10} lb</span></div><ul class="vs-items">${it.map(v => `<li><details><summary><b>${esc(v.name)}</b>${v.equipData && v.equipData.equipped ? '<i class="vs-eq">장착</i>' : ''}<span>×${v.quantity || 1}</span><em>${v.weight ? v.weight + ' lb' : ''}</em></summary>${v.description ? `<div class="vs-desc">${txt(v.description)}</div>` : '<div class="vs-desc vs-mut">설명 없음</div>'}</details></li>`).join('') || '<li class="vs-mut">없음</li>'}</ul>`;
+    return `<div class="vs-coins">${cur}<span class="vs-mut">무게 합계 ${Math.round(w * 10) / 10} lb</span></div><ul class="vs-items">${it.map(v => `<li><details><summary><b>${ic(itIc(v.name))}${esc(v.name)}</b>${v.equipData && v.equipData.equipped ? '<i class="vs-eq">장착</i>' : ''}<span>×${v.quantity || 1}</span><em>${v.weight ? v.weight + ' lb' : ''}</em></summary>${v.description ? `<div class="vs-desc">${txt(v.description)}</div>` : '<div class="vs-desc vs-mut">설명 없음</div>'}</details></li>`).join('') || '<li class="vs-mut">없음</li>'}</ul>`;
   }
   function features(c) {
     const F = c.T('Features').concat(c.T('Action'));
     const by = {}; F.forEach(v => { const s = v.source || '기타'; (by[s] = by[s] || []).push(v); });
     const SRC = { Class: '클래스', Subclass: '하위 클래스', Species: '종족', Background: '배경', Feat: '재주', Spell: '주문', Item: '아이템', Other: '기타', Custom: '직접 추가' };
     const seen = new Set();
-    return Object.keys(by).map(s => box(SRC[s] || s, `<ul class="vs-items">${by[s].filter(v => { const k = v.name + '|' + (v.description || '').slice(0, 30); if (seen.has(k)) return false; seen.add(k); return true; }).map(v => `<li><details><summary><b>${esc(v.name)}</b>${v.actionType ? `<span>${esc(v.actionType)}</span>` : ''}</summary><div class="vs-desc">${txt(v.description || '')}</div></details></li>`).join('')}</ul>`)).join('') || '<p class="vs-mut">없음</p>';
+    return Object.keys(by).map(s => box(SRC[s] || s, `<ul class="vs-items">${by[s].filter(v => { const k = v.name + '|' + (v.description || '').slice(0, 30); if (seen.has(k)) return false; seen.add(k); return true; }).map(v => `<li><details><summary><b>${ic(spIc(v.name) || FICO[v.source] || FICO.def)}${esc(v.name)}</b>${v.actionType ? `<span>${esc(v.actionType)}</span>` : ''}</summary><div class="vs-desc">${txt(v.description || '')}</div></details></li>`).join('')}</ul>`)).join('') || '<p class="vs-mut">없음</p>';
   }
   function spells(c) {
     const S = c.T('Spell');
@@ -112,7 +131,7 @@
     const head = c.cast ? `<div class="vs-coins"><span>주문 능력 <b>${esc(AB.find(x => x[0] === c.cast.ability)[2])}</b></span><span>내성 DC <b>${dc}</b></span><span>주문 공격 <b>${sg(c.pb + c.castM)}</b></span></div>` : '';
     const lv = {}; S.forEach(v => { (lv[+v.level || 0] = lv[+v.level || 0] || []).push(v); });
     return head + Object.keys(lv).sort((a, b) => a - b).map(l => { const mx = c.slots[l] || 0, cu = c.curSlots[LV[l]]; const pips = mx ? `<span class="vs-pips">${Array.from({ length: mx }, (_, i) => `<i class="${i < (cu != null ? cu : mx) ? 'on' : ''}"></i>`).join('')}</span>` : '';
-      return box((+l ? l + '레벨' : '소마법') + pips, `<ul class="vs-items">${lv[l].sort((a, b) => a.name.localeCompare(b.name)).map(v => { const co = v.components || {}; return `<li><details><summary><b>${esc(v.name)}</b><span>${esc(SCHOOL_KO[String(v.school || '').replace(/^./, x => x.toUpperCase())] || v.school || '')}</span><em>${esc([v.castingTime, v.range, v.duration].filter(Boolean).join(' · '))}</em></summary><div class="vs-desc"><p class="vs-mut">${[co.verbal && 'V', co.somatic && 'S', co.material && 'M'].filter(Boolean).join(' ')}${co.materialDescription ? ' (' + esc(co.materialDescription) + ')' : ''}${v.concentration ? ' · 집중' : ''}${v.ritual ? ' · 의식' : ''}</p>${txt(v.description || '')}${v.upcastText ? `<p><b>더 높은 레벨로</b> ${txt(v.upcastText)}</p>` : ''}</div></details></li>`; }).join('')}</ul>`); }).join('');
+      return box((+l ? l + '레벨' : '소마법') + pips, `<ul class="vs-items">${lv[l].sort((a, b) => a.name.localeCompare(b.name)).map(v => { const co = v.components || {}; return `<li><details><summary><b>${ic(spIc(v.name))}${esc(v.name)}</b><span>${esc(SCHOOL_KO[String(v.school || '').replace(/^./, x => x.toUpperCase())] || v.school || '')}</span><em>${esc([v.castingTime, v.range, v.duration].filter(Boolean).join(' · '))}</em></summary><div class="vs-desc"><p class="vs-mut">${[co.verbal && 'V', co.somatic && 'S', co.material && 'M'].filter(Boolean).join(' ')}${co.materialDescription ? ' (' + esc(co.materialDescription) + ')' : ''}${v.concentration ? ' · 집중' : ''}${v.ritual ? ' · 의식' : ''}</p>${txt(v.description || '')}${v.upcastText ? `<p><b>더 높은 레벨로</b> ${txt(v.upcastText)}</p>` : ''}</div></details></li>`; }).join('')}</ul>`); }).join('');
   }
   function about(p, c) {
     const ch = ((p.store.about || {}).characteristics) || {};
@@ -235,7 +254,7 @@
       let reg = []; try { reg = ((state.boardTex && state.boardTex.pcs) || []).map(p => p && p.name).filter(Boolean); } catch (e) {}
       if (reg.length) d.pcs = sxPick(d.pcs, reg).map(x => Object.assign({}, x.c, { name: x.j }));
       else d.pcs.forEach(p => { if (p.jname) p.name = p.jname; });
-      DATA = d;
+      DATA = d; icons();
       fetch('data/sheets_history.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(h => { if (h) { HIST = h; if (document.getElementById('vs-body')) try { sheet(); } catch (e) {} } }).catch(() => {});
       return d;
     });
@@ -244,7 +263,7 @@
   }
   // 저널 캐릭터 시트(안쪽 창)에서 쓰는 통로: 이름으로 시트를 찾아 그려 줘요
   window.vsApi = {
-    load, ready: () => !!DATA,
+    load, ready: () => !!DATA, icons,
     find: name => { if (!DATA || !name) return null; return DATA.pcs.find(p => p.name === name || p.jname === name) || (sxPick(DATA.pcs, [name])[0] || {}).c || null; },
     html: (p, t, opt) => bodyHtml(p, t, opt),
     css: () => css
@@ -296,6 +315,8 @@
   .vs-coins{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 10px;font-size:14px}
   .vs-coin{padding:2px 10px;border:1px solid #c9c7b8;border-radius:12px;background:#fff}.vs-coin b{margin-right:3px}
   .vs-comp{border:1px solid #c9c7b8;border-radius:6px;background:rgba(255,255,255,.4);margin:0 0 8px}.vs-comp summary{display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;list-style:none;flex-wrap:wrap}.vs-comp summary::-webkit-details-marker{display:none}.vs-comp summary img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #7a6a53;background:#ddd}.vs-comp summary b{font-size:16px;color:#4b0000;margin-right:auto}.vs-compb{padding:0 10px 8px}
+  .vs-ic{width:26px;height:26px;object-fit:cover;border-radius:5px;border:1px solid #7a6a53;background:#2a2622;flex:none}
+  .vs-items summary b,.vs-atk summary b{display:flex;align-items:center;gap:7px;min-width:0}
   .vs-pips{display:inline-flex;gap:3px;margin-left:auto}.vs-pips i{width:12px;height:12px;border:1px solid #7a1f1f;transform:rotate(45deg);display:inline-block}.vs-pips i.on{background:#7a1f1f}
   @media(max-width:760px){.vs-win{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}#vs-list{display:flex;overflow-x:auto}#vs-list button{width:auto;flex:none}.vs-abs{grid-template-columns:repeat(3,minmax(0,1fr))}.vs-cols{grid-template-columns:1fr}.vs-head{flex-wrap:wrap}}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
