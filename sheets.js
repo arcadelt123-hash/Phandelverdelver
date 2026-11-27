@@ -90,7 +90,7 @@
     const cls = Object.entries(c.classes).map(([n, l]) => `${n} ${l}`).join(' / ') || '';
     return `<header class="vs-head"><img class="vs-por" src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'">
       <div class="vs-id"><h2>${esc(p.name)}</h2><div class="vs-sub">${esc([cls + (c.sub ? ' (' + c.sub + ')' : ''), c.species, c.background && c.background.name].filter(Boolean).join(' · '))}</div>
-      <div class="vs-stats">${stat('레벨', c.lvl)}${stat('숙련', sg(c.pb))}${stat('AC', c.ac)}${stat('HP', `${c.hp.currentHP != null ? c.hp.currentHP : c.hpMax}<small>/${c.hpMax}</small>${c.hp.tempHP ? `<small> +${c.hp.tempHP}</small>` : ''}`)}${stat('이동', c.speed + 'ft')}${stat('선제', sg(md(c.ab.Dexterity)))}</div></div></header>`;
+      <div class="vs-stats">${stat('레벨', c.lvl)}${stat('숙련', sg(c.pb))}${stat('AC', c.ac)}${stat('최대 HP', c.hpMax)}${stat('속도', c.speed + 'ft')}${stat('선제권', sg(md(c.ab.Dexterity)))}</div></div></header>`;
   }
   const stat = (l, v) => `<div class="vs-stat"><span>${l}</span><b>${v}</b></div>`;
   function main(c) {
@@ -160,7 +160,7 @@
     const SK = { acrobatics: 'Acrobatics', animal_handling: 'Animal Handling', arcana: 'Arcana', athletics: 'Athletics', deception: 'Deception', history: 'History', insight: 'Insight', intimidation: 'Intimidation', investigation: 'Investigation', medicine: 'Medicine', nature: 'Nature', perception: 'Perception', performance: 'Performance', persuasion: 'Persuasion', religion: 'Religion', sleight_of_hand: 'Sleight of Hand', stealth: 'Stealth', survival: 'Survival' };
     const pb = num(v('pb')) || 2;
     const headH = `<header class="vs-head"><img class="vs-por" src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><div class="vs-id"><h2>${esc(p.name)}</h2><div class="vs-sub">${esc([v('class_display'), v('race_display') || v('race'), v('background')].filter(Boolean).join(' · '))} · 예전 시트</div>
-      <div class="vs-stats">${stat('레벨', v('level') || '-')}${stat('숙련', sg(pb))}${stat('AC', v('ac') || '-')}${stat('HP', `${v('hp') || 0}<small>/${mx('hp') || '-'}</small>${num(v('hp_temp')) ? `<small> +${v('hp_temp')}</small>` : ''}`)}${stat('이동', (v('speed') || 30) + 'ft')}${stat('선제', sg(num(v('initiative_bonus'))))}</div></div></header>`;
+      <div class="vs-stats">${stat('레벨', v('level') || '-')}${stat('숙련', sg(pb))}${stat('AC', v('ac') || '-')}${stat('최대 HP', mx('hp') || v('hp') || '-')}${stat('속도', (v('speed') || 30) + 'ft')}${stat('선제권', sg(num(v('initiative_bonus'))))}</div></div></header>`;
     let page = '';
     if (tab === 'main') {
       page = `<div class="vs-abs">${AK.map((k, i) => { const sp = !!v(k + '_save_prof'); return `<div class="vs-ab"><span class="vs-abn">${AB[i][2]}</span><b class="vs-abm">${sg(num(v(k + '_mod')))}</b><span class="vs-abs2">${v(k) || 10}</span><span class="vs-sv${sp ? ' on' : ''}">내성 ${sg(num(v(k + '_save_bonus')))}</span></div>`; }).join('')}</div>`
@@ -194,7 +194,7 @@
     const L = compsOf(p);
     if (!L.length) return '<p class="vs-mut">동행 크리처가 없어요. (다음 시트 내보내기 때 같은 플레이어가 조종하는 크리처가 들어와요)</p>';
     return L.map(k => { const c = k.store ? calc(k) : null;
-      const stats = c ? `<div class="vs-stats">${stat('AC', c.ac)}${stat('HP', `${c.hp.currentHP != null ? c.hp.currentHP : c.hpMax}<small>/${c.hpMax}</small>`)}${stat('이동', c.speed + 'ft')}</div>` : '';
+      const stats = c ? `<div class="vs-stats">${stat('AC', c.ac)}${stat('최대 HP', c.hpMax)}${stat('속도', c.speed + 'ft')}</div>` : '';
       const abl = c ? `<div class="vs-abs">${AB.map(([q, s2, ko]) => `<div class="vs-ab"><span class="vs-abn">${ko}</span><b class="vs-abm">${sg(md(c.ab[q]))}</b><span class="vs-abs2">${c.ab[q]}</span></div>`).join('')}</div>` : '';
       return `<details class="vs-comp"><summary><img src="${esc(k.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><b>${esc(k.name)}</b>${stats}</summary><div class="vs-compb">${abl}${c ? box('공격', attacks(c)) + features(c) : ''}</div></details>`; }).join('');
   }
