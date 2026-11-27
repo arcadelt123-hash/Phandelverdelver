@@ -251,8 +251,10 @@
       d.comps = all.filter(p => p.comp);
       d.pcs = all.filter(p => !p.comp);
       // 저널에 PC로 등록한 캐릭터만 (이름은 저널에 등록한 이름으로)
-      let reg = []; try { reg = ((state.boardTex && state.boardTex.pcs) || []).map(p => p && p.name).filter(Boolean); } catch (e) {}
-      if (reg.length) d.pcs = sxPick(d.pcs, reg).map(x => Object.assign({}, x.c, { name: x.j }));
+      // 저널 PC에 'r20'(Roll20 캐릭터 이름)을 따로 정해 두면 그 이름으로 찾아요 (예: 저널 '림데어 페이-브랑슈' ↔ Roll20 '올시람 페어워터')
+      let reg = []; try { reg = ((state.boardTex && state.boardTex.pcs) || []).filter(p => p && p.name).map(p => ({ j: p.name, r: p.r20 || p.name })); } catch (e) {}
+      d.all = all.filter(p => !p.comp);
+      if (reg.length) d.pcs = reg.map(x => { const m = sxPick(d.all, [x.r])[0]; return m ? Object.assign({}, m.c, { name: x.j, r20name: m.c.name }) : null; }).filter(Boolean).filter((p, i, L) => L.findIndex(q => q.id === p.id) === i);
       else d.pcs.forEach(p => { if (p.jname) p.name = p.jname; });
       DATA = d; icons();
       fetch('data/sheets_history.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(h => { if (h) { HIST = h; if (document.getElementById('vs-body')) try { sheet(); } catch (e) {} } }).catch(() => {});
@@ -266,6 +268,9 @@
     load, ready: () => !!DATA, icons,
     find: name => { if (!DATA || !name) return null; return DATA.pcs.find(p => p.name === name || p.jname === name) || (sxPick(DATA.pcs, [name])[0] || {}).c || null; },
     html: (p, t, opt) => bodyHtml(p, t, opt),
+    // 이름이 달라서 못 찾은 Roll20 캐릭터들 + 저널 PC에 연결하기
+    unmatched: () => { if (!DATA) return []; const used = new Set(DATA.pcs.map(p => p.id)); return (DATA.all || []).filter(p => !used.has(p.id)).map(p => p.name); },
+    link: (jname, r20) => { try { const c = ((state.boardTex && state.boardTex.pcs) || []).find(p => p && p.name === jname); if (!c) return Promise.reject(); if (r20) c.r20 = r20; else delete c.r20; if (typeof persistState === 'function') persistState(); } catch (e) { return Promise.reject(e); } DATA = null; loading = null; return load(); },
     css: () => css
   };
   window.vsOpen = open;
