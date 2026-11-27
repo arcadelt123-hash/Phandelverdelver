@@ -159,7 +159,7 @@
     const AK = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
     const SK = { acrobatics: 'Acrobatics', animal_handling: 'Animal Handling', arcana: 'Arcana', athletics: 'Athletics', deception: 'Deception', history: 'History', insight: 'Insight', intimidation: 'Intimidation', investigation: 'Investigation', medicine: 'Medicine', nature: 'Nature', perception: 'Perception', performance: 'Performance', persuasion: 'Persuasion', religion: 'Religion', sleight_of_hand: 'Sleight of Hand', stealth: 'Stealth', survival: 'Survival' };
     const pb = num(v('pb')) || 2;
-    const headH = `<header class="vs-head"><img class="vs-por" src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><div class="vs-id"><h2>${esc(p.name)}</h2><div class="vs-sub">${esc([v('class_display'), v('race_display') || v('race'), v('background')].filter(Boolean).join(' · '))} · 예전 시트</div>
+    const headH = `<header class="vs-head"><img class="vs-por" src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><div class="vs-id"><h2>${esc(p.name)}</h2><div class="vs-sub">${esc([v('class_display'), v('race_display') || v('race'), v('background')].filter(Boolean).join(' · '))}</div>
       <div class="vs-stats">${stat('레벨', v('level') || '-')}${stat('숙련', sg(pb))}${stat('AC', v('ac') || '-')}${stat('최대 HP', mx('hp') || v('hp') || '-')}${stat('속도', (v('speed') || 30) + 'ft')}${stat('선제권', sg(num(v('initiative_bonus'))))}</div></div></header>`;
     let page = '';
     if (tab === 'main') {
