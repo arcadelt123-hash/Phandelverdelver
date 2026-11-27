@@ -11,7 +11,7 @@
   const txt = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
   const sg = n => (n >= 0 ? '+' : '') + n;
   const md = s => Math.floor((s - 10) / 2);
-  let DATA = null, cur = 0, tab = 'main';
+  let DATA = null, HIST = null, cur = 0, tab = 'main', ver = -1;
 
   // ---- 시트 계산 (2024 시트 integrants에서) ----
   function calc(p) {
@@ -102,7 +102,7 @@
     const head = c.cast ? `<div class="vs-coins"><span>주문 능력 <b>${esc(AB.find(x => x[0] === c.cast.ability)[2])}</b></span><span>내성 DC <b>${dc}</b></span><span>주문 공격 <b>${sg(c.pb + c.castM)}</b></span></div>` : '';
     const lv = {}; S.forEach(v => { (lv[+v.level || 0] = lv[+v.level || 0] || []).push(v); });
     return head + Object.keys(lv).sort((a, b) => a - b).map(l => { const mx = c.slots[l] || 0, cu = c.curSlots[LV[l]]; const pips = mx ? `<span class="vs-pips">${Array.from({ length: mx }, (_, i) => `<i class="${i < (cu != null ? cu : mx) ? 'on' : ''}"></i>`).join('')}</span>` : '';
-      return box((+l ? l + '레벨' : '소마법') + pips, `<ul class="vs-items">${lv[l].sort((a, b) => a.name.localeCompare(b.name)).map(v => { const co = v.components || {}; return `<li><details><summary><b>${esc(v.name)}</b><span>${esc(SCHOOL_KO[v.school] || v.school || '')}</span><em>${esc([v.castingTime, v.range, v.duration].filter(Boolean).join(' · '))}</em></summary><div class="vs-desc"><p class="vs-mut">${[co.verbal && 'V', co.somatic && 'S', co.material && 'M'].filter(Boolean).join(' ')}${co.materialDescription ? ' (' + esc(co.materialDescription) + ')' : ''}${v.concentration ? ' · 집중' : ''}${v.ritual ? ' · 의식' : ''}</p>${txt(v.description || '')}${v.upcastText ? `<p><b>더 높은 레벨로</b> ${txt(v.upcastText)}</p>` : ''}</div></details></li>`; }).join('')}</ul>`); }).join('');
+      return box((+l ? l + '레벨' : '소마법') + pips, `<ul class="vs-items">${lv[l].sort((a, b) => a.name.localeCompare(b.name)).map(v => { const co = v.components || {}; return `<li><details><summary><b>${esc(v.name)}</b><span>${esc(SCHOOL_KO[String(v.school || '').replace(/^./, x => x.toUpperCase())] || v.school || '')}</span><em>${esc([v.castingTime, v.range, v.duration].filter(Boolean).join(' · '))}</em></summary><div class="vs-desc"><p class="vs-mut">${[co.verbal && 'V', co.somatic && 'S', co.material && 'M'].filter(Boolean).join(' ')}${co.materialDescription ? ' (' + esc(co.materialDescription) + ')' : ''}${v.concentration ? ' · 집중' : ''}${v.ritual ? ' · 의식' : ''}</p>${txt(v.description || '')}${v.upcastText ? `<p><b>더 높은 레벨로</b> ${txt(v.upcastText)}</p>` : ''}</div></details></li>`; }).join('')}</ul>`); }).join('');
   }
   function about(p, c) {
     const ch = ((p.store.about || {}).characteristics) || {};
@@ -113,13 +113,21 @@
       + (bg ? box('배경 · ' + esc(bg.name), `<div class="vs-desc">${txt(bg.description || '')}</div>`) : '')
       + (Object.keys(notes).length ? box('메모', Object.values(notes).map(n => `<div class="vs-desc">${txt(typeof n === 'string' ? n : (n.title ? n.title + '\n' : '') + (n.content || n.text || ''))}</div>`).join('')) : '');
   }
+  function histBar(p0) {
+    const H = (HIST && HIST.pcs && HIST.pcs[p0.id]) || [];
+    if (!H.length) return '';
+    const opt = (v, l) => `<option value="${v}"${ver === v ? ' selected' : ''}>${l}</option>`;
+    return `<div class="vs-hist"><label>레벨 기록 <select data-vh>${opt(-1, '지금')}${H.map((h, i) => [h, i]).reverse().map(([h, i]) => opt(i, 'Lv ' + h.level + ' (' + esc((h.saved || '').slice(0, 10)) + ')')).join('')}</select></label>${ver >= 0 ? '<span>예전 기록을 보고 있어요</span>' : ''}</div>`;
+  }
   function sheet() {
-    const p = DATA.pcs[cur], el = document.getElementById('vs-body');
+    const p0 = DATA.pcs[cur], el = document.getElementById('vs-body');
+    const H = p0 && HIST && HIST.pcs && HIST.pcs[p0.id];
+    const p = p0 && ver >= 0 && H && H[ver] ? Object.assign({}, p0, H[ver]) : p0;
     if (!p) { el.innerHTML = ''; return; }
     if (!p.store) { el.innerHTML = `<header class="vs-head"><img class="vs-por" src="${esc(p.avatar || '')}" alt=""><div class="vs-id"><h2>${esc(p.name)}</h2><div class="vs-sub">예전 시트 (OGL) · 데이터가 거의 비어 있어요</div></div></header>`; return; }
     const c = calc(p);
     const T = [['main', '능력치'], ['inv', '소지품'], ['feat', '특성'], ['spell', '주문'], ['about', '소개']];
-    el.innerHTML = head(p, c) + `<nav class="vs-tabs">${T.map(([k, l]) => `<button data-vt="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`).join('')}</nav><div class="vs-page">${tab === 'main' ? main(c) : tab === 'inv' ? inventory(c) : tab === 'feat' ? features(c) : tab === 'spell' ? spells(c) : about(p, c)}</div>`;
+    el.innerHTML = histBar(p0) + head(p, c) + `<nav class="vs-tabs">${T.map(([k, l]) => `<button data-vt="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`).join('')}</nav><div class="vs-page">${tab === 'main' ? main(c) : tab === 'inv' ? inventory(c) : tab === 'feat' ? features(c) : tab === 'spell' ? spells(c) : about(p, c)}</div>`;
   }
   function list() {
     document.getElementById('vs-list').innerHTML = DATA.pcs.map((p, i) => `<button data-vi="${i}" class="${i === cur ? 'on' : ''}"><img src="${esc(p.avatar || '')}" alt="" onerror="this.style.visibility='hidden'"><span>${esc(p.name)}</span></button>`).join('')
@@ -133,9 +141,10 @@
       document.body.appendChild(m);
       m.addEventListener('click', e => {
         if (e.target === m || e.target.closest('.vs-x')) { m.style.display = 'none'; return; }
-        const b = e.target.closest('[data-vi]'); if (b) { cur = +b.dataset.vi; tab = 'main'; list(); sheet(); return; }
+        const b = e.target.closest('[data-vi]'); if (b) { cur = +b.dataset.vi; tab = 'main'; ver = -1; list(); sheet(); return; }
         const t = e.target.closest('[data-vt]'); if (t) { tab = t.dataset.vt; sheet(); }
       });
+      m.addEventListener('change', e => { const s = e.target.closest('[data-vh]'); if (s) { ver = +s.value; sheet(); } });
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && m.style.display !== 'none') m.style.display = 'none'; });
     }
     m.style.display = 'flex';
@@ -143,6 +152,7 @@
     fetch('data/sheets.json', { cache: 'no-cache' }).then(r => r.json()).then(d => {
       d.pcs = d.pcs.filter(p => p.store || (p.attrs && p.attrs.strength));
       DATA = d; list(); sheet();
+      fetch('data/sheets_history.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(h => { if (h) { HIST = h; sheet(); } }).catch(() => {});
     }).catch(e => { document.getElementById('vs-body').innerHTML = `<p class="vs-mut">시트 데이터를 못 불러왔어요 (${esc(e.message)})</p>`; });
   }
   window.vsOpen = open;
@@ -188,6 +198,7 @@
   .vs-eq{font-style:normal;font-size:11px;background:#7a1f1f;color:#fff;border-radius:8px;padding:0 6px;margin-left:6px}
   .vs-desc{font-size:14px;line-height:1.6;padding:4px 6px 10px;color:#2b2a24}
   .vs-mut{color:#7a6a53}
+  .vs-hist{display:flex;gap:10px;align-items:center;margin:0 44px 8px 0;font-size:13px;color:#4f4b43}.vs-hist select{font:inherit;padding:3px 6px;border:1px solid #c9c7b8;border-radius:3px;background:#fff;min-height:30px}.vs-hist span{color:#7a1f1f}
   .vs-coins{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 10px;font-size:14px}
   .vs-coin{padding:2px 10px;border:1px solid #c9c7b8;border-radius:12px;background:#fff}.vs-coin b{margin-right:3px}
   .vs-pips{display:inline-flex;gap:3px;margin-left:auto}.vs-pips i{width:12px;height:12px;border:1px solid #7a1f1f;transform:rotate(45deg);display:inline-block}.vs-pips i.on{background:#7a1f1f}
