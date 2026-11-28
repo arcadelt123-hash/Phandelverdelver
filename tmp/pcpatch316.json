@@ -1,0 +1,1 @@
+[["    const status = st.dead ? ` <b style=\"color:${T.red};\">사망</b>` : st.stable ? ` <b style=\"color:${T.green};\">안정화</b>` : '';", "    const status = st.dead ? ` <b style=\"color:${T.red};white-space:nowrap;\">사망</b>` : st.stable ? ` <b style=\"color:${T.green};white-space:nowrap;\">안정화</b>` : '';   // v2.9.2: 글자가 두 줄로 갈라지지 않게"]]
