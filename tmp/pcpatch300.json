@@ -1,0 +1,1 @@
+[["      if (hit) midiSend(midiWhoTo(P.name, P.pid), line('', `명중! 이제 <b>피해</b>를 굴려 주세요", "      if (hit && !P.dmgF) midiSend(midiWhoTo(P.name, P.pid), line('', `명중! 이제 <b>피해</b>를 굴려 주세요"]]
