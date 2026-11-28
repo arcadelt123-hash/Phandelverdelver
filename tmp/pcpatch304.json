@@ -1,0 +1,1 @@
+[["db = P.dmgF && hit !== false ? ' ' + midiBtn(P.nat === 20 ? '치명타 피해' : '피해', `!연출 피해굴림 ${midiK(P)}`) +", "db = P.dmgF && hit !== false ? ' ' + midiBtn(P.nat === 20 ? '치명타 피해' : '피해', `!연출 피해굴림 ${midiK(P)}`).replace(/style=\"/, 'style=\"transform:translateY(3px);') +   // v2.9.2: 버튼만 3px 아래로 (식은 그대로)\n       "]]
