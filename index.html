@@ -2208,6 +2208,28 @@
   <style>/* 1차 수정: 상단 메뉴 칩 글자가 세로로 꺾이지 않게 */
     .top-bar #gmcast-btn, .top-bar #shoplive-btn, .top-bar #r20-btn { white-space: nowrap; }
   </style>
+<style id="mob-fix">
+/* ===== 폰 화면 다듬기 (2026-11-28) ===== */
+@media (max-width: 760px) {
+  .top-bar .action-group { flex: 1 1 100% !important; flex-wrap: wrap !important; justify-content: center !important; row-gap: 4px !important; max-width: 100% !important; }
+  .top-bar .tab-ico { width: 34px !important; height: 34px !important; min-width: 34px !important; }
+  .top-bar #tab-map .tab-ico { width: 38px !important; height: 38px !important; min-width: 38px !important; }
+  .top-bar .btn-icon-top img, .top-bar .btn-icon-top .top-ico { width: 32px !important; height: 32px !important; min-width: 32px !important; }
+  .top-bar .btn-icon-top .ico-img, .top-bar #gs-ico { width: 32px !important; height: 32px !important; min-width: 32px !important; }
+  .top-bar #gmcast-btn, .top-bar #shoplive-btn, .top-bar #r20-btn { min-height: 34px !important; padding: 4px 11px !important; font-size: 13px !important; }
+  .top-bar .nav-hide-btn { order: 4 !important; }
+  .top-bar > .cal-chip { order: 5 !important; flex: 0 1 auto !important; }
+  body.sheet-on .top-bar .action-group, body.sheet-on .top-bar > .cal-chip { display: none !important; }
+  #fbc-fab { width: 64px !important; height: 24px !important; right: 8px !important; bottom: 8px !important; opacity: .85; background-size: contain !important; background-position: center !important; }
+  .bg-chip, .folder-pill, .tag-pill { min-height: 34px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+  .drag-handle { min-width: 30px !important; min-height: 30px !important; display: inline-flex !important; align-items: center; justify-content: center; }
+  input.fl-op { height: 26px !important; }
+  .qt-meta, .tk-in { font-size: 11px !important; }
+  .q-sub { flex: 0 1 auto !important; min-width: 0 !important; gap: 2px !important; }
+  .q-sub > button { padding-left: 3px !important; padding-right: 3px !important; }
+  .bg-es { font-size: 11px !important; }
+}
+</style>
 </head>
 <body>
 <style>#auth-ov::before{content:"";position:fixed;inset:0;background:var(--abg) center/cover no-repeat;opacity:.55;pointer-events:none}#auth-ov>.ab{position:relative}</style>
@@ -9673,6 +9695,7 @@ const gmv = gm && !plView(), tgt = shopCicTgt(), cnt = {}; (sh.items || []).forE
       });
     }
     function openSheet(id) {
+      document.body.classList.add('sheet-on');   // 폰: 상단 메뉴를 줄인 뒤 높이를 재요
       sheetOpenId = id; const ov = sheetFrame(); window.scrollTo(0, 0);
       const tb = document.querySelector('.top-bar'); ov.style.setProperty('--sheet-top', (tb ? Math.ceil(tb.getBoundingClientRect().bottom) + 8 : 0) + 'px');
       ov.classList.add('open'); document.body.style.overflow = 'hidden'; document.body.classList.add('sheet-on');
