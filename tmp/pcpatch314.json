@@ -1,1 +1,0 @@
-[["  const send = (who, text, opts) => { try { text = cfxText(text);", "  const send = (who, text, opts) => { try { text = String(cfxText(text)).replace(/<a [^>]*>/g, a => a.replace(/background-color:\\s*#(7b5cc4|5a2a6a|6b3d8a|7d5cc0|4b2f9a)\\b/gi, 'background-color:#000000'));   // v2.9.2: 보라색 버튼은 모두 검은 배경\n   "]]
